@@ -1,0 +1,829 @@
+import sqlite3
+from datetime import datetime, timedelta
+import json
+
+
+def createConnection():
+    try:
+        connection = sqlite3.connect("data.db")
+        print("Datenbankverbindung erfolgreich hergestellt.")
+        return connection
+    except sqlite3.Error as e:
+        print(f"Fehler beim Herstellen der Datenbankverbindung: {e}")
+        return None
+
+
+try:
+    with open("compliments.json", "r", encoding="utf8") as f:
+        compliments = json.load(f)
+
+except FileNotFoundError:
+    compliments = {}
+
+
+
+
+def closeConnection(connection):
+    if connection:
+        connection.close()
+        print("Datenbankverbindung geschlossen.")
+
+
+
+
+def checkCooldown(connection, user_id, cooldown_duration):
+    if connection is not None:
+        cursor = connection.cursor()
+        try: #datetime.fromisoformat(data["cooldowns"][user_id])
+            cursor.execute('''  SELECT SparkTimestamp 
+                                FROM User 
+                                WHERE UserID = ?''', 
+                                (user_id,))
+            result = cursor.fetchone()
+            if result and result[0]:
+                last_used = datetime.fromisoformat(result[0])
+                if datetime.now() < last_used + timedelta(hours=cooldown_duration):
+                    return False
+            return True
+        except sqlite3.Error as e:
+            print(f"Fehler beim Überprüfen des Cooldowns: {e}")
+            return False
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+        return False
+
+
+
+
+def updateCooldown(connection, user_id):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            now = datetime.now().date().isoformat()
+            cursor.execute('''  UPDATE User 
+                                SET SparkTimestamp = ?
+                                WHERE UserID = ?''', 
+                                (now, user_id))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Aktualisieren des Cooldowns: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+
+
+
+
+def checkHugPatCooldown(connection, user_id, cooldown_duration):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT HugPatTimestamp 
+                                FROM User 
+                                WHERE UserID = ?''', 
+                                (user_id,))
+            result = cursor.fetchone()
+            print(result)
+            if result[0] == '0':
+                return True
+            else:
+                last_used = datetime.fromisoformat(result[0])
+                now = datetime.now()
+                if now < last_used + timedelta(hours=cooldown_duration):
+                    return False
+            return True
+        except sqlite3.Error as e:
+            print(f"Fehler beim Überprüfen des HugPat-Cooldowns: {e}")
+            return False
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+        return False
+
+
+
+
+def updateHugPatCooldown(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            now = datetime.now().date().isoformat()
+            cursor.execute('''  UPDATE User
+                                SET HugPatTimestamp = ?
+                                WHERE UserID = ?''',
+                                (now, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Aktualisieren des HugPat-Cooldowns: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+
+
+
+
+def updateHugPatUses(connection, user_id, max_uses):
+    if connection is None:
+        print("Keine Datenbankverbindung verfügbar.")
+        return False
+
+    cursor = connection.cursor()
+    try:
+        now = datetime.now().date().isoformat()
+        # Prüfen, ob der User existiert
+        cursor.execute('''  SELECT HugPatUses, HugPatLastReset 
+                            FROM User 
+                            WHERE UserID = ?''', 
+                            (user_id,))
+        result = cursor.fetchone()
+
+        if result:
+            count, last_reset = result
+            if last_reset != now:  # Neuer Tag → Reset
+                count = 0
+                last_reset = now
+
+            if count >= max_uses:
+                return False 
+
+            count += 1  # Nutzung erhöhen
+            cursor.execute('''  UPDATE User 
+                                SET HugPatUses = ?, HugPatLastReset = ? 
+                                WHERE UserID = ?''',
+                                (count, last_reset, user_id))
+            return True #TODO Testen ob jetzt mehr als einmal hug genutzt werden kann
+        else:
+            # Falls der User nicht existiert, neu anlegen
+            count = 1
+            last_reset = now
+            cursor.execute('''  INSERT INTO User 
+                                (UserID, HugPatUses, HugPatLastReset) 
+                                VALUES (?, ?, ?)''',
+                                (user_id, count, last_reset))
+        connection.commit()
+        return True
+
+    except sqlite3.Error as e:
+        print(f"Fehler beim Aktualisieren der HugPat-Nutzung: {e}")
+        return False
+
+
+
+def getCompliments(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Compliment, Count 
+                                FROM Compliments 
+                                WHERE UserID = ?''', 
+                                (userID,))
+            results = cursor.fetchall()
+
+            if results:
+                return {compliment: count for compliment, count in results}
+            else:
+                return {}
+        
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen der Kompliment-Statistiken: {e}")
+            return {}
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+        return {}
+
+
+
+
+def insertCompliment(connection, userID, compliment, Count = 1):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  INSERT INTO Compliments
+                                (UserID, Compliment, Count)
+                                VALUES(?, ?, ?)''',
+                                (userID, compliment, Count))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Einfügen des kompliments: {e}")
+            return False
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+        return False
+
+
+
+
+def updateCompliment(connection, userID, compliment):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Compliments
+                                SET Count = Count + 1
+                                WHERE userID = ?
+                                AND Compliment = ?''',
+                                (userID, compliment))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Updaten der Compliments: {e}")
+            return {}
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+        return {}
+
+
+
+
+def updateStreak(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET Streak = Streak + 1
+                                WHERE userID = ?''',
+                                (userID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Streak: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+        return {}
+
+
+
+
+def getStreak(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Streak
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result and result[0]:
+                return result[0]
+            else:
+                print(f"Keine Streak gesetzt: {userID}")
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen der Streak: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+        return {}
+    
+
+
+
+def resetStreak(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET Streak = 0
+                                WHERE userID = ?''',
+                                (userID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Streak: {e}")
+    else:
+        print("Keine Datenbankverbindung verfühgbar.")
+        return {}
+
+
+
+
+def getSparkID(connection):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ID
+                                FROM Logs
+                                ORDER BY ID DESC
+                                LIMIT 1''')
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen der ID: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+        return {}
+
+
+
+
+def getStreakPoints(connection, userID): #Bisher nicht verwendet
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT StreakPoints
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen der StreakPoints: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+        return {}
+    
+
+
+
+def updateStreakPoints(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET StreakPoints = Streakpoints + 1
+                                WHERE UserID = ?''',
+                                (userID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen der StreakPoints: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+        return {}
+
+
+
+
+def getPremium(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT HatPremium
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen von Premium: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+        return {}
+
+
+
+
+def getPremiumTimestamp(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT PremiumTimestamp
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return False
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen von Premium: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+        return {}
+
+
+
+
+def setPremium(connection, PremiumTimestamp, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET HatPremium = 1,
+                                PremiumTimestamp = ?
+                                WHERE UserID = ?''',
+                                (PremiumTimestamp, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Updaten von Premium: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def resetPremium(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET HatPremium = 0
+                                WHERE UserID = ?''',
+                                (userID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Updaten von Premium: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def insertLogs(connection, Timestamp, UserID, UserName, TargetID, TargetName, Compliment, Typ, ServerID, ServerName):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  INSERT INTO Logs
+                                (Timestamp, UserID, UserName, TargetID, TargetName, Compliment, Typ, ServerID, ServerName)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                (Timestamp, UserID, UserName, TargetID, TargetName, Compliment, Typ, ServerID, ServerName))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Insert von Logs: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def getCooldown(connection, userID):
+    """
+    Retrieves the cooldown timestamp for a specific user.
+
+    This function queries the database for the 'SparkTimestamp' of the user
+    with the given userID. If the user exists, it returns the timestamp as 
+    a string. If the user does not exist or an error occurs, it returns 0.
+
+    Parameters
+    ----------
+    connection : sqlite3.Connection
+        The database connection to use.
+    userID : str
+        The ID of the user to retrieve the cooldown for.
+
+    Returns
+    -------
+    str or int
+        The timestamp of the last cooldown as a string, or 0 if the user
+        does not exist or an error occurs.
+    """
+
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT SparkTimestamp
+                                FROM User
+                                WHERE userID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen des Cooldowns: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def checkUserExists(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT UserID
+                                FROM User
+                                WHERE userID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen des Users: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def insertUser(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  INSERT INTO User
+                                (UserID, HugPatUses, SparkUses, HugPatLastReset, HugPatTimestamp, SparkTimestamp, Streak, StreakPoints, HatGevotet, HatPremium, PremiumTimestamp, VoteTimestamp, StreakPointsTimestamp)
+                                VALUES(?, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)''',
+                                (userID,))
+            connection.commit()
+            print("TestErfolg")
+        except sqlite3.Error as e:
+            print(f"Fehler beim Einfügen des Users: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def updateSparkUses(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET SparkUses = SparkUses + 1
+                                WHERE UserID = ?''',
+                                (userID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Updaten von SparkUses: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def resetSparkUses(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET SparkUses = 0
+                                WHERE UserID = ?''',
+                                (userID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Updaten von SparkUses: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def getSparkUses(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT SparkUses
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von SparkUses: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def insertUserSetting(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  INSERT INTO Settings
+                                (UserID, SparkDM, HugPatPing, HugPatDM, StatsPrivate)
+                                VALUES(?, True, True, False, False)''',
+                                (userID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim einfügen des Users in die Settings: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def checkUserSetting(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT UserID
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim überprüfen des Users in die Settings: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def getSparkDM(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT SparkDM
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 1
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von SparkDM: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def setSparkDM(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET SparkDM = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der SparkDM Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def getHugPatDM(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT HugPatDM
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von HugPatDM: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def setHugPatDM(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET HugPatDM = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der HugPatDM Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def getHugPatPing(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT HugPatPing
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 1
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von HugPatPing: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def setHugPatPing(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET HugPatPing = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der HugPatPing Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def getStatsPrivate(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT StatsPrivate
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von StatsPrivate: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def setStatsPrivate(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET StatsPrivate = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der StatsPrivate Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def getStreakPrivate(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT StreakPrivate
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von StreakPrivate: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setStreakPrivate(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET StreakPrivate = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der StreakPrivate Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getTopServerSparks(connection):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT serverID, serverName, COUNT(*) as count 
+                                FROM Logs 
+                                WHERE Typ = 'Compliment' OR Typ = 'Custom'
+                                GROUP BY serverID 
+                                ORDER BY count DESC 
+                                LIMIT 5''')
+            result = cursor.fetchall()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der StatsPrivate Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
+
+
+
+
+def getTopServerHugs(connection):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT serverID, serverName, COUNT(*) as count 
+                                FROM Logs 
+                                WHERE Typ = 'Hug' OR Typ = 'Pat'
+                                GROUP BY serverID 
+                                ORDER BY count DESC 
+                                LIMIT 5''')
+            result = cursor.fetchall()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der StatsPrivate Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verfügbar")
