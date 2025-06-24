@@ -32,11 +32,23 @@ except FileNotFoundError:
     compliments = {}
 
     
+async def setBotActivity():
+    await asyncio.sleep(10)  # Warte 10 Sekunden, um sicherzustellen, dass der Bot vollständig verbunden ist
+    activity = discord.Streaming(
+        name=f"Ich gammel auf {len(bot.guilds)} Servern",
+        url="https://www.twitch.tv/kurom0m0"
+    )
+    await bot.change_presence(activity=activity)
 
 
 #wird beim Start vom Bot ausgeführt
 @bot.event
 async def on_ready():
+    activity = discord.Streaming(
+        name=f"Ich gammel auf {len(bot.guilds)} Servern",
+        url="https://www.twitch.tv/kurom0m0"
+    )
+    await bot.change_presence(activity=activity)
     print(f"Bot ist eingeloggt als {bot.user.name}")
     try:
         synced = await bot.tree.sync()
@@ -46,6 +58,7 @@ async def on_ready():
     #zeigt in Konsole an, auf welchen Servern der Bot ist
     for guild in bot.guilds:
         print(f'- {guild.name} (ID: {guild.id})')
+    bot.loop.create_task(setBotActivity())
 
 
 
