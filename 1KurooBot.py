@@ -44,11 +44,6 @@ async def setBotActivity():
 #wird beim Start vom Bot ausgeführt
 @bot.event
 async def on_ready():
-    activity = discord.Streaming(
-        name=f"Ich gammel auf {len(bot.guilds)} Servern",
-        url="https://www.twitch.tv/kurom0m0"
-    )
-    await bot.change_presence(activity=activity)
     print(f"Bot ist eingeloggt als {bot.user.name}")
     try:
         synced = await bot.tree.sync()
