@@ -14,6 +14,7 @@ from collections import Counter
 from dataBase import *
 from Methoden import *
 from hug import sendHug, sendPat
+from spark import sparkCheck
 import sqlite3
 
 intents = discord.Intents.default()
@@ -85,26 +86,16 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
     ResetPremium(connection, userID)
     ResetStreak(connection, userID)
 
-    #resettet
+    #resettet SparkUses
     if cooldown != date:
         resetSparkUses(connection, userID)
         SparkUses = 0
 
 
-    if cooldown:
-        if Premium:
-            #Wenn User Premium hat, dann prüft ob mehr als 2 mal gesparkt wurde
-            if SparkUses == 2:
-                await interaction.response.send_message(f"Du hast Heute bereits 2x gesparkt! Versuchs morgen nochmal.", ephemeral=True)
-                return
-        else:
-            if cooldown == date:
-                await interaction.response.send_message(f"Du kannst den Befehl /spark morgen wieder verwenden.", ephemeral=True)
-                return
-
-    if targetID == userID:
-        await interaction.response.send_message("Eigenlob stinkt :^)")
-        return
+    #prüft ob User schon gesparkt hat heute
+    sparkCheck(cooldown, SparkUses, Premium, date, interaction)
+    #prüft ob User sich selbst auswählt
+    checkTarget(targetID, userID, interaction)
 
     if SparkUses < 1:
         updateStreak(connection, userID)
