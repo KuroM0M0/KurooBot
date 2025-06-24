@@ -342,6 +342,19 @@ async def streak(interaction: discord.Interaction):
 
 
 
+@bot.tree.command(name="Newsletter", description="Damit erhältst du bei jedem Update eine DM vom Bot was alles neu ist")
+async def newsletter(interaction: discord.Interaction):
+    userID = str(interaction.user.id)
+    haveNewsletter = getNewsletter(connection, userID)
+    if haveNewsletter == 0:
+        setNewsletter(connection, userID, True)
+        await interaction.response.send_message("Du hast dich für den Newsletter angemeldet!", ephemeral=True)
+    else:
+        setNewsletter(connection, userID, False)
+        await interaction.response.send_message("Du hast dich für den Newsletter abgemeldet!", ephemeral=True)
+
+
+
 
 
 
