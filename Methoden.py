@@ -3,14 +3,7 @@ from dataBase import *;
 
 def UserExists(connection, userID): 
     """
-    Checks if a user exists in the database and inserts a new user if not.
-    
-    Parameters
-    ----------
-    connection : sqlite3.Connection
-        The database connection to use.
-    userID : str
-        The ID of the user to check.
+    Prüft ob User in der Datenbank existiert, wenn nicht wird er hinzugefügen
     """
     exists = checkUserExists(connection, userID)
     if exists is None:
@@ -19,14 +12,7 @@ def UserExists(connection, userID):
 
 def ResetPremium(connection, userID):
     """
-    Checks if a user's premium has expired and resets it if so.
-    
-    Parameters
-    ----------
-    connection : sqlite3.Connection
-        The database connection to use.
-    userID : str
-        The ID of the user to check.
+    Prüft ob Premium abgelaufen ist, wenn ja wird es resettet
     """
     Premium = getPremium(connection, userID)
     if Premium:
@@ -43,20 +29,23 @@ def StreakPunkt(connection, userID):
     This function checks the user's streak and spark uses. If the user has
     less than 2 spark uses and their streak is divisible by 3, it updates
     their streak points.
-
-    Parameters
-    ----------
-    connection : sqlite3.Connection
-        The database connection to use.
-    userID : str
-        The ID of the user to check and update.
     """
     streak = getStreak(connection, userID)
     if getSparkUses(connection, userID) < 2:
         if streak % 3 == 0:
             updateStreakPoints(connection, userID)
 
+
+
 def ResetStreak(connection, userID):
+    """
+    Resets the streak for a user if the difference between the current date
+    and the user's last spark date is greater than 1 day.
+
+    This function is used to reset a user's streak when they miss a day of
+    sparking. If the user has not sparked in more than a day, their streak is
+    reset to 0.
+    """
     today = datetime.now().date()
     lastSparkStr = getCooldown(connection, userID)
 
@@ -67,3 +56,13 @@ def ResetStreak(connection, userID):
     delta = (today - lastSpark).days
     if delta > 1:
         resetStreak(connection, userID)
+
+
+
+async def checkTarget(targetID, userID, interaction):
+    """
+    Prüft ob User sich selbst auswählt
+    """
+    if targetID == userID:
+        await interaction.response.send_message("Eigenlob stinkt :^)")
+        return

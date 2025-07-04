@@ -14,6 +14,8 @@ from collections import Counter
 from dataBase import *
 from Methoden import *
 from hug import sendHug, sendPat
+from spark import sparkCheck
+from settings import Settings, PremiumSettings
 import sqlite3
 
 intents = discord.Intents.default()
@@ -21,6 +23,7 @@ intents.message_content = True
 intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 KuroID = 308660164137844736
+UpdateChannelID = 1310607294026747954
 cooldownDuration = 24
 
 connection = createConnection()
@@ -93,26 +96,16 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
     ResetPremium(connection, userID)
     ResetStreak(connection, userID)
 
-    #resettet
+    #resettet SparkUses
     if cooldown != date:
         resetSparkUses(connection, userID)
         SparkUses = 0
 
 
-    if cooldown:
-        if Premium:
-            #Wenn User Premium hat, dann prüft ob mehr als 2 mal gesparkt wurde
-            if SparkUses == 2:
-                await interaction.response.send_message(f"Du hast Heute bereits 2x gesparkt! Versuchs morgen nochmal.", ephemeral=True)
-                return
-        else:
-            if cooldown == date:
-                await interaction.response.send_message(f"Du kannst den Befehl /spark morgen wieder verwenden.", ephemeral=True)
-                return
-
-    if targetID == userID:
-        await interaction.response.send_message("Eigenlob stinkt :^)")
-        return
+    #prüft ob User schon gesparkt hat heute
+    sparkCheck(cooldown, SparkUses, Premium, date, interaction)
+    #prüft ob User sich selbst auswählt
+    checkTarget(targetID, userID, interaction)
 
     if SparkUses < 1:
         updateStreak(connection, userID)
@@ -311,9 +304,17 @@ async def help(interaction: discord.Interaction):
 async def settings(interaction: discord.Interaction):
     userID = str(interaction.user.id)
     userHaveSettings = checkUserSetting(connection, userID)
+    premium = getPremium(connection, userID)
+
     if not userHaveSettings:
         insertUserSetting(connection, userID)
-    await interaction.response.send_message(view=Settings())
+
+    if premium == True:
+        await interaction.response.send_message(view=PremiumSettings(), ephemeral=True)
+        return
+    else:
+        await interaction.response.send_message(view=Settings(), ephemeral=True)
+        return
 
 
 
@@ -359,6 +360,27 @@ async def streak(interaction: discord.Interaction):
 
 
 
+@bot.tree.command(name="newsletter", description="Damit erhältst du bei jedem Update eine DM vom Bot was alles neu ist")
+async def newsletter(interaction: discord.Interaction):
+    userID = str(interaction.user.id)
+    haveNewsletter = getNewsletter(connection, userID)
+    if haveNewsletter == 0:
+        setNewsletter(connection, userID, True)
+        await interaction.response.send_message("Du hast dich für den Newsletter angemeldet!", ephemeral=True)
+    else:
+        setNewsletter(connection, userID, False)
+        await interaction.response.send_message("Du hast dich für den Newsletter abgemeldet!", ephemeral=True)
+
+
+@bot.tree.command(name="send_newsletter", description="Newsletter an alle Abonnenten schicken")
+async def send_newsletter(interaction: discord.Interaction):
+    if interaction.user.id != KuroID:
+        await interaction.response.send_message("Du darfst diesen Befehl nicht verwenden.", ephemeral=True)
+        return
+    await interaction.response.send_message("Newsletter wird versendet...", ephemeral=True)
+
+
+
 
 
 
@@ -397,33 +419,7 @@ class TopServerButton(ui.View):
 
 
 
-class Settings(ui.View):
-    @ui.button(label="StatsPrivate", style=discord.ButtonStyle.primary)
-    async def StatsPrivate(self, interaction: discord.Interaction, button: ui.Button):
-        userID = interaction.user.id
-        StatsPrivate = getStatsPrivate(connection, userID)
 
-        if StatsPrivate == True:
-            setStatsPrivate(connection, userID, False)
-            await interaction.response.send_message("Deine Stats sind jetzt wieder öffentlich sichtbar!", ephemeral=True)
-
-        else:
-            setStatsPrivate(connection, userID, True)
-            await interaction.response.send_message("Deine Stats sind nun Privat!", ephemeral=True)
-
-
-    @ui.button(label="StreakPrivate", style=discord.ButtonStyle.primary)
-    async def StreakPrivate(self, interaction: discord.Interaction, button: ui.Button):
-        userID = interaction.user.id
-        StreakPrivate = getStreakPrivate(connection, userID)
-
-        if StreakPrivate == True:
-            setStreakPrivate(connection, userID, False)
-            await interaction.response.send_message("Deine Streak ist jetzt wieder für alle sichtbar!", ephemeral=True)
-
-        else:
-            setStreakPrivate(connection, userID, True)
-            await interaction.response.send_message("Deine Streak ist nun nur für dich Sichtbar!", ephemeral=True)
 
 
         
