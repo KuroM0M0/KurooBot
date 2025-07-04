@@ -15,7 +15,7 @@ from dataBase import *
 from Methoden import *
 from hug import sendHug, sendPat
 from spark import sparkCheck
-from settings import Settings, PremiumSettings
+from settings import Settings, PremiumSettings, settingStuff
 import sqlite3
 
 intents = discord.Intents.default()
@@ -302,19 +302,7 @@ async def help(interaction: discord.Interaction):
 
 @bot.tree.command(name="settings", description="Stelle zB. SparkDMs ein/aus")
 async def settings(interaction: discord.Interaction):
-    userID = str(interaction.user.id)
-    userHaveSettings = checkUserSetting(connection, userID)
-    premium = getPremium(connection, userID)
-
-    if not userHaveSettings:
-        insertUserSetting(connection, userID)
-
-    if premium == True:
-        await interaction.response.send_message(view=PremiumSettings(), ephemeral=True)
-        return
-    else:
-        await interaction.response.send_message(view=Settings(), ephemeral=True)
-        return
+    settingStuff(interaction)
 
 
 
@@ -413,10 +401,6 @@ class TopServerButton(ui.View):
             description += f"{serverName}: {Count} \n"
             embed.description = description
         await interaction.response.edit_message(embed=embed)
-
-
-
-
 
 
 

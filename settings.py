@@ -83,3 +83,19 @@ class PremiumSettings(ui.View):
         else:
             setStreakPrivate(connection, userID, True)
             await interaction.response.send_message("Du erhältst nun Updates in deine DMs!", ephemeral=True)
+
+
+async def settingStuff(interaction):
+    userID = str(interaction.user.id)
+    userHaveSettings = checkUserSetting(connection, userID)
+    premium = getPremium(connection, userID)
+
+    if not userHaveSettings:
+        insertUserSetting(connection, userID)
+
+    if premium == True:
+        await interaction.response.send_message(view=PremiumSettings(), ephemeral=True)
+        return
+    else:
+        await interaction.response.send_message(view=Settings(), ephemeral=True)
+        return
