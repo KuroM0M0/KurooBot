@@ -1,5 +1,5 @@
 async def sparkCheck(cooldown, SparkUses, Premium, date, interaction):
-#prüft ob User schon gesparkt hat heute
+    """prüft ob User heute schon gesparkt hat"""
     if cooldown:
         if Premium:
             #Wenn User Premium hat, dann prüft ob mehr als 2 mal gesparkt wurde

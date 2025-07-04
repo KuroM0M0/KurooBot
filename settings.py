@@ -57,18 +57,14 @@ class PremiumSettings(ui.View):
     async def StatsPrivate(self, interaction: discord.Interaction, button: ui.Button):
         userID = interaction.user.id
         StatsPrivate = getStatsPrivate(connection, userID)
-        premium = getPremium(connection, userID)
 
         if StatsPrivate == True:
             setStatsPrivate(connection, userID, False)
             await interaction.response.send_message("Deine Stats sind jetzt wieder öffentlich sichtbar!", ephemeral=True)
 
         else:
-            if premium == True:
-                setStatsPrivate(connection, userID, True)
-                await interaction.response.send_message("Deine Stats sind nun Privat!", ephemeral=True)
-            else:
-                await interaction.response.send_message("Diese Einstellung ist nur für Premium Nutzer verfügbar!", ephemeral=True)
+            setStatsPrivate(connection, userID, True)
+            await interaction.response.send_message("Deine Stats sind nun Privat!", ephemeral=True)
 
 
     @ui.button(label="Newsletter", style=discord.ButtonStyle.green)
@@ -85,17 +81,11 @@ class PremiumSettings(ui.View):
             await interaction.response.send_message("Du erhältst nun Updates in deine DMs!", ephemeral=True)
 
 
-async def settingStuff(interaction):
-    userID = str(interaction.user.id)
+def settingStuff(userID):
+    """Prüft ob User in der Datenbank Settings hat, wenn nicht wird er hinzugefügt"""
     userHaveSettings = checkUserSetting(connection, userID)
-    premium = getPremium(connection, userID)
-
+    
     if not userHaveSettings:
         insertUserSetting(connection, userID)
 
-    if premium == True:
-        await interaction.response.send_message(view=PremiumSettings(), ephemeral=True)
-        return
-    else:
-        await interaction.response.send_message(view=Settings(), ephemeral=True)
-        return
+    

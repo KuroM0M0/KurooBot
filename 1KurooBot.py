@@ -102,9 +102,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         SparkUses = 0
 
 
-    #prüft ob User schon gesparkt hat heute
     sparkCheck(cooldown, SparkUses, Premium, date, interaction)
-    #prüft ob User sich selbst auswählt
     checkTarget(targetID, userID, interaction)
 
     if SparkUses < 1:
@@ -302,7 +300,16 @@ async def help(interaction: discord.Interaction):
 
 @bot.tree.command(name="settings", description="Stelle zB. SparkDMs ein/aus")
 async def settings(interaction: discord.Interaction):
-    settingStuff(interaction)
+    userID = str(interaction.user.id)
+    premium = getPremium(connection, userID)
+
+    settingStuff(userID)
+    if premium == True:
+        await interaction.response.send_message(view=PremiumSettings(), ephemeral=True)
+        return
+    else:
+        await interaction.response.send_message(view=Settings(), ephemeral=True)
+        return
 
 
 
