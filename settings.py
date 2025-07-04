@@ -1,0 +1,85 @@
+from dataBase import *
+import discord
+from discord import ButtonStyle, ui
+
+connection = createConnection()
+
+#secondary, grey, gray = grau
+#primary, blurple = blau
+#danger, red = rot
+#green, success = grün
+#link = link benötigt
+#premium = sku_id benötigt
+
+class Settings(ui.View):
+    @ui.button(label="StreakPrivate", style=discord.ButtonStyle.green)
+    async def StreakPrivate(self, interaction: discord.Interaction, button: ui.Button):
+        userID = interaction.user.id
+        StreakPrivate = getStreakPrivate(connection, userID)
+
+        if StreakPrivate == True:
+            setStreakPrivate(connection, userID, False)
+            await interaction.response.send_message("Deine Streak ist jetzt wieder für alle sichtbar!", ephemeral=True)
+
+        else:
+            setStreakPrivate(connection, userID, True)
+            await interaction.response.send_message("Deine Streak ist nun nur für dich Sichtbar!", ephemeral=True)
+
+
+    @ui.button(label="StatsPrivate", style=discord.ButtonStyle.red)
+    async def StatsPrivate(self, interaction: discord.Interaction, button: ui.Button):
+        await interaction.response.send_message("Diese Einstellung ist nur für Premium Nutzer verfugbar!", ephemeral=True)
+
+
+    @ui.button(label="Newsletter", style=discord.ButtonStyle.red)
+    async def Newsletter(self, interaction: discord.Interaction, button: ui.Button):
+        await interaction.response.send_message("Diese Einstellung ist nur für Premium Nutzer verfugbar!", ephemeral=True)
+
+
+
+
+class PremiumSettings(ui.View):
+    @ui.button(label="StreakPrivate", style=discord.ButtonStyle.primary)
+    async def StreakPrivate(self, interaction: discord.Interaction, button: ui.Button):
+        userID = interaction.user.id
+        StreakPrivate = getStreakPrivate(connection, userID)
+
+        if StreakPrivate == True:
+            setStreakPrivate(connection, userID, False)
+            await interaction.response.send_message("Deine Streak ist jetzt wieder für alle sichtbar!", ephemeral=True)
+
+        else:
+            setStreakPrivate(connection, userID, True)
+            await interaction.response.send_message("Deine Streak ist nun nur für dich Sichtbar!", ephemeral=True)
+
+
+    @ui.button(label="StatsPrivate", style=discord.ButtonStyle.primary)
+    async def StatsPrivate(self, interaction: discord.Interaction, button: ui.Button):
+        userID = interaction.user.id
+        StatsPrivate = getStatsPrivate(connection, userID)
+        premium = getPremium(connection, userID)
+
+        if StatsPrivate == True:
+            setStatsPrivate(connection, userID, False)
+            await interaction.response.send_message("Deine Stats sind jetzt wieder öffentlich sichtbar!", ephemeral=True)
+
+        else:
+            if premium == True:
+                setStatsPrivate(connection, userID, True)
+                await interaction.response.send_message("Deine Stats sind nun Privat!", ephemeral=True)
+            else:
+                await interaction.response.send_message("Diese Einstellung ist nur für Premium Nutzer verfügbar!", ephemeral=True)
+
+
+    @ui.button(label="Newsletter", style=discord.ButtonStyle.green)
+    async def Newsletter(self, interaction: discord.Interaction, button: ui.Button):
+        userID = interaction.user.id
+        StreakPrivate = getNewsletter(connection, userID)
+
+        if StreakPrivate == True:
+            setNewsletter(connection, userID, False)
+            await interaction.response.send_message("Du erhältst nun keine Updates mehr in deinen DMs!", ephemeral=True)
+
+        else:
+            setStreakPrivate(connection, userID, True)
+            await interaction.response.send_message("Du erhältst nun Updates in deine DMs!", ephemeral=True)

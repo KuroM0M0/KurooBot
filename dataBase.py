@@ -864,3 +864,23 @@ def setNewsletter(connection, userID, an): #an = true/false
             print(f"Fehler beim setzen der Newsletter Setting: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getNewsletterSubs(connection):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Newsletter
+                                FROM Settings
+                                WHERE Newsletter = 1''',
+                                )
+            result = cursor.fetchall()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von NewsletterSubscriber: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
