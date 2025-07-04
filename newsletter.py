@@ -1,4 +1,5 @@
 import discord
+import asyncio
 from dataBase import *
 
 connection = createConnection()
@@ -19,3 +20,4 @@ class NewsletterModal(discord.ui.Modal, title="Newsletter"):
         for subscriber in NewsletterSubs:
             Subs = await interaction.client.fetch_user(subscriber)
             await Subs.send(embed=embed)
+            await asyncio.sleep(1)

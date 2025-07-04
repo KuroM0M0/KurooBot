@@ -64,5 +64,5 @@ async def CheckTarget(targetID, userID, interaction):
     Prüft ob User sich selbst auswählt
     """
     if targetID == userID:
-        await interaction.response.send_message("Eigenlob stinkt :^)")
+        await interaction.followup.send("Eigenlob stinkt :^)")
         return

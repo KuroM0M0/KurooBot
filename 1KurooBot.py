@@ -14,7 +14,7 @@ from collections import Counter
 from dataBase import *
 from Methoden import *
 from hug import sendHug, sendPat
-from spark import sparkCheck
+from spark import SparkCheck
 from settings import Settings, PremiumSettings, settingStuff
 from newsletter import NewsletterModal
 import sqlite3
@@ -39,7 +39,7 @@ except FileNotFoundError:
 async def setBotActivity():
     await asyncio.sleep(10)  # Warte 10 Sekunden, um sicherzustellen, dass der Bot vollständig verbunden ist
     activity = discord.Streaming(
-        name=f"Ich gammel auf {len(bot.guilds)} Servern",
+        name=f"{len(bot.guilds)} von 100 Server",
         url="https://www.twitch.tv/kurom0m0"
     )
     await bot.change_presence(activity=activity)
@@ -78,6 +78,7 @@ async def PremiumAktivieren(ctx, member: discord.Member):
 @bot.tree.command(name="spark", description="Mache einer Person ein anonymes Kompliment")
 @app_commands.describe(person="Wähle eine Person aus", kompliment="Wähle ein Kompliment aus der Liste")
 async def spark(interaction: discord.Interaction, person: discord.Member, kompliment: str):
+    await interaction.response.defer(ephemeral=True)
     userID = str(interaction.user.id)
     userName = interaction.user.display_name
     targetID = str(person.id)
@@ -103,8 +104,8 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         SparkUses = 0
 
 
-    sparkCheck(cooldown, SparkUses, Premium, date, interaction)
-    checkTarget(targetID, userID, interaction)
+    await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
+    await CheckTarget(targetID, userID, interaction)
 
     if SparkUses < 1:
         updateStreak(connection, userID)
@@ -138,7 +139,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         ghostping = await channel.send(f"{person.mention}")
         await ghostping.delete()
 
-        await interaction.response.send_message("Dein anonymer Text war erfolgreich :D", ephemeral=True)
+        await interaction.followup.send("Dein Kompliment war erfolgreich :D", ephemeral=True)
 
 
     else:
@@ -156,14 +157,14 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
             embed.set_footer(text=f"Spark ID: {getSparkID(connection)}")
             await channel.send(embed=embed)
 
-            await interaction.response.send_message("Dein anonymer Text war erfolgreich :D", ephemeral=True)
+            await interaction.followup.send("Dein anonymer Text war erfolgreich :D", ephemeral=True)
 
             ghostping = await channel.send(f"{person.mention}")
             await ghostping.delete()
 
         #Wenn nutzer kein Premium hat
         else:
-            await interaction.response.send_message("Du hast kein Premium! Bitte wähle ein vorhandenes Kompliment aus.", ephemeral=True)
+            await interaction.followup.send("Du hast kein Premium! Bitte wähle ein vorhandenes Kompliment aus.", ephemeral=True)
 
     
 
@@ -361,7 +362,6 @@ async def sendNewsletter(interaction: discord.Interaction):
     if interaction.user.id != KuroID:
         await interaction.response.send_message("Du darfst diesen Befehl nicht verwenden.", ephemeral=True)
         return
-    
     await interaction.response.send_modal(NewsletterModal())
 
 
