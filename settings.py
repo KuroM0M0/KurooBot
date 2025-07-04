@@ -70,14 +70,14 @@ class PremiumSettings(ui.View):
     @ui.button(label="Newsletter", style=discord.ButtonStyle.green)
     async def Newsletter(self, interaction: discord.Interaction, button: ui.Button):
         userID = interaction.user.id
-        StreakPrivate = getNewsletter(connection, userID)
+        Newsletter = getNewsletter(connection, userID)
 
-        if StreakPrivate == True:
+        if Newsletter == True:
             setNewsletter(connection, userID, False)
             await interaction.response.send_message("Du erhältst nun keine Updates mehr in deinen DMs!", ephemeral=True)
 
         else:
-            setStreakPrivate(connection, userID, True)
+            setNewsletter(connection, userID, True)
             await interaction.response.send_message("Du erhältst nun Updates in deine DMs!", ephemeral=True)
 
 

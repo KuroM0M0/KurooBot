@@ -872,7 +872,7 @@ def getNewsletterSubs(connection):
     if connection is not None:
         cursor = connection.cursor()
         try:
-            cursor.execute('''  SELECT Newsletter
+            cursor.execute('''  SELECT UserID
                                 FROM Settings
                                 WHERE Newsletter = 1''',
                                 )
