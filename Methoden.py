@@ -59,7 +59,7 @@ def ResetStreak(connection, userID):
 
 
 
-async def checkTarget(targetID, userID, interaction):
+async def CheckTarget(targetID, userID, interaction):
     """
     Prüft ob User sich selbst auswählt
     """
