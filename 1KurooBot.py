@@ -16,6 +16,7 @@ from Methoden import *
 from hug import sendHug, sendPat
 from spark import sparkCheck
 from settings import Settings, PremiumSettings, settingStuff
+from newsletter import NewsletterModal
 import sqlite3
 
 intents = discord.Intents.default()
@@ -355,24 +356,13 @@ async def streak(interaction: discord.Interaction):
 
 
 
-@bot.tree.command(name="newsletter", description="Damit erhältst du bei jedem Update eine DM vom Bot was alles neu ist")
-async def newsletter(interaction: discord.Interaction):
-    userID = str(interaction.user.id)
-    haveNewsletter = getNewsletter(connection, userID)
-    if haveNewsletter == 0:
-        setNewsletter(connection, userID, True)
-        await interaction.response.send_message("Du hast dich für den Newsletter angemeldet!", ephemeral=True)
-    else:
-        setNewsletter(connection, userID, False)
-        await interaction.response.send_message("Du hast dich für den Newsletter abgemeldet!", ephemeral=True)
-
-
-@bot.tree.command(name="send_newsletter", description="Newsletter an alle Abonnenten schicken")
-async def send_newsletter(interaction: discord.Interaction):
+@bot.tree.command(name="sendnewsletter", description="Newsletter an alle Abonnenten schicken")
+async def sendNewsletter(interaction: discord.Interaction):
     if interaction.user.id != KuroID:
         await interaction.response.send_message("Du darfst diesen Befehl nicht verwenden.", ephemeral=True)
         return
-    await interaction.response.send_message("Newsletter wird versendet...", ephemeral=True)
+    
+    await interaction.response.send_modal(NewsletterModal())
 
 
 
