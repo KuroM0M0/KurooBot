@@ -65,4 +65,4 @@ async def CheckTarget(targetID, userID, interaction):
     """
     if targetID == userID:
         await interaction.followup.send("Eigenlob stinkt :^)")
-        return
+        raise Exception("Eigenlob")
