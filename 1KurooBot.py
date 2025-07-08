@@ -14,7 +14,7 @@ from collections import Counter
 from dataBase import *
 from Methoden import *
 from hug import sendHug, sendPat
-from spark import sparkCheck
+from spark import *
 from settings import Settings, PremiumSettings, settingStuff
 from newsletter import NewsletterModal
 import sqlite3
@@ -103,7 +103,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         SparkUses = 0
 
 
-    sparkCheck(cooldown, SparkUses, Premium, date, interaction)
+    #sparkCheck(cooldown, SparkUses, Premium, date, interaction)
     checkTarget(targetID, userID, interaction)
 
     if SparkUses < 1:
@@ -137,6 +137,8 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
 
         ghostping = await channel.send(f"{person.mention}")
         await ghostping.delete()
+
+        await sendSparkDM(targetID, interaction)
 
         await interaction.response.send_message("Dein anonymer Text war erfolgreich :D", ephemeral=True)
 
