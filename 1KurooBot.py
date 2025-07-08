@@ -365,6 +365,9 @@ async def sendNewsletter(interaction: discord.Interaction):
     await interaction.response.send_modal(NewsletterModal())
 
 
+@bot.tree.command(name="premium", description="Hole dir Premium")
+async def premium(interaction: discord.Interaction):
+    await interaction.response.send_message("https://www.paypal.com/ncp/payment/UM3PN82GN7ZRE", ephemeral=True)
 
 
 
