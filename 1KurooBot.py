@@ -366,7 +366,7 @@ async def sendNewsletter(interaction: discord.Interaction):
 
 @bot.tree.command(name="premium", description="Hole dir Premium")
 async def premium(interaction: discord.Interaction):
-    await interaction.response.send_message("https://www.paypal.com/ncp/payment/UM3PN82GN7ZRE", ephemeral=True)
+    await interaction.response.send_message("Sende hier 1€ um Premium zu erhalten. In die Nachricht bitte deine Discord ID, damit dir Premium zugewiesen werden kann. https://paypal.me/KuroPixel?country.x=DE&locale.x=de_DE", ephemeral=True)
 
 
 
