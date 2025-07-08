@@ -223,7 +223,6 @@ async def topserver(interaction: discord.Interaction):
         )
         description = ""
         for serverID, serverName, Count in rows:
-            print(f"{serverName} {Count}")
             description += f"{serverName}: {Count} \n"
             embed.description = description
         
@@ -252,7 +251,6 @@ async def cooldown(interaction: discord.Interaction):
             await interaction.response.send_message("Du hast keinen Cooldown mehr.", ephemeral=True)
     else:
         await interaction.response.send_message("Du hast keinen Cooldown mehr.", ephemeral=True)
-    print(f"{userName} CooldownCommand")
 
 
 
