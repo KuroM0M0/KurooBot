@@ -24,7 +24,6 @@ intents.message_content = True
 intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 KuroID = 308660164137844736
-UpdateChannelID = 1310607294026747954
 cooldownDuration = 24
 
 connection = createConnection()
