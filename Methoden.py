@@ -50,7 +50,7 @@ def ResetStreak(connection, userID):
     lastSparkStr = getCooldown(connection, userID)
 
     if lastSparkStr == "0":
-        return
+        raise Exception("Keine Streak vorhanden")
 
     lastSpark = datetime.fromisoformat(lastSparkStr).date()
     delta = (today - lastSpark).days

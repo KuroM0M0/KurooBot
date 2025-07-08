@@ -14,7 +14,7 @@ from collections import Counter
 from dataBase import *
 from Methoden import *
 from hug import sendHug, sendPat
-from spark import SparkCheck
+from spark import *
 from settings import Settings, PremiumSettings, settingStuff
 from newsletter import NewsletterModal
 import sqlite3
@@ -138,6 +138,8 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         ghostping = await channel.send(f"{person.mention}")
         await ghostping.delete()
 
+
+        await sendSparkDM(targetID, interaction)
         await interaction.followup.send("Dein Kompliment war erfolgreich :D", ephemeral=True)
 
 
@@ -221,7 +223,6 @@ async def topserver(interaction: discord.Interaction):
         )
         description = ""
         for serverID, serverName, Count in rows:
-            print(f"{serverName} {Count}")
             description += f"{serverName}: {Count} \n"
             embed.description = description
         
@@ -250,7 +251,6 @@ async def cooldown(interaction: discord.Interaction):
             await interaction.response.send_message("Du hast keinen Cooldown mehr.", ephemeral=True)
     else:
         await interaction.response.send_message("Du hast keinen Cooldown mehr.", ephemeral=True)
-    print(f"{userName} CooldownCommand")
 
 
 
