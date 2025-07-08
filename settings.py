@@ -80,6 +80,19 @@ class PremiumSettings(ui.View):
             setNewsletter(connection, userID, True)
             await interaction.response.send_message("Du erhältst nun Updates in deine DMs!", ephemeral=True)
 
+    @ui.button(label="SparkDM", style=discord.ButtonStyle.primary)
+    async def SparkDM(self, interaction: discord.Interaction, button: ui.Button):
+        userID = interaction.user.id
+        SparkDM = getSparkDM(connection, userID)
+
+        if SparkDM == True:
+            setSparkDM(connection, userID, False)
+            await interaction.response.send_message("Du erhaltet nun keine private Nachricht mehr, wenn du gesparkt wurdest!", ephemeral=True)
+
+        else:
+            setSparkDM(connection, userID, True)
+            await interaction.response.send_message("Du erhaltet nun private Nachrichten, wenn du gesparkt wurdest!", ephemeral=True)
+
 
 def settingStuff(userID):
     """Prüft ob User in der Datenbank Settings hat, wenn nicht wird er hinzugefügt"""
