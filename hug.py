@@ -149,4 +149,3 @@ async def sendPat(interaction, person):
 
     ghostping = await channel.send(f"{person.mention}")
     await ghostping.delete()
-    print(f"{userName} PatCommand")
