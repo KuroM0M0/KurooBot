@@ -83,7 +83,7 @@ def checkHugPatCooldown(connection, user_id, cooldown_duration):
                                 (user_id,))
             result = cursor.fetchone()
             print(result)
-            if result[0] == '0':
+            if result[0] == '0' or result[0] is None:
                 return True
             else:
                 last_used = datetime.fromisoformat(result[0])
