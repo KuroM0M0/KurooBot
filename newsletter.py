@@ -17,7 +17,8 @@ class NewsletterModal(discord.ui.Modal, title="Newsletter"):
 
         embed = discord.Embed(title=f"Update {self.updateNr.value}", color=discord.Color.green())
         embed.add_field(name="Was ist neu?", value=self.new.value, inline=False)
-        embed.add_field(name="", value="") #damit mehr Abstand ist
+        embed.add_field(name="", value="", inline=True) #damit mehr Abstand ist
+        embed.add_field(name="", value="", inline=False)
         embed.add_field(name="Zusammenfassung", value=self.fazit.value, inline=False)
 
         NewsletterSubs = getNewsletterSubs(connection)
