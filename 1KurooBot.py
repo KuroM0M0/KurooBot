@@ -13,6 +13,7 @@ from collections import Counter
 #eigene Imports
 from dataBase import *
 from Methoden import *
+from help import *
 from hug import sendHug, sendPat
 from spark import *
 from settings import Settings, PremiumSettings, settingStuff
@@ -272,29 +273,39 @@ async def pat(interaction: discord.Interaction, person: discord.Member):
 
 
 @bot.tree.command(name="help", description="Zeigt dir alle Befehle an")
-async def help(interaction: discord.Interaction):
-    embed = discord.Embed(
-        color=0x005b96
-    )
+async def help(interaction: discord.Interaction, command: str = None):
+    if command is None:
+        embed = discord.Embed(
+            color=0x005b96
+        )
 
-    cmdDescription = [
-        "**/spark (Person) (Kompliment)**\n   Damit kannst du einer Person ein Anonymes kompliment machen.\n",
-        "**/stats (Person)**\n                Zeige alle Komplimente an, die diese Person bisher bekommen hat\n",
-        "**/topserver**\n                     Zeigt die 2 meistgenutzten Server an\n",
-        "**/hug (Person)**\n                  Umarme diese Person Anonym\n",
-        "**/pat (Person)**\n                  gib der Person ein Anonymes pat\n",
-        "**/cooldown**\n                      Schaue nach, wann du wieder /spark verwenden kannst\n",
-        "**/feedback**\n                      Öffnet ein Formular in dem du Feedback für den Bot eingeben kannst\n",
-        "**/settings**\n                      Stell einige Dinge ein, zb. ob du private Nachrichten möchtest\n",
-        "**/streak**\n                        Schaue dir alle relevanten Dinge zu deiner Streak an\n"
+        embed.add_field(
+            name="ℹ️ Befehle: ",
+            value="\n".join(cmdDescription),
+            inline=False
+        )
+        await interaction.response.send_message(embed=embed)
+    elif command == "spark":
+        await helpSpark(interaction)
+    elif command == "stats":
+        await helpStats(interaction)
+    elif command == "hug":
+        await helpHug(interaction)
+    elif command == "pat":
+        await helpPat(interaction)
+    elif command == "settings":
+        await helpSettings(interaction)
+    elif command == "streak":
+        await helpStreak(interaction)
+
+@help.autocomplete("command")
+async def helpAutocomplete(interaction: discord.Interaction, current: str):
+    befehle = ["spark", "stats", "hug", "pat", "settings", "streak"]
+    return [
+        app_commands.Choice(name=b, value=b)
+        for b in befehle
+        if current.lower() in b.lower()
     ]
-
-    embed.add_field(
-        name="ℹ️ Befehle: ",
-        value="\n".join(cmdDescription),
-        inline=False
-    )
-    await interaction.response.send_message(embed=embed)
 
 
 
