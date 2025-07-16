@@ -13,11 +13,11 @@ async def SparkCheck(cooldown, SparkUses, Premium, date, interaction):
                 raise Exception("Cooldown")
 
 
-async def sendSparkDM(targetID, interaction):
+async def sendSparkDM(targetID, interaction, bot):
     BotID = 1310744379228426290
     channel = interaction.channel
 
-    messages = [msg async for msg in channel.history(limit=2)]
-    if messages and messages[1].author.id == BotID:
-        target = await interaction.client.fetch_user(int(targetID))
+    messages = [msg async for msg in channel.history(limit=1)]
+    if messages and messages[0].author.id == BotID:
+        target = await bot.fetch_user(targetID)
         await target.send(messages[0].jump_url)
