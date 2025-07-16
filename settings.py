@@ -102,3 +102,7 @@ def settingStuff(userID):
         insertUserSetting(connection, userID)
 
     
+
+class SettingsModal(discord.ui.Modal, title="Settings"): #TODO Settings von Button auf Modal ändern
+    async def on_submit(self, interaction):
+        return await super().on_submit(interaction)
