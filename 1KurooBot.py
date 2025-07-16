@@ -18,6 +18,7 @@ from hug import sendHug, sendPat
 from spark import *
 from settings import Settings, PremiumSettings, settingStuff
 from newsletter import NewsletterModal
+from stats import *
 import sqlite3
 
 intents = discord.Intents.default()
@@ -183,32 +184,45 @@ async def kompliment_autocomplete(interaction: discord.Interaction, current: str
 
 @bot.tree.command(name="stats", description="Zeigt dir die Statistiken einer Person an.")
 @app_commands.describe(person="Wähle die Person aus, von der du die Stats sehen möchtest.")
-async def stats(interaction: discord.Interaction, person: discord.Member):
-    targetID = str(person.id)
-    targetName = person.display_name
-    Streak = getStreak(connection, targetID)
-    StatsPrivate = getStatsPrivate(connection, targetID)
+async def stats(interaction: discord.Interaction, person: discord.Member = None):
+    await interaction.response.defer(ephemeral=True)
+    user = (interaction.user)
+    userID = str(interaction.user.id)
+    channel = interaction.channel
 
-    if StatsPrivate == 1:
-        await interaction.response.send_message(f"{targetName} hat seine Stats versteckt.", ephemeral=True)
-        return
+    if person == None:
+        StatsPrivateSelf = getStatsPrivate(connection, userID)
+        embedSelf = await StatsSelf(user)
+        if embedSelf == None:
+            await interaction.followup.send(f"{user.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
+            return
+        if StatsPrivateSelf == 1:
+            await interaction.followup.send(embed=embedSelf)
+            return
+        else:
+            await interaction.delete_original_response()
+            await channel.send(embed=embedSelf)
+            return
 
-    if Streak == None:
-        Streak = 0
-
-    complimentStats = getCompliments(connection, targetID)
-    if complimentStats:
-        kompliment = "\n".join([f"{k}: {v}" for k, v in complimentStats.items()])
-        embed = discord.Embed(
-            title=f"Stats von {person.display_name}",
-            description=f"{kompliment}",
-            color=0x005b96
-        )
-        embed.set_thumbnail(url=person.display_avatar.url)
-        #embed.set_footer(text=f"Streak: {Streak} Tage")
-        await interaction.response.send_message(embed=embed)
     else:
-        await interaction.response.send_message(f"{targetName} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
+        targetID = str(person.id)
+        targetName = person.display_name
+        embedTarget = await StatsTarget(person)
+        StatsPrivateTarget = getStatsPrivate(connection, targetID)
+        if embedTarget == None:
+            await interaction.delete_original_response()
+            await channel.send(f"{person.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
+            return
+        if StatsPrivateTarget == 1:
+            await interaction.followup.send(f"{targetName} hat seine Stats versteckt.", ephemeral=True)
+            return
+        else:
+            StatsTarget(person)
+            await interaction.delete_original_response()
+            await channel.send(embed=embedTarget)
+            return
+    
+        
 
 
 
