@@ -394,6 +394,11 @@ async def premium(interaction: discord.Interaction):
     await interaction.response.send_message("Sende hier 1€ um Premium zu erhalten. In die Nachricht bitte deine Discord ID, damit dir Premium zugewiesen werden kann. https://paypal.me/KuroPixel?country.x=DE&locale.x=de_DE", ephemeral=True)
 
 
+@bot.tree.command(name="vote", description="Wenn du den Bot kostenlos unterstützen möchtest :)")
+async def vote(interaction: discord.Interaction):
+    await interaction.response.send_message("https://top.gg/bot/1306244838504665169/vote", ephemeral=True)
+
+
 
 
 class TopServerButton(ui.View):
