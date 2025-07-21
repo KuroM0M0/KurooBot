@@ -45,12 +45,16 @@ class PremiumSettings(ui.View):
         StreakPrivate = getStreakPrivate(connection, userID)
 
         if StreakPrivate == True:
+            button.label = "Streak: Öffentlich🌐"
+            await interaction.response.edit_message(view=self)
             setStreakPrivate(connection, userID, False)
-            await interaction.response.send_message("Deine Streak ist jetzt wieder für alle sichtbar!", ephemeral=True)
+            #await interaction.followup.send("Deine Streak ist jetzt wieder für alle sichtbar!", ephemeral=True)
 
         else:
+            button.label = "Streak: Privat🔒"
+            await interaction.response.edit_message(view=self)
             setStreakPrivate(connection, userID, True)
-            await interaction.response.send_message("Deine Streak ist nun nur für dich Sichtbar!", ephemeral=True)
+            #await interaction.followup.send("Deine Streak ist nun nur für dich Sichtbar!", ephemeral=True)
 
 
     @ui.button(label="StatsPrivate", style=discord.ButtonStyle.primary)
@@ -59,12 +63,16 @@ class PremiumSettings(ui.View):
         StatsPrivate = getStatsPrivate(connection, userID)
 
         if StatsPrivate == True:
+            button.label = "Stats: Öffentlich🌐"
+            await interaction.response.edit_message(view=self)
             setStatsPrivate(connection, userID, False)
-            await interaction.response.send_message("Deine Stats sind jetzt wieder öffentlich sichtbar!", ephemeral=True)
+            #await interaction.response.send_message("Deine Stats sind jetzt wieder öffentlich sichtbar!", ephemeral=True)
 
         else:
+            button.label = "Stats: Privat🔒"
+            await interaction.response.edit_message(view=self)
             setStatsPrivate(connection, userID, True)
-            await interaction.response.send_message("Deine Stats sind nun Privat!", ephemeral=True)
+            #await interaction.response.send_message("Deine Stats sind nun Privat!", ephemeral=True)
 
 
     @ui.button(label="Newsletter", style=discord.ButtonStyle.green)
@@ -73,12 +81,16 @@ class PremiumSettings(ui.View):
         Newsletter = getNewsletter(connection, userID)
 
         if Newsletter == True:
+            button.label = "Newsletter: aktiv✅"
+            await interaction.response.edit_message(view=self)
             setNewsletter(connection, userID, False)
-            await interaction.response.send_message("Du erhältst nun keine Updates mehr in deinen DMs!", ephemeral=True)
+            #await interaction.response.send_message("Du erhältst nun keine Updates mehr in deinen DMs!", ephemeral=True)
 
         else:
+            button.label = "Newsletter: deaktiv❌"
+            await interaction.response.edit_message(view=self)
             setNewsletter(connection, userID, True)
-            await interaction.response.send_message("Du erhältst nun Updates in deine DMs!", ephemeral=True)
+            #await interaction.response.send_message("Du erhältst nun Updates in deine DMs!", ephemeral=True)
 
     @ui.button(label="SparkDM", style=discord.ButtonStyle.primary)
     async def SparkDM(self, interaction: discord.Interaction, button: ui.Button):
@@ -86,12 +98,16 @@ class PremiumSettings(ui.View):
         SparkDM = getSparkDM(connection, userID)
 
         if SparkDM == True:
+            button.label = "Sparks per DM: aktiv✅"
+            await interaction.response.edit_message(view=self)
             setSparkDM(connection, userID, False)
-            await interaction.response.send_message("Du erhaltet nun keine private Nachricht mehr, wenn du gesparkt wurdest!", ephemeral=True)
+            #await interaction.response.send_message("Du erhaltet nun keine private Nachricht mehr, wenn du gesparkt wurdest!", ephemeral=True)
 
         else:
+            button.label = "Sparks per DM: deaktiv❌"
+            await interaction.response.edit_message(view=self)
             setSparkDM(connection, userID, True)
-            await interaction.response.send_message("Du erhaltet nun private Nachrichten, wenn du gesparkt wurdest!", ephemeral=True)
+            #await interaction.response.send_message("Du erhaltet nun private Nachrichten, wenn du gesparkt wurdest!", ephemeral=True)
 
 
 def settingStuff(userID):
@@ -100,5 +116,3 @@ def settingStuff(userID):
     
     if not userHaveSettings:
         insertUserSetting(connection, userID)
-
-    
