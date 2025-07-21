@@ -7,11 +7,14 @@ async def StatsSelf(user):
     complimentStats = getCompliments(connection, user.id)
 
     if complimentStats["Normal"] or complimentStats["Custom"]:
-        def format_stats(data):
-            return "\n".join([f"`{compliment}` {count}" for compliment, count in data.items()])
+        def format_stats(data, show_x=True):
+            return "\n".join([
+                f"{compliment} {count}{'x' if show_x else ''}"
+                for compliment, count in data.items()
+            ])
 
-        normal_text = format_stats(complimentStats["Normal"])
-        custom_text = format_stats(complimentStats["Custom"])
+        normal_text = format_stats(complimentStats["Normal"], show_x=True)
+        custom_text = format_stats(complimentStats["Custom"], show_x=False)
 
         full_text = ""
 
@@ -37,11 +40,14 @@ async def StatsTarget(target):
     complimentStats = getCompliments(connection, target.id)
 
     if complimentStats["Normal"] or complimentStats["Custom"]:
-        def format_stats(data):
-            return "\n".join([f"{compliment} {count}" for compliment, count in data.items()])
+        def format_stats(data, show_x=True):
+            return "\n".join([
+                f"{compliment} {count}{'x' if show_x else ''}"
+                for compliment, count in data.items()
+            ])
 
-        normal_text = format_stats(complimentStats["Normal"])
-        custom_text = format_stats(complimentStats["Custom"])
+        normal_text = format_stats(complimentStats["Normal"], show_x=True)
+        custom_text = format_stats(complimentStats["Custom"], show_x=False)
 
         full_text = ""
 
