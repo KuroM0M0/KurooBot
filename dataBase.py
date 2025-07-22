@@ -185,7 +185,7 @@ def getCompliments(connection, userID):
             cursor.execute('''
                                 SELECT Compliment, Typ, ID
                                 FROM Logs
-                                WHERE TargetID = ?
+                                WHERE TargetID = ? AND Disabled = 0
                             ''', (userID,))
             results = cursor.fetchall()
 
@@ -942,3 +942,50 @@ def getNewsletterSubs(connection):
             print(f"Fehler beim selecten von NewsletterSubscriber: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getStatDisabled(connection, SparkID):
+    """
+    Gibt den Wert von Disabled für den Spark mit der SparkID zurück.
+
+    Args:
+        connection (sqlite3.Connection): Die Verbindung zur Datenbank.
+        SparkID (int): Die ID des Sparks.
+
+    Returns:
+        int: Der Wert von Disabled (0 = false, 1 = true).
+    """
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Disabled, TargetID
+                                FROM Logs
+                                WHERE ID = ?''',
+                                (SparkID,))
+            result = cursor.fetchone() #TODO testen was passiert wenn ungültiger wert eingegeben wird
+            print(result)
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von StatDisabled: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setStatDisabled(connection, SparkID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Logs
+                                SET Disabled = ?
+                                WHERE ID = ?''',
+                                (an, SparkID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der StatDisabled Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+        #überprüfung ob User wirklich seine eigenen disabled ist nötig

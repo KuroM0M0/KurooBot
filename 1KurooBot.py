@@ -18,6 +18,7 @@ from hug import sendHug, sendPat
 from spark import *
 from settings import Settings, PremiumSettings, settingStuff
 from newsletter import NewsletterModal
+from disableCustomSpark import disableCustomSparkModal
 from stats import *
 import sqlite3
 
@@ -426,7 +427,14 @@ class TopServerButton(ui.View):
             embed.description = description
         await interaction.response.edit_message(embed=embed)
 
-
+@bot.tree.command(name="spark_ausblenden", description="Verberge bestimmte Custom Sparks in deinen Stats (Premium)")
+async def sparkDisable(interaction: discord.Interaction):
+    userID = str(interaction.user.id)
+    premium = getPremium(connection, userID)
+    if premium:
+        await interaction.response.send_modal(disableCustomSparkModal())
+    else:
+        await interaction.response.send_message("Dieser Befehl ist nur für Premium Nutzer verfügbar.", ephemeral=True)
 
 
 
