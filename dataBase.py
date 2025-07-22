@@ -167,19 +167,44 @@ def updateHugPatUses(connection, user_id, max_uses):
 
 
 def getCompliments(connection, userID):
+    """
+    Liefert eine Dictionary mit den Komplimenten und der Anzahl
+    der Nutzung pro Kompliment für einen bestimmten User aus der Compliments Tabelle
+
+    Args:
+        connection (sqlite3.Connection): Die Verbindung zur Datenbank.
+        userID (int): Die ID des Users.
+
+    Returns:
+        dict: Ein Dictionary mit den Komplimenten und der Anzahl
+            der Nutzung pro Kompliment.
+    """
     if connection is not None:
         cursor = connection.cursor()
         try:
-            cursor.execute('''  SELECT Compliment, Count 
-                                FROM Compliments 
-                                WHERE UserID = ?''', 
-                                (userID,))
+            cursor.execute('''
+                                SELECT Compliment, Typ, ID
+                                FROM Logs
+                                WHERE TargetID = ?
+                            ''', (userID,))
             results = cursor.fetchall()
 
-            if results:
-                return {compliment: count for compliment, count in results}
-            else:
-                return {}
+            normal_types = {"Compliment", "Hug", "Pat"}
+
+            stats = {
+                "Normal": {},  # Dict[compliment] = count
+                "Custom": {}   # Dict[compliment] = list of IDs
+            }
+
+            for compliment, cType, spark_id in results: #cType = Typ
+                if cType in normal_types:
+                    stats["Normal"][compliment] = stats["Normal"].get(compliment, 0) + 1
+                elif cType == "Custom":
+                    if compliment not in stats["Custom"]:
+                        stats["Custom"][compliment] = []
+                    stats["Custom"][compliment].append(spark_id)
+
+            return stats
         
         except sqlite3.Error as e:
             print(f"Fehler beim Abrufen der Kompliment-Statistiken: {e}")
@@ -187,6 +212,39 @@ def getCompliments(connection, userID):
     else:
         print("Keine Datenbankverbindung verfügbar.")
         return {}
+    
+
+
+def getCustomCompliments(connection, userID):
+    """
+    Liefert eine Liste mit allen Custom-Komplimenten für einen bestimmten User aus der Logs Tabelle
+
+    Args:
+        connection (sqlite3.Connection): Die Verbindung zur Datenbank.
+        userID (int): Die ID des Users.
+
+    Returns:
+        list: Eine Liste mit allen Custom-Komplimenten des Users.
+    """
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Compliment
+                                FROM Logs
+                                WHERE UserID = ? AND Compliment = "Custom"''', 
+                                (userID,))
+            results = cursor.fetchall()
+
+            if results:
+                return [compliment for compliment, in results]
+            else:
+                return []
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen der Custom-Komplimente: {e}")
+            return []
+    else:
+        print("Keine Datenbankverbindung verführbar.")
+        return []
 
 
 
