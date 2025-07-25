@@ -59,10 +59,10 @@ def ResetStreak(connection, userID):
 
 
 
-async def checkTarget(targetID, userID, interaction):
+async def CheckTarget(targetID, userID, interaction):
     """
     Prüft ob User sich selbst auswählt
     """
     if targetID == userID:
-        await interaction.response.send_message("Eigenlob stinkt :^)")
-        return
+        await interaction.followup.send("Eigenlob stinkt :^)")
+        raise Exception("Eigenlob")

@@ -83,7 +83,7 @@ def checkHugPatCooldown(connection, user_id, cooldown_duration):
                                 (user_id,))
             result = cursor.fetchone()
             print(result)
-            if result[0] == '0':
+            if result[0] == '0' or result[0] is None:
                 return True
             else:
                 last_used = datetime.fromisoformat(result[0])
@@ -167,19 +167,44 @@ def updateHugPatUses(connection, user_id, max_uses):
 
 
 def getCompliments(connection, userID):
+    """
+    Liefert eine Dictionary mit den Komplimenten und der Anzahl
+    der Nutzung pro Kompliment für einen bestimmten User aus der Compliments Tabelle
+
+    Args:
+        connection (sqlite3.Connection): Die Verbindung zur Datenbank.
+        userID (int): Die ID des Users.
+
+    Returns:
+        dict: Ein Dictionary mit den Komplimenten und der Anzahl
+            der Nutzung pro Kompliment.
+    """
     if connection is not None:
         cursor = connection.cursor()
         try:
-            cursor.execute('''  SELECT Compliment, Count 
-                                FROM Compliments 
-                                WHERE UserID = ?''', 
-                                (userID,))
+            cursor.execute('''
+                                SELECT Compliment, Typ, ID
+                                FROM Logs
+                                WHERE TargetID = ? AND Disabled = 0
+                            ''', (userID,))
             results = cursor.fetchall()
 
-            if results:
-                return {compliment: count for compliment, count in results}
-            else:
-                return {}
+            normal_types = {"Compliment", "Hug", "Pat"}
+
+            stats = {
+                "Normal": {},  # Dict[compliment] = count
+                "Custom": {}   # Dict[compliment] = list of IDs
+            }
+
+            for compliment, cType, spark_id in results: #cType = Typ
+                if cType in normal_types:
+                    stats["Normal"][compliment] = stats["Normal"].get(compliment, 0) + 1
+                elif cType == "Custom":
+                    if compliment not in stats["Custom"]:
+                        stats["Custom"][compliment] = []
+                    stats["Custom"][compliment].append(spark_id)
+
+            return stats
         
         except sqlite3.Error as e:
             print(f"Fehler beim Abrufen der Kompliment-Statistiken: {e}")
@@ -187,6 +212,39 @@ def getCompliments(connection, userID):
     else:
         print("Keine Datenbankverbindung verfügbar.")
         return {}
+    
+
+
+def getCustomCompliments(connection, userID):
+    """
+    Liefert eine Liste mit allen Custom-Komplimenten für einen bestimmten User aus der Logs Tabelle
+
+    Args:
+        connection (sqlite3.Connection): Die Verbindung zur Datenbank.
+        userID (int): Die ID des Users.
+
+    Returns:
+        list: Eine Liste mit allen Custom-Komplimenten des Users.
+    """
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Compliment
+                                FROM Logs
+                                WHERE UserID = ? AND Compliment = "Custom"''', 
+                                (userID,))
+            results = cursor.fetchall()
+
+            if results:
+                return [compliment for compliment, in results]
+            else:
+                return []
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen der Custom-Komplimente: {e}")
+            return []
+    else:
+        print("Keine Datenbankverbindung verführbar.")
+        return []
 
 
 
@@ -884,3 +942,50 @@ def getNewsletterSubs(connection):
             print(f"Fehler beim selecten von NewsletterSubscriber: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getStatDisabled(connection, SparkID):
+    """
+    Gibt den Wert von Disabled für den Spark mit der SparkID zurück.
+
+    Args:
+        connection (sqlite3.Connection): Die Verbindung zur Datenbank.
+        SparkID (int): Die ID des Sparks.
+
+    Returns:
+        int: Der Wert von Disabled (0 = false, 1 = true).
+    """
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Disabled, TargetID
+                                FROM Logs
+                                WHERE ID = ?''',
+                                (SparkID,))
+            result = cursor.fetchone() #TODO testen was passiert wenn ungültiger wert eingegeben wird
+            print(result)
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von StatDisabled: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setStatDisabled(connection, SparkID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Logs
+                                SET Disabled = ?
+                                WHERE ID = ?''',
+                                (an, SparkID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der StatDisabled Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+        #überprüfung ob User wirklich seine eigenen disabled ist nötig

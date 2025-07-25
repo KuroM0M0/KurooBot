@@ -13,10 +13,13 @@ from collections import Counter
 #eigene Imports
 from dataBase import *
 from Methoden import *
+from help import *
 from hug import sendHug, sendPat
 from spark import *
 from settings import Settings, PremiumSettings, settingStuff
 from newsletter import NewsletterModal
+from disableCustomSpark import disableCustomSparkModal
+from stats import *
 import sqlite3
 
 intents = discord.Intents.default()
@@ -24,7 +27,6 @@ intents.message_content = True
 intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 KuroID = 308660164137844736
-UpdateChannelID = 1310607294026747954
 cooldownDuration = 24
 
 connection = createConnection()
@@ -39,7 +41,7 @@ except FileNotFoundError:
 async def setBotActivity():
     await asyncio.sleep(10)  # Warte 10 Sekunden, um sicherzustellen, dass der Bot vollständig verbunden ist
     activity = discord.Streaming(
-        name=f"Ich gammel auf {len(bot.guilds)} Servern",
+        name=f"{len(bot.guilds)} von 100 Server",
         url="https://www.twitch.tv/kurom0m0"
     )
     await bot.change_presence(activity=activity)
@@ -78,6 +80,7 @@ async def PremiumAktivieren(ctx, member: discord.Member):
 @bot.tree.command(name="spark", description="Mache einer Person ein anonymes Kompliment")
 @app_commands.describe(person="Wähle eine Person aus", kompliment="Wähle ein Kompliment aus der Liste")
 async def spark(interaction: discord.Interaction, person: discord.Member, kompliment: str):
+    await interaction.response.defer(ephemeral=True)
     userID = str(interaction.user.id)
     userName = interaction.user.display_name
     targetID = str(person.id)
@@ -103,8 +106,8 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         SparkUses = 0
 
 
-    #sparkCheck(cooldown, SparkUses, Premium, date, interaction)
-    checkTarget(targetID, userID, interaction)
+    await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
+    await CheckTarget(targetID, userID, interaction)
 
     if SparkUses < 1:
         updateStreak(connection, userID)
@@ -138,9 +141,9 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         ghostping = await channel.send(f"{person.mention}")
         await ghostping.delete()
 
-        await sendSparkDM(targetID, interaction)
-
-        await interaction.response.send_message("Dein anonymer Text war erfolgreich :D", ephemeral=True)
+        await asyncio.sleep(2)
+        await sendSparkDM(targetID, interaction, bot)
+        await interaction.followup.send("Dein Kompliment war erfolgreich :D", ephemeral=True)
 
 
     else:
@@ -158,14 +161,14 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
             embed.set_footer(text=f"Spark ID: {getSparkID(connection)}")
             await channel.send(embed=embed)
 
-            await interaction.response.send_message("Dein anonymer Text war erfolgreich :D", ephemeral=True)
+            await interaction.followup.send("Dein anonymer Text war erfolgreich :D", ephemeral=True)
 
             ghostping = await channel.send(f"{person.mention}")
             await ghostping.delete()
 
         #Wenn nutzer kein Premium hat
         else:
-            await interaction.response.send_message("Du hast kein Premium! Bitte wähle ein vorhandenes Kompliment aus.", ephemeral=True)
+            await interaction.followup.send("Du hast kein Premium! Bitte wähle ein vorhandenes Kompliment aus.", ephemeral=True)
 
     
 
@@ -182,32 +185,45 @@ async def kompliment_autocomplete(interaction: discord.Interaction, current: str
 
 @bot.tree.command(name="stats", description="Zeigt dir die Statistiken einer Person an.")
 @app_commands.describe(person="Wähle die Person aus, von der du die Stats sehen möchtest.")
-async def stats(interaction: discord.Interaction, person: discord.Member):
-    targetID = str(person.id)
-    targetName = person.display_name
-    Streak = getStreak(connection, targetID)
-    StatsPrivate = getStatsPrivate(connection, targetID)
+async def stats(interaction: discord.Interaction, person: discord.Member = None):
+    await interaction.response.defer(ephemeral=True)
+    user = (interaction.user)
+    userID = str(interaction.user.id)
+    channel = interaction.channel
 
-    if StatsPrivate == 1:
-        await interaction.response.send_message(f"{targetName} hat seine Stats versteckt.", ephemeral=True)
-        return
+    if person == None:
+        StatsPrivateSelf = getStatsPrivate(connection, userID)
+        embedSelf = await StatsSelf(user)
+        if embedSelf == None:
+            await interaction.followup.send(f"{user.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
+            return
+        if StatsPrivateSelf == 1:
+            await interaction.followup.send(embed=embedSelf)
+            return
+        else:
+            await interaction.delete_original_response()
+            await channel.send(embed=embedSelf)
+            return
 
-    if Streak == None:
-        Streak = 0
-
-    complimentStats = getCompliments(connection, targetID)
-    if complimentStats:
-        kompliment = "\n".join([f"{k}: {v}" for k, v in complimentStats.items()])
-        embed = discord.Embed(
-            title=f"Stats von {person.display_name}",
-            description=f"{kompliment}",
-            color=0x005b96
-        )
-        embed.set_thumbnail(url=person.display_avatar.url)
-        #embed.set_footer(text=f"Streak: {Streak} Tage")
-        await interaction.response.send_message(embed=embed)
     else:
-        await interaction.response.send_message(f"{targetName} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
+        targetID = str(person.id)
+        targetName = person.display_name
+        embedTarget = await StatsTarget(person)
+        StatsPrivateTarget = getStatsPrivate(connection, targetID)
+        if embedTarget == None:
+            await interaction.delete_original_response()
+            await channel.send(f"{person.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
+            return
+        if StatsPrivateTarget == 1:
+            await interaction.followup.send(f"{targetName} hat seine Stats versteckt.", ephemeral=True)
+            return
+        else:
+            StatsTarget(person)
+            await interaction.delete_original_response()
+            await channel.send(embed=embedTarget)
+            return
+    
+        
 
 
 
@@ -272,29 +288,39 @@ async def pat(interaction: discord.Interaction, person: discord.Member):
 
 
 @bot.tree.command(name="help", description="Zeigt dir alle Befehle an")
-async def help(interaction: discord.Interaction):
-    embed = discord.Embed(
-        color=0x005b96
-    )
+async def help(interaction: discord.Interaction, command: str = None):
+    if command is None:
+        embed = discord.Embed(
+            color=0x005b96
+        )
 
-    cmdDescription = [
-        "**/spark (Person) (Kompliment)**\n   Damit kannst du einer Person ein Anonymes kompliment machen.\n",
-        "**/stats (Person)**\n                Zeige alle Komplimente an, die diese Person bisher bekommen hat\n",
-        "**/topserver**\n                     Zeigt die 2 meistgenutzten Server an\n",
-        "**/hug (Person)**\n                  Umarme diese Person Anonym\n",
-        "**/pat (Person)**\n                  gib der Person ein Anonymes pat\n",
-        "**/cooldown**\n                      Schaue nach, wann du wieder /spark verwenden kannst\n",
-        "**/feedback**\n                      Öffnet ein Formular in dem du Feedback für den Bot eingeben kannst\n",
-        "**/settings**\n                      Stell einige Dinge ein, zb. ob du private Nachrichten möchtest\n",
-        "**/streak**\n                        Schaue dir alle relevanten Dinge zu deiner Streak an\n"
+        embed.add_field(
+            name="ℹ️ Befehle: ",
+            value="\n".join(cmdDescription),
+            inline=False
+        )
+        await interaction.response.send_message(embed=embed)
+    elif command == "spark":
+        await helpSpark(interaction)
+    elif command == "stats":
+        await helpStats(interaction)
+    elif command == "hug":
+        await helpHug(interaction)
+    elif command == "pat":
+        await helpPat(interaction)
+    elif command == "settings":
+        await helpSettings(interaction)
+    elif command == "streak":
+        await helpStreak(interaction)
+
+@help.autocomplete("command")
+async def helpAutocomplete(interaction: discord.Interaction, current: str):
+    befehle = ["spark", "stats", "hug", "pat", "settings", "streak"]
+    return [
+        app_commands.Choice(name=b, value=b)
+        for b in befehle
+        if current.lower() in b.lower()
     ]
-
-    embed.add_field(
-        name="ℹ️ Befehle: ",
-        value="\n".join(cmdDescription),
-        inline=False
-    )
-    await interaction.response.send_message(embed=embed)
 
 
 
@@ -361,10 +387,12 @@ async def sendNewsletter(interaction: discord.Interaction):
     if interaction.user.id != KuroID:
         await interaction.response.send_message("Du darfst diesen Befehl nicht verwenden.", ephemeral=True)
         return
-    
     await interaction.response.send_modal(NewsletterModal())
 
 
+@bot.tree.command(name="premium", description="Hole dir Premium")
+async def premium(interaction: discord.Interaction):
+    await interaction.response.send_message("Sende hier 1€ um Premium zu erhalten. In die Nachricht bitte deine Discord ID, damit dir Premium zugewiesen werden kann. https://paypal.me/KuroPixel?country.x=DE&locale.x=de_DE", ephemeral=True)
 
 
 
@@ -399,7 +427,14 @@ class TopServerButton(ui.View):
             embed.description = description
         await interaction.response.edit_message(embed=embed)
 
-
+@bot.tree.command(name="spark_ausblenden", description="Verberge bestimmte Custom Sparks in deinen Stats (Premium)")
+async def sparkDisable(interaction: discord.Interaction):
+    userID = str(interaction.user.id)
+    premium = getPremium(connection, userID)
+    if premium:
+        await interaction.response.send_modal(disableCustomSparkModal())
+    else:
+        await interaction.response.send_message("Dieser Befehl ist nur für Premium Nutzer verfügbar.", ephemeral=True)
 
 
 
