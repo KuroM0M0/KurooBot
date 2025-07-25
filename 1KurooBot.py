@@ -326,15 +326,18 @@ async def helpAutocomplete(interaction: discord.Interaction, current: str):
 
 @bot.tree.command(name="settings", description="Stelle zB. SparkDMs ein/aus")
 async def settings(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
     userID = str(interaction.user.id)
     premium = getPremium(connection, userID)
 
     settingStuff(userID)
+    await interaction.followup.send(embed=settingStuff(userID), ephemeral=True)
     if premium == True:
-        await interaction.response.send_message(view=PremiumSettings(), ephemeral=True)
+        await interaction.followup.send(view=PremiumSettings(), ephemeral=True)
         return
     else:
-        await interaction.response.send_message(view=Settings(), ephemeral=True)
+        await interaction.followup.send(view=Settings(), ephemeral=True)
+        await interaction.followup.send("Folgende Settings sind nur für Premium Nutzer einstellbar: \nStatsPrivate \nSparkDM \nNewsletter \nHug/Pat DM", ephemeral=True)
         return
 
 
