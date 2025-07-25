@@ -23,7 +23,9 @@ async def helpSpark(interaction):
         value="""\n\n Du kannst täglich **einer** Person ein Anonymes Kompliment geben. \n\n
                     **Mit Premium** kannst du täglich **2 sparks** verwenden und hast zusätzlich die möglichkeit diese sparks **custom** zu gestalten. 
                     \n\n **/spark (Person) (Kompliment)**\n   Damit kannst du einer Person ein Anonymes kompliment machen. \n
-                    Um einen **Custom Spark** zu senden, einfach beim Feld "Kompliment" deine Nachricht reinsenden.\n""",
+                    Um einen **Custom Spark** zu senden, einfach beim Feld "Kompliment" deine Nachricht reinsenden.\n
+                    Wenn du möchtest, dass man in Zukunft **nachschauen** kann **wer** den **Spark versendet** hat, kannst du noch **reveal True** angeben. 
+                    Wenn es **Anonym** bleiben soll, kannst du das **Feld einfach weglassen** oder False angeben.\n""",
         inline=False
     )
     await interaction.response.send_message(embed=embed)

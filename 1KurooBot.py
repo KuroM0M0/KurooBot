@@ -79,7 +79,7 @@ async def PremiumAktivieren(ctx, member: discord.Member):
 
 @bot.tree.command(name="spark", description="Mache einer Person ein anonymes Kompliment")
 @app_commands.describe(person="Wähle eine Person aus", kompliment="Wähle ein Kompliment aus der Liste")
-async def spark(interaction: discord.Interaction, person: discord.Member, kompliment: str):
+async def spark(interaction: discord.Interaction, person: discord.Member, kompliment: str, reveal: bool = None):
     await interaction.response.defer(ephemeral=True)
     userID = str(interaction.user.id)
     userName = interaction.user.display_name
@@ -113,12 +113,15 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         updateStreak(connection, userID)
         StreakPunkt(connection, userID)
 
+    if reveal == None:
+        reveal = False
 
     if kompliment in compliments:
         updateCooldown(connection, userID)
         updateSparkUses(connection, userID)
         targetCompliments = getCompliments(connection, targetID)
-    
+
+        #seit 25.07.25 wird Compliments Table nicht mehr verwendet sondern die Logs
         #überprüft ob das ausgewählte (kompliment) in der Datenbank ist
         if kompliment in targetCompliments: 
             #nimmt das Kompliment aus der Datenbank (also i guess, weil nur das ausgewählte verändert wird)
@@ -126,7 +129,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         else:
             insertCompliment(connection, targetID, kompliment)
 
-        insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Compliment", guildID, guildName)
+        insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Compliment", guildID, guildName, reveal)
 
         embed = discord.Embed(
         title=f"{compliments[kompliment]['name']}",
@@ -149,7 +152,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
     else:
         if Premium:
             insertCompliment(connection, targetID, kompliment)
-            insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Custom", guildID, guildName)
+            insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Custom", guildID, guildName, reveal)
             updateCooldown(connection, userID)
             updateSparkUses(connection, userID)
 
@@ -327,15 +330,18 @@ async def helpAutocomplete(interaction: discord.Interaction, current: str):
 
 @bot.tree.command(name="settings", description="Stelle zB. SparkDMs ein/aus")
 async def settings(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
     userID = str(interaction.user.id)
     premium = getPremium(connection, userID)
 
     settingStuff(userID)
+    await interaction.followup.send(embed=settingStuff(userID), ephemeral=True)
     if premium == True:
-        await interaction.response.send_message(view=PremiumSettings(), ephemeral=True)
+        await interaction.followup.send(view=PremiumSettings(), ephemeral=True)
         return
     else:
-        await interaction.response.send_message(view=Settings(), ephemeral=True)
+        await interaction.followup.send(view=Settings(), ephemeral=True)
+        await interaction.followup.send("Folgende Settings sind nur für Premium Nutzer einstellbar: \nStatsPrivate \nSparkDM \nNewsletter \nHug/Pat DM", ephemeral=True)
         return
 
 
