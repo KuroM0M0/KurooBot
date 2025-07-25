@@ -481,7 +481,7 @@ def resetPremium(connection, userID):
 
 
 
-def insertLogs(connection, Timestamp, UserID, UserName, TargetID, TargetName, Compliment, Typ, ServerID, ServerName, Reveal):
+def insertLogs(connection, Timestamp, UserID, UserName, TargetID, TargetName, Compliment, Typ, ServerID, ServerName, Reveal = False):
     if connection is not None:
         cursor = connection.cursor()
         try:

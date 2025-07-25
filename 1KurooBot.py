@@ -145,7 +145,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         await ghostping.delete()
 
         await asyncio.sleep(2)
-        await sendSparkDM(targetID, interaction, bot)
+        await sendSparkDM(targetID, interaction)
         await interaction.followup.send("Dein Kompliment war erfolgreich :D", ephemeral=True)
 
 
