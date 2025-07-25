@@ -16,10 +16,11 @@ async def sparkCheck(cooldown, SparkUses, Premium, date, interaction):
 
 
 async def sendSparkDM(targetID, interaction):
-    BotID = 1310744379228426290
+    BotID = 1306244838504665169#TestbotID#1310744379228426290
     channel = interaction.channel
 
-    messages = [msg async for msg in channel.history(limit=2)]
-    if messages and messages[1].author.id == BotID:
+    messages = [msg async for msg in channel.history(limit=1)]
+    if messages and messages[0].author.id == BotID:
         target = await interaction.client.fetch_user(int(targetID))
-        await target.send(messages[0].jump_url)
+        embed = discord.Embed(title="Du wurdest gesparkt!", description=messages[0].jump_url, color=0x005b96)
+        await target.send(embed=embed)
