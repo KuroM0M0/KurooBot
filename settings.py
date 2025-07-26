@@ -74,13 +74,13 @@ class PremiumSettings(ui.View):
         Newsletter = getNewsletter(connection, userID)
 
         if Newsletter == True:
-            button.label = "Newsletter: aktiv✅"
+            button.label = "Newsletter: deaktiv❌"
             await interaction.response.edit_message(view=self)
             setNewsletter(connection, userID, False)
             #await interaction.response.send_message("Du erhältst nun keine Updates mehr in deinen DMs!", ephemeral=True)
 
         else:
-            button.label = "Newsletter: deaktiv❌"
+            button.label = "Newsletter: aktiv✅"
             await interaction.response.edit_message(view=self)
             setNewsletter(connection, userID, True)
             #await interaction.response.send_message("Du erhältst nun Updates in deine DMs!", ephemeral=True)
@@ -91,15 +91,32 @@ class PremiumSettings(ui.View):
         SparkDM = getSparkDM(connection, userID)
 
         if SparkDM == True:
-            button.label = "Sparks per DM: aktiv✅"
+            button.label = "Sparks per DM: deaktiv❌"
             await interaction.response.edit_message(view=self)
             setSparkDM(connection, userID, False)
             #await interaction.response.send_message("Du erhaltet nun keine private Nachricht mehr, wenn du gesparkt wurdest!", ephemeral=True)
 
         else:
-            button.label = "Sparks per DM: deaktiv❌"
+            button.label = "Sparks per DM: aktiv✅"
             await interaction.response.edit_message(view=self)
             setSparkDM(connection, userID, True)
+            #await interaction.response.send_message("Du erhaltet nun private Nachrichten, wenn du gesparkt wurdest!", ephemeral=True)
+
+    @ui.button(label="CustomSparks", style=discord.ButtonStyle.primary)
+    async def CustomSparks(self, interaction: discord.Interaction, button: ui.Button):
+        userID = interaction.user.id
+        CustomSpark = getCustomSparkSetting(connection, userID)
+
+        if CustomSpark == True:
+            button.label = "Custom Sparks: deaktiv❌"
+            await interaction.response.edit_message(view=self)
+            setCustomSparkSetting(connection, userID, False)
+            #await interaction.response.send_message("Du erhaltet nun keine private Nachricht mehr, wenn du gesparkt wurdest!", ephemeral=True)
+
+        else:
+            button.label = "Custom Sparks: aktiv✅"
+            await interaction.response.edit_message(view=self)
+            setCustomSparkSetting(connection, userID, True)
             #await interaction.response.send_message("Du erhaltet nun private Nachrichten, wenn du gesparkt wurdest!", ephemeral=True)
 
 

@@ -150,6 +150,10 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
 
     else:
         if Premium:
+            CustomSpark = getCustomSparkSetting(connection, targetID)
+            if CustomSpark == False:
+                await interaction.followup.send("Diese Person hat ausgestellt, dass man ihr einen custom Spark schicken kann!", ephemeral=True)
+                return
             insertCompliment(connection, targetID, kompliment)
             insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Custom", guildID, guildName, reveal)
             updateCooldown(connection, userID)
