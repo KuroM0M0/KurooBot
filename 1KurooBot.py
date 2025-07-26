@@ -18,6 +18,7 @@ from hug import sendHug, sendPat
 from spark import *
 from settings import Settings, PremiumSettings, settingStuff
 from newsletter import NewsletterModal
+from disableCustomSpark import disableCustomSparkModal
 from stats import *
 import sqlite3
 
@@ -144,7 +145,8 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         await ghostping.delete()
 
         await asyncio.sleep(2)
-        await sendSparkDM(targetID, interaction, bot)
+        if getSparkDM(connection, userID) == True:
+            await sendSparkDM(targetID, interaction)
         await interaction.followup.send("Dein Kompliment war erfolgreich :D", ephemeral=True)
 
 
@@ -171,6 +173,10 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
 
             ghostping = await channel.send(f"{person.mention}")
             await ghostping.delete()
+
+            await asyncio.sleep(2)
+            if getSparkDM(connection, userID) == True:
+                await sendSparkDM(targetID, interaction)
 
         #Wenn nutzer kein Premium hat
         else:
@@ -382,6 +388,7 @@ async def streak(interaction: discord.Interaction):
             color=0x005b96
         )
     embed.set_thumbnail(url=interaction.user.display_avatar.url)
+    embed.set_footer(text="3 Tage Streak = 1 Punkt")
 
     if streakPrivate == True:
         await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -436,7 +443,14 @@ class TopServerButton(ui.View):
             embed.description = description
         await interaction.response.edit_message(embed=embed)
 
-
+@bot.tree.command(name="spark_ausblenden", description="Verberge bestimmte Custom Sparks in deinen Stats (Premium)")
+async def sparkDisable(interaction: discord.Interaction):
+    userID = str(interaction.user.id)
+    premium = getPremium(connection, userID)
+    if premium:
+        await interaction.response.send_modal(disableCustomSparkModal())
+    else:
+        await interaction.response.send_message("Dieser Befehl ist nur für Premium Nutzer verfügbar.", ephemeral=True)
 
 
 

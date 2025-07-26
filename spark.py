@@ -1,3 +1,4 @@
+import discord
 async def SparkCheck(cooldown, SparkUses, Premium, date, interaction):
 
     """prüft ob User heute schon gesparkt hat"""
@@ -13,11 +14,15 @@ async def SparkCheck(cooldown, SparkUses, Premium, date, interaction):
                 raise Exception("Cooldown")
 
 
-async def sendSparkDM(targetID, interaction, bot):
-    BotID = 1310744379228426290
+
+async def sendSparkDM(targetID, interaction):
+    #BotID = 1306244838504665169
+    BotID = 1310744379228426290#TestbotID
+
     channel = interaction.channel
 
     messages = [msg async for msg in channel.history(limit=1)]
     if messages and messages[0].author.id == BotID:
-        target = await bot.fetch_user(targetID)
-        await target.send(messages[0].jump_url)
+        target = await interaction.client.fetch_user(int(targetID))
+        embed = discord.Embed(title="Du wurdest gesparkt!", description=messages[0].jump_url, color=0x005b96)
+        await target.send(embed=embed)
