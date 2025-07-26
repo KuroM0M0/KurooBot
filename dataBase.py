@@ -988,4 +988,3 @@ def setStatDisabled(connection, SparkID, an): #an = true/false
             print(f"Fehler beim setzen der StatDisabled Setting: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
-        #überprüfung ob User wirklich seine eigenen disabled ist nötig
