@@ -884,3 +884,40 @@ def getNewsletterSubs(connection):
             print(f"Fehler beim selecten von NewsletterSubscriber: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getCustomSparkSetting(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT CustomSpark
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von CustomSpark: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setCustomSparkSetting(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET CustomSpark = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der CustomSpark Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
