@@ -165,6 +165,10 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
             ghostping = await channel.send(f"{person.mention}")
             await ghostping.delete()
 
+            await asyncio.sleep(2)
+            if getSparkDM(connection, userID) == True:
+                await sendSparkDM(targetID, interaction)
+
         #Wenn nutzer kein Premium hat
         else:
             await interaction.followup.send("Du hast kein Premium! Bitte wähle ein vorhandenes Kompliment aus.", ephemeral=True)
