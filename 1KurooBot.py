@@ -373,6 +373,7 @@ async def streak(interaction: discord.Interaction):
             color=0x005b96
         )
     embed.set_thumbnail(url=interaction.user.display_avatar.url)
+    embed.set_footer(text="3 Tage Streak = 1 Punkt")
 
     if streakPrivate == True:
         await interaction.response.send_message(embed=embed, ephemeral=True)
