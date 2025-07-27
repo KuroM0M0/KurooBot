@@ -28,6 +28,21 @@ class Settings(ui.View):
             await interaction.edit_original_response(view=self)
             setStreakPrivate(connection, userID, True)
 
+    @ui.button(label="Ghostping", style=discord.ButtonStyle.primary)
+    async def Ghostping(self, interaction: discord.Interaction, button: ui.Button):
+        userID = interaction.user.id
+        Ghostping = getGhostpingSetting(connection, userID)
+
+        if Ghostping == True:
+            button.label = "Ghostping: deaktiv❌"
+            await interaction.response.edit_message(view=self)
+            setGhostpingSetting(connection, userID, False)
+
+        else:
+            button.label = "Ghostping: aktiv✅"
+            await interaction.response.edit_message(view=self)
+            setGhostpingSetting(connection, userID, True)
+
 
 
 
@@ -118,6 +133,21 @@ class PremiumSettings(ui.View):
             await interaction.response.edit_message(view=self)
             setCustomSparkSetting(connection, userID, True)
             #await interaction.response.send_message("Du erhaltet nun private Nachrichten, wenn du gesparkt wurdest!", ephemeral=True)
+
+    @ui.button(label="Ghostping", style=discord.ButtonStyle.primary)
+    async def Ghostping(self, interaction: discord.Interaction, button: ui.Button):
+        userID = interaction.user.id
+        Ghostping = getGhostpingSetting(connection, userID)
+
+        if Ghostping == True:
+            button.label = "Ghostping: deaktiv❌"
+            await interaction.response.edit_message(view=self)
+            setGhostpingSetting(connection, userID, False)
+
+        else:
+            button.label = "Ghostping: aktiv✅"
+            await interaction.response.edit_message(view=self)
+            setGhostpingSetting(connection, userID, True)
 
 
 def settingStuff(userID):
