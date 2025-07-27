@@ -1025,3 +1025,40 @@ def setStatDisabled(connection, SparkID, an): #an = true/false
             print(f"Fehler beim setzen der StatDisabled Setting: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getGhostpingSetting(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Ghostping
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Ghostping: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setGhostpingSetting(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET Ghostping = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Ghostping Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
