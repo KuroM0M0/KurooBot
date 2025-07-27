@@ -481,14 +481,14 @@ def resetPremium(connection, userID):
 
 
 
-def insertLogs(connection, Timestamp, UserID, UserName, TargetID, TargetName, Compliment, Typ, ServerID, ServerName):
+def insertLogs(connection, Timestamp, UserID, UserName, TargetID, TargetName, Compliment, Typ, ServerID, ServerName, Reveal = False):
     if connection is not None:
         cursor = connection.cursor()
         try:
             cursor.execute('''  INSERT INTO Logs
-                                (Timestamp, UserID, UserName, TargetID, TargetName, Compliment, Typ, ServerID, ServerName)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                                (Timestamp, UserID, UserName, TargetID, TargetName, Compliment, Typ, ServerID, ServerName))
+                                (Timestamp, UserID, UserName, TargetID, TargetName, Compliment, Typ, ServerID, ServerName, Reveal)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                (Timestamp, UserID, UserName, TargetID, TargetName, Compliment, Typ, ServerID, ServerName, Reveal))
             connection.commit()
         except sqlite3.Error as e:
             print(f"Fehler beim Insert von Logs: {e}")

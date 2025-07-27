@@ -49,7 +49,7 @@ def ResetStreak(connection, userID):
     today = datetime.now().date()
     lastSparkStr = getCooldown(connection, userID)
 
-    if lastSparkStr == "0":
+    if lastSparkStr == "0" or lastSparkStr is None:
         return
 
     lastSpark = datetime.fromisoformat(lastSparkStr).date()
