@@ -141,8 +141,9 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         embed.set_footer(text=f"Spark ID: {getSparkID(connection)}")
         await channel.send(embed=embed)
 
-        ghostping = await channel.send(f"{person.mention}")
-        await ghostping.delete()
+        if getGhostpingSetting(connection, userID) == True:
+            ghostping = await channel.send(f"{person.mention}")
+            await ghostping.delete()
 
         await asyncio.sleep(2)
         if getSparkDM(connection, userID) == True:
@@ -171,8 +172,9 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
 
             await interaction.followup.send("Dein anonymer Text war erfolgreich :D", ephemeral=True)
 
-            ghostping = await channel.send(f"{person.mention}")
-            await ghostping.delete()
+            if getGhostpingSetting(connection, userID) == True:
+                ghostping = await channel.send(f"{person.mention}")
+                await ghostping.delete()
 
             await asyncio.sleep(2)
             if getSparkDM(connection, userID) == True:
