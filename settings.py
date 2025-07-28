@@ -149,6 +149,21 @@ class PremiumSettings(ui.View):
             await interaction.response.edit_message(view=self)
             setGhostpingSetting(connection, userID, True)
 
+    @ui.button(label="Profil", style=discord.ButtonStyle.primary)
+    async def Profil(self, interaction: discord.Interaction, button: ui.Button):
+        userID = interaction.user.id
+        Profil = getProfilPrivateSetting(connection, userID)
+
+        if Profil == True:
+            button.label = "Profil: Öffentlich🌐"
+            await interaction.response.edit_message(view=self)
+            setProfilPrivateSetting(connection, userID, False)
+
+        else:
+            button.label = "Profil: Privat🔒"
+            await interaction.response.edit_message(view=self)
+            setProfilPrivateSetting(connection, userID, True)
+
 
 def settingStuff(userID):
     """Prüft ob User in der Datenbank Settings hat, wenn nicht wird er hinzugefügt"""
@@ -161,6 +176,9 @@ def settingStuff(userID):
     statsPrivate = getStatsPrivate(connection, userID)
     newsletter = getNewsletter(connection, userID)
     sparkDM = getSparkDM(connection, userID)
+    ghostPing = getGhostpingSetting(connection, userID)
+    customSpark = getCustomSparkSetting(connection, userID)
+    profilPrivate = getProfilPrivateSetting(connection, userID)
 
     if streakPrivate == 1:
         streakPrivate = "Privat🔒"
@@ -182,9 +200,27 @@ def settingStuff(userID):
     elif sparkDM == 0:
         sparkDM = "Deaktiv❌"
 
+    if customSpark == 1:
+        customSpark = "Aktiv✅"
+    elif customSpark == 0:
+        customSpark = "Deaktiv❌"
+
+    if ghostPing == 1:
+        ghostPing = "Aktiv✅"
+    elif ghostPing == 0:
+        ghostPing = "Deaktiv❌"
+
+    if profilPrivate == 1:
+        profilPrivate = "Privat🔒"
+    elif profilPrivate == 0:
+        profilPrivate = "Öffentlich🌐"
+
     embed = discord.Embed(title="Settings", color=0x005b96)
     embed.add_field(name="Streak", value=streakPrivate, inline=False)
     embed.add_field(name="Stats", value=statsPrivate, inline=False)
     embed.add_field(name="Newsletter", value=newsletter, inline=False)
     embed.add_field(name="SparkDM", value=sparkDM, inline=False)
+    embed.add_field(name="Custom Sparks", value=customSpark, inline=False)
+    embed.add_field(name="Ghostping", value=ghostPing, inline=False)
+    embed.add_field(name="Profil", value=profilPrivate, inline=False)
     return embed
