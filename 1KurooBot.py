@@ -1,6 +1,7 @@
 import json
 import discord
 import asyncio
+import random
 from discord.ext import commands
 from discord import app_commands
 from discord import ButtonStyle, ui
@@ -33,6 +34,8 @@ connection = createConnection()
 try:
     with open("compliments.json", "r", encoding="utf8") as f:
         compliments = json.load(f)
+        for key, data in compliments.items():
+            link = data.get("link")
 except FileNotFoundError:
     compliments = {}
 
@@ -132,16 +135,18 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         description=f"{person.mention} {compliments[kompliment]['text']}",
         color=0x00FF00)
 
-        embed.set_image(url=f"{compliments[kompliment]['link']}")
+        embed.set_image(url=random.choice(compliments[kompliment].get("link")))
         embed.set_thumbnail(url=person.display_avatar.url)
         embed.set_footer(text=f"Spark ID: {getSparkID(connection)}")
         await channel.send(embed=embed)
 
-        ghostping = await channel.send(f"{person.mention}")
-        await ghostping.delete()
+        if getGhostpingSetting(connection, userID) == True:
+            ghostping = await channel.send(f"{person.mention}")
+            await ghostping.delete()
 
-        await asyncio.sleep(2)
-        await sendSparkDM(targetID, interaction, bot)
+        if getSparkDM(connection, targetID) == True:
+            await asyncio.sleep(2)
+            await sendSparkDM(targetID, interaction)
         await interaction.followup.send("Dein Kompliment war erfolgreich :D", ephemeral=True)
 
 
@@ -166,11 +171,13 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
 
             await interaction.followup.send("Dein anonymer Text war erfolgreich :D", ephemeral=True)
 
-            ghostping = await channel.send(f"{person.mention}")
-            await ghostping.delete()
+            if getGhostpingSetting(connection, userID) == True:
+                ghostping = await channel.send(f"{person.mention}")
+                await ghostping.delete()
 
-            await asyncio.sleep(2)
-            if getSparkDM(connection, userID) == True:
+
+            if getSparkDM(connection, targetID) == True:
+                await asyncio.sleep(2)
                 await sendSparkDM(targetID, interaction)
 
         #Wenn nutzer kein Premium hat
@@ -402,6 +409,11 @@ async def sendNewsletter(interaction: discord.Interaction):
 @bot.tree.command(name="premium", description="Hole dir Premium")
 async def premium(interaction: discord.Interaction):
     await interaction.response.send_message("Sende hier 1€ um Premium zu erhalten. In die Nachricht bitte deine Discord ID, damit dir Premium zugewiesen werden kann. https://paypal.me/KuroPixel?country.x=DE&locale.x=de_DE", ephemeral=True)
+
+
+@bot.tree.command(name="vote", description="Wenn du den Bot kostenlos unterstützen möchtest :)")
+async def vote(interaction: discord.Interaction):
+    await interaction.response.send_message("https://top.gg/bot/1306244838504665169/vote", ephemeral=True)
 
 
 

@@ -888,7 +888,36 @@ def getNewsletterSubs(connection):
 
 
 
+
 def getCustomSparkSetting(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT CustomSpark
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von CustomSpark: {e}")
+
+            
+            
+            
+def getStatDisabled(connection, SparkID):
+    """
+    Gibt den Wert von Disabled für den Spark mit der SparkID zurück.
+
+    Args:
+        connection (sqlite3.Connection): Die Verbindung zur Datenbank.
+        SparkID (int): Die ID des Sparks.
+
+    Returns:
+        int: Der Wert von Disabled (0 = false, 1 = true).
+    """
     if connection is not None:
         cursor = connection.cursor()
         try:
@@ -908,6 +937,7 @@ def getCustomSparkSetting(connection, userID):
 
 
 
+
 def setCustomSparkSetting(connection, userID, an): #an = true/false
     if connection is not None:
         cursor = connection.cursor()
@@ -919,5 +949,96 @@ def setCustomSparkSetting(connection, userID, an): #an = true/false
             connection.commit()
         except sqlite3.Error as e:
             print(f"Fehler beim setzen der CustomSpark Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+        
+        
+        
+def setStatDisabled(connection, SparkID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET CustomSpark = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der CustomSpark Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getGhostpingSetting(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Ghostping
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Ghostping: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setGhostpingSetting(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET Ghostping = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Ghostping Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getProfilPrivateSetting(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ProfilPrivate
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Profil: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setProfilPrivateSetting(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET ProfilPrivate = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der ProfilPrivate Setting: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
