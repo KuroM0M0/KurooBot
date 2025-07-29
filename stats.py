@@ -32,6 +32,13 @@ async def StatsSelf(user):
             color=0x005b96
         )
         embedSelf.set_thumbnail(url=user.display_avatar.url)
+
+        sparkCountSelf = getSparkCountSelf(connection, user.id)
+        sparkCountDisabled = getSparkCountDisabled(connection, user.id)
+        if sparkCountDisabled is not None and sparkCountDisabled != 0:
+            embedSelf.set_footer(text=f"Hat {sparkCountSelf} Sparks erhalten und {sparkCountDisabled} davon ausgeblendet")
+        else:
+            embedSelf.set_footer(text=f"Hat {sparkCountSelf} Sparks erhalten")
         return embedSelf
     return None
 
@@ -65,5 +72,12 @@ async def StatsTarget(target):
             color=0x005b96
         )
         embedTarget.set_thumbnail(url=target.display_avatar.url)
+
+        sparkCountSelf = getSparkCountSelf(connection, target.id)
+        sparkCountDisabled = getSparkCountDisabled(connection, target.id)
+        if sparkCountDisabled is not None and sparkCountDisabled != 0:
+            embedTarget.set_footer(text=f"Hat {sparkCountSelf} Sparks erhalten und {sparkCountDisabled} davon ausgeblendet")
+        else:
+            embedTarget.set_footer(text=f"Hat {sparkCountSelf} Sparks erhalten")
         return embedTarget
     return None
