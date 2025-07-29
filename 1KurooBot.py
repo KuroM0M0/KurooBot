@@ -174,6 +174,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
             ghostping = await channel.send(f"{person.mention}")
             await ghostping.delete()
 
+
             if getSparkDM(connection, targetID) == True:
                 await asyncio.sleep(2)
                 await sendSparkDM(targetID, interaction)
