@@ -1174,3 +1174,76 @@ def getSparkCountSelf(connection, userID):
             print(f"Fehler beim selecten von SparkTargetCount: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getSparkReveal(connection, SparkID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT UserName, ServerName
+                                FROM Logs
+                                WHERE ID = ?''',
+                                (SparkID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Reveal: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getSparkTargetID(connection, SparkID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT TargetID
+                                FROM Logs
+                                WHERE ID = ?''',
+                                (SparkID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von SenderID: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getRevealUses(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT RevealUses
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von RevealUses: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setRevealUses(connection, userID, RevealUses):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET RevealUses = ?
+                                WHERE UserID = ?''',
+                                (RevealUses, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der RevealUses Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")

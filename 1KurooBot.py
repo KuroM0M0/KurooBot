@@ -77,6 +77,25 @@ async def PremiumAktivieren(ctx, member: discord.Member):
     else:
         await ctx.send("Du bist nicht berechtigt dies zu tun!")
 
+@bot.command(name="PremiumDeaktivieren")
+async def PremiumDeaktivieren(ctx, member: discord.Member):
+    targetID = member.id
+    userID = ctx.author.id
+    if userID == KuroID:
+        await ctx.send(f"{member} hat nun kein Premium mehr!")
+        resetPremium(connection, targetID)
+    else:
+        await ctx.send("Du bist nicht berechtigt dies zu tun!")
+
+@bot.command(name="setRevealUses")
+async def setRevealUses(ctx, member: discord.Member, uses: int):
+    targetID = member.id
+    userID = ctx.author.id
+    if userID == KuroID:
+        await ctx.send(f"{member} hat nun {uses} Reveals!")
+        setRevealUses(connection, targetID, uses)
+    else:
+        await ctx.send("Du bist nicht berechtigt dies zu tun!")
 
 
 
@@ -503,10 +522,26 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
 
 
 @bot.tree.command(name="reveal", description="Lasse dir anzeigen von wem ein Spark gesendet wurde!")
-async def reveal(interaction: discord.Interaction, SparkID: int):
+async def reveal(interaction: discord.Interaction, sparkid: int):
     await interaction.response.defer(ephemeral=True)
+    userID = str(interaction.user.id)
+    revealUses = getRevealUses(connection, userID)
 
-    await interaction.followup.send("")
+    if revealUses < 1:
+        await interaction.followup.send("Du hast keine Reveals mehr. Um dir neue zu holen, gib '/help reveal' ein.", ephemeral=True)
+        return
+    
+    if userID != getSparkTargetID(connection, sparkid):
+        await interaction.followup.send("Du kannst nur Sparks revealen, die du selbst erhalten hast!", ephemeral=True)
+        return
+
+    result = getSparkReveal(connection, sparkid)
+    if result is None:
+        await interaction.followup.send("Dieser Spark existiert nicht.", ephemeral=True)
+        return
+    else:
+        await interaction.followup.send(f"Dieser Spark wurde von {result} gesendet.", ephemeral=True)
+        setRevealUses(connection, userID, revealUses - 1)
 
 
         
