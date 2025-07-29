@@ -79,7 +79,7 @@ async def PremiumAktivieren(ctx, member: discord.Member):
 
 @bot.tree.command(name="spark", description="Mache einer Person ein anonymes Kompliment")
 @app_commands.describe(person="Wähle eine Person aus", kompliment="Wähle ein Kompliment aus der Liste")
-async def spark(interaction: discord.Interaction, person: discord.Member, kompliment: str):
+async def spark(interaction: discord.Interaction, person: discord.Member, kompliment: str, reveal: bool = None):
     await interaction.response.defer(ephemeral=True)
     userID = str(interaction.user.id)
     userName = interaction.user.display_name
@@ -113,12 +113,15 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         updateStreak(connection, userID)
         StreakPunkt(connection, userID)
 
+    if reveal == None:
+        reveal = False
 
     if kompliment in compliments:
         updateCooldown(connection, userID)
         updateSparkUses(connection, userID)
         targetCompliments = getCompliments(connection, targetID)
-    
+
+        #seit 25.07.25 wird Compliments Table nicht mehr verwendet sondern die Logs
         #überprüft ob das ausgewählte (kompliment) in der Datenbank ist
         if kompliment in targetCompliments: 
             #nimmt das Kompliment aus der Datenbank (also i guess, weil nur das ausgewählte verändert wird)
@@ -126,7 +129,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         else:
             insertCompliment(connection, targetID, kompliment)
 
-        insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Compliment", guildID, guildName)
+        insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Compliment", guildID, guildName, reveal)
 
         embed = discord.Embed(
         title=f"{compliments[kompliment]['name']}",
@@ -141,15 +144,20 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         ghostping = await channel.send(f"{person.mention}")
         await ghostping.delete()
 
-        await asyncio.sleep(2)
-        await sendSparkDM(targetID, interaction, bot)
+        if getSparkDM(connection, targetID) == True:
+            await asyncio.sleep(2)
+            await sendSparkDM(targetID, interaction)
         await interaction.followup.send("Dein Kompliment war erfolgreich :D", ephemeral=True)
 
 
     else:
         if Premium:
+            CustomSpark = getCustomSparkSetting(connection, targetID)
+            if CustomSpark == False:
+                await interaction.followup.send("Diese Person hat ausgestellt, dass man ihr einen custom Spark schicken kann!", ephemeral=True)
+                return
             insertCompliment(connection, targetID, kompliment)
-            insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Custom", guildID, guildName)
+            insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Custom", guildID, guildName, reveal)
             updateCooldown(connection, userID)
             updateSparkUses(connection, userID)
 
@@ -166,8 +174,9 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
             ghostping = await channel.send(f"{person.mention}")
             await ghostping.delete()
 
-            await asyncio.sleep(2)
-            if getSparkDM(connection, userID) == True:
+
+            if getSparkDM(connection, targetID) == True:
+                await asyncio.sleep(2)
                 await sendSparkDM(targetID, interaction)
 
         #Wenn nutzer kein Premium hat
@@ -331,15 +340,18 @@ async def helpAutocomplete(interaction: discord.Interaction, current: str):
 
 @bot.tree.command(name="settings", description="Stelle zB. SparkDMs ein/aus")
 async def settings(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
     userID = str(interaction.user.id)
     premium = getPremium(connection, userID)
 
     settingStuff(userID)
+    await interaction.followup.send(embed=settingStuff(userID), ephemeral=True)
     if premium == True:
-        await interaction.response.send_message(view=PremiumSettings(), ephemeral=True)
+        await interaction.followup.send(view=PremiumSettings(), ephemeral=True)
         return
     else:
-        await interaction.response.send_message(view=Settings(), ephemeral=True)
+        await interaction.followup.send(view=Settings(), ephemeral=True)
+        await interaction.followup.send("Folgende Settings sind nur für Premium Nutzer einstellbar: \nStatsPrivate \nSparkDM \nNewsletter \nHug/Pat DM", ephemeral=True)
         return
 
 
@@ -398,6 +410,11 @@ async def sendNewsletter(interaction: discord.Interaction):
 @bot.tree.command(name="premium", description="Hole dir Premium")
 async def premium(interaction: discord.Interaction):
     await interaction.response.send_message("Sende hier 1€ um Premium zu erhalten. In die Nachricht bitte deine Discord ID, damit dir Premium zugewiesen werden kann. https://paypal.me/KuroPixel?country.x=DE&locale.x=de_DE", ephemeral=True)
+
+
+@bot.tree.command(name="vote", description="Wenn du den Bot kostenlos unterstützen möchtest :)")
+async def vote(interaction: discord.Interaction):
+    await interaction.response.send_message("https://top.gg/bot/1306244838504665169/vote", ephemeral=True)
 
 
 

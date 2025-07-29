@@ -1,3 +1,4 @@
+import discord
 async def SparkCheck(cooldown, SparkUses, Premium, date, interaction):
 
     """prüft ob User heute schon gesparkt hat"""
@@ -15,7 +16,8 @@ async def SparkCheck(cooldown, SparkUses, Premium, date, interaction):
 
 
 async def sendSparkDM(targetID, interaction):
-    BotID = 1306244838504665169#TestbotID#1310744379228426290
+    #BotID = 1306244838504665169
+    BotID = 1310744379228426290#TestbotID
 
     channel = interaction.channel
 
