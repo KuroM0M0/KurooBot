@@ -19,7 +19,6 @@ from hug import sendHug, sendPat
 from spark import *
 from settings import Settings, PremiumSettings, settingStuff
 from newsletter import NewsletterModal
-from disableCustomSpark import disableCustomSparkModal
 from stats import *
 import sqlite3
 
@@ -82,7 +81,7 @@ async def PremiumAktivieren(ctx, member: discord.Member):
 
 @bot.tree.command(name="spark", description="Mache einer Person ein anonymes Kompliment")
 @app_commands.describe(person="Wähle eine Person aus", kompliment="Wähle ein Kompliment aus der Liste")
-async def spark(interaction: discord.Interaction, person: discord.Member, kompliment: str, reveal: bool = None):
+async def spark(interaction: discord.Interaction, person: discord.Member, kompliment: str):
     await interaction.response.defer(ephemeral=True)
     userID = str(interaction.user.id)
     userName = interaction.user.display_name
@@ -116,15 +115,12 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         updateStreak(connection, userID)
         StreakPunkt(connection, userID)
 
-    if reveal == None:
-        reveal = False
 
     if kompliment in compliments:
         updateCooldown(connection, userID)
         updateSparkUses(connection, userID)
         targetCompliments = getCompliments(connection, targetID)
-
-        #seit 25.07.25 wird Compliments Table nicht mehr verwendet sondern die Logs
+    
         #überprüft ob das ausgewählte (kompliment) in der Datenbank ist
         if kompliment in targetCompliments: 
             #nimmt das Kompliment aus der Datenbank (also i guess, weil nur das ausgewählte verändert wird)
@@ -132,7 +128,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         else:
             insertCompliment(connection, targetID, kompliment)
 
-        insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Compliment", guildID, guildName, reveal)
+        insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Compliment", guildID, guildName)
 
         embed = discord.Embed(
         title=f"{compliments[kompliment]['name']}",
@@ -161,7 +157,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
                 await interaction.followup.send("Diese Person hat ausgestellt, dass man ihr einen custom Spark schicken kann!", ephemeral=True)
                 return
             insertCompliment(connection, targetID, kompliment)
-            insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Custom", guildID, guildName, reveal)
+            insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, kompliment, "Custom", guildID, guildName)
             updateCooldown(connection, userID)
             updateSparkUses(connection, userID)
 
@@ -330,6 +326,8 @@ async def help(interaction: discord.Interaction, command: str = None):
         await helpSettings(interaction)
     elif command == "streak":
         await helpStreak(interaction)
+    elif command == "reveal":
+        await helpReveal(interaction)
 
 @help.autocomplete("command")
 async def helpAutocomplete(interaction: discord.Interaction, current: str):
@@ -345,18 +343,15 @@ async def helpAutocomplete(interaction: discord.Interaction, current: str):
 
 @bot.tree.command(name="settings", description="Stelle zB. SparkDMs ein/aus")
 async def settings(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
     userID = str(interaction.user.id)
     premium = getPremium(connection, userID)
 
     settingStuff(userID)
-    await interaction.followup.send(embed=settingStuff(userID), ephemeral=True)
     if premium == True:
-        await interaction.followup.send(view=PremiumSettings(), ephemeral=True)
+        await interaction.response.send_message(view=PremiumSettings(), ephemeral=True)
         return
     else:
-        await interaction.followup.send(view=Settings(), ephemeral=True)
-        await interaction.followup.send("Folgende Settings sind nur für Premium Nutzer einstellbar: \nStatsPrivate \nSparkDM \nNewsletter \nHug/Pat DM", ephemeral=True)
+        await interaction.response.send_message(view=Settings(), ephemeral=True)
         return
 
 
@@ -394,7 +389,6 @@ async def streak(interaction: discord.Interaction):
             color=0x005b96
         )
     embed.set_thumbnail(url=interaction.user.display_avatar.url)
-    embed.set_footer(text="3 Tage Streak = 1 Punkt")
 
     if streakPrivate == True:
         await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -454,14 +448,7 @@ class TopServerButton(ui.View):
             embed.description = description
         await interaction.response.edit_message(embed=embed)
 
-@bot.tree.command(name="spark_ausblenden", description="Verberge bestimmte Custom Sparks in deinen Stats (Premium)")
-async def sparkDisable(interaction: discord.Interaction):
-    userID = str(interaction.user.id)
-    premium = getPremium(connection, userID)
-    if premium:
-        await interaction.response.send_modal(disableCustomSparkModal())
-    else:
-        await interaction.response.send_message("Dieser Befehl ist nur für Premium Nutzer verfügbar.", ephemeral=True)
+
 
 
 
