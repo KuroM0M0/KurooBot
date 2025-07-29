@@ -1,6 +1,7 @@
 import json
 import discord
 import asyncio
+import random
 from discord.ext import commands
 from discord import app_commands
 from discord import ButtonStyle, ui
@@ -34,6 +35,8 @@ connection = createConnection()
 try:
     with open("compliments.json", "r", encoding="utf8") as f:
         compliments = json.load(f)
+        for key, data in compliments.items():
+            link = data.get("link")
 except FileNotFoundError:
     compliments = {}
 
@@ -136,13 +139,14 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         description=f"{person.mention} {compliments[kompliment]['text']}",
         color=0x00FF00)
 
-        embed.set_image(url=f"{compliments[kompliment]['link']}")
+        embed.set_image(url=random.choice(compliments[kompliment].get("link")))
         embed.set_thumbnail(url=person.display_avatar.url)
         embed.set_footer(text=f"Spark ID: {getSparkID(connection)}")
         await channel.send(embed=embed)
 
-        ghostping = await channel.send(f"{person.mention}")
-        await ghostping.delete()
+        if getGhostpingSetting(connection, userID) == True:
+            ghostping = await channel.send(f"{person.mention}")
+            await ghostping.delete()
 
         if getSparkDM(connection, targetID) == True:
             await asyncio.sleep(2)
@@ -171,8 +175,9 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
 
             await interaction.followup.send("Dein anonymer Text war erfolgreich :D", ephemeral=True)
 
-            ghostping = await channel.send(f"{person.mention}")
-            await ghostping.delete()
+            if getGhostpingSetting(connection, userID) == True:
+                ghostping = await channel.send(f"{person.mention}")
+                await ghostping.delete()
 
 
             if getSparkDM(connection, targetID) == True:
