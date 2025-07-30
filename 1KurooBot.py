@@ -149,8 +149,8 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         resetSparkUses(connection, userID)
         SparkUses = 0
 
-    #await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
-    #await CheckTarget(targetID, userID, interaction)
+    await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
+    await CheckTarget(targetID, userID, interaction)
     await CheckSparkChannel(connection, guildID, channelID, interaction)
 
     if SparkUses < 1:
