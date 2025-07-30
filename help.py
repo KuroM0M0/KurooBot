@@ -146,3 +146,17 @@ async def helpAdmin(interaction):
         inline=False
     )
     await interaction.response.send_message(embed=embed)
+
+
+async def helpVote(interaction):
+    embed = discord.Embed(
+        color=0x005b96
+    )
+
+    embed.add_field(
+        name="Hilfe zu /vote: ",
+        value="""   Um an VotePunkte zu kommen, kannst du alle 12 Stunden einmal Voten.
+                    Mit diesen Punkten kannst du aktuell noch nichts machen, bald aber Premium kaufen.""",
+        inline=False
+    )
+    await interaction.response.send_message(embed=embed)
