@@ -43,6 +43,20 @@ class Settings(ui.View):
             await interaction.response.edit_message(view=self)
             setGhostpingSetting(connection, userID, True)
 
+    @ui.button(label="Profil", style=discord.ButtonStyle.primary)
+    async def Profil(self, interaction: discord.Interaction, button: ui.Button):
+        userID = interaction.user.id
+        Profil = getProfilPrivateSetting(connection, userID)
+
+        if Profil == True:
+            button.label = "Profil: Öffentlich🌐"
+            await interaction.response.edit_message(view=self)
+            setProfilPrivateSetting(connection, userID, False)
+
+        else:
+            button.label = "Profil: Privat🔒"
+            await interaction.response.edit_message(view=self)
+            setProfilPrivateSetting(connection, userID, True)
 
 
 

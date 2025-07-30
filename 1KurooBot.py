@@ -77,6 +77,25 @@ async def PremiumAktivieren(ctx, member: discord.Member):
     else:
         await ctx.send("Du bist nicht berechtigt dies zu tun!")
 
+@bot.command(name="PremiumDeaktivieren")
+async def PremiumDeaktivieren(ctx, member: discord.Member):
+    targetID = member.id
+    userID = ctx.author.id
+    if userID == KuroID:
+        await ctx.send(f"{member} hat nun kein Premium mehr!")
+        resetPremium(connection, targetID)
+    else:
+        await ctx.send("Du bist nicht berechtigt dies zu tun!")
+
+@bot.command(name="setRevealUses")
+async def setRevealUses(ctx, member: discord.Member, uses: int):
+    targetID = member.id
+    userID = ctx.author.id
+    if userID == KuroID:
+        await ctx.send(f"{member} hat nun {uses} Reveals!")
+        setRevealUses(connection, targetID, uses)
+    else:
+        await ctx.send("Du bist nicht berechtigt dies zu tun!")
 
 
 
@@ -236,7 +255,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
             await interaction.followup.send(f"{targetName} hat seine Stats versteckt.", ephemeral=True)
             return
         else:
-            StatsTarget(person)
+            await StatsTarget(person)
             await interaction.delete_original_response()
             await channel.send(embed=embedTarget)
             return
@@ -465,7 +484,70 @@ async def sparkDisable(interaction: discord.Interaction):
     else:
         await interaction.response.send_message("Dieser Befehl ist nur für Premium Nutzer verfügbar.", ephemeral=True)
 
+@bot.tree.command(name="profil", description="Zeige dein Profil an")
 
+
+async def profil(interaction: discord.Interaction, user: discord.User = None):
+    if user is None:
+        user = interaction.user
+
+    userID = user.id
+    userName = user.display_name
+    sparkCount = getSparkCount(connection, userID)
+    Premium = getPremium(connection, userID)
+    PremiumTimestamp = getPremiumTimestamp(connection, userID)
+    privacy = getProfilPrivateSetting(connection, userID)
+
+    if privacy == True:
+        if userID != interaction.user.id:
+            await interaction.response.send_message("Diese Person hat ihr Profil auf Privat.", ephemeral=True)
+            return
+
+
+    embed = discord.Embed(
+        title=f"Profil von {userName}",
+        color=0x005b96)
+    embed.set_thumbnail(url=user.display_avatar.url)
+    embed.add_field(name="🗓️Beigetreten am", value=user.joined_at.strftime("%d.%m.%Y"), inline=True)
+
+    if getBirthday(connection, userID) is not None:
+        embed.add_field(name="🎂Geburtstag", value=getBirthday(connection, userID), inline=True)
+
+    if Premium == True:
+        dt = datetime.fromisoformat(PremiumTimestamp)
+        unix_timestamp = int(dt.timestamp())
+        embed.add_field(name="Premium seit", value=f"<t:{unix_timestamp}:f>", inline=False)
+
+    embed.add_field(name="\u200b", value="\u200b", inline=False) #leerzeile
+    embed.add_field(
+    name="📨 Versendete Sparks",
+    value=f"{sparkCount} Sparks",
+    inline=True)
+    await interaction.response.send_message(embed=embed)
+
+
+@bot.tree.command(name="reveal", description="Lasse dir anzeigen von wem ein Spark gesendet wurde!")
+async def reveal(interaction: discord.Interaction, sparkid: int):
+    await interaction.response.defer(ephemeral=True)
+    userID = str(interaction.user.id)
+    revealUses = getRevealUses(connection, userID)
+
+    if revealUses < 1:
+        await interaction.followup.send("Du hast keine Reveals mehr. Um dir neue zu holen, gib '/help reveal' ein.", ephemeral=True)
+        return
+    
+    if userID != getSparkTargetID(connection, sparkid):
+        await interaction.followup.send("Du kannst nur Sparks revealen, die du selbst erhalten hast!", ephemeral=True)
+        return
+
+    result = getSparkReveal(connection, sparkid)
+    if result is None:
+        await interaction.followup.send("Dieser Spark existiert nicht.", ephemeral=True)
+        return
+    else:
+        await interaction.followup.send(f"Dieser Spark wurde von {result} gesendet.", ephemeral=True)
+        setRevealUses(connection, userID, revealUses - 1)
+    await interaction.followup.send("")
 
         
 
