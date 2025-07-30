@@ -108,6 +108,11 @@ async def setSparkChannel(ctx):
     await ctx.send(f"{channel} ist nun der Spark Channel!")
     setChannelSparkID(connection, serverID, channel.id)
 
+@setSparkChannel.error
+async def setSparkChannel_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
+
 @bot.command(name="setNewsletterChannel")
 @commands.has_permissions(administrator=True)
 async def setNewsletterChannel(ctx):

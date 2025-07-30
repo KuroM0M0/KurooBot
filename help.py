@@ -139,6 +139,7 @@ async def helpAdmin(interaction):
         name="Hilfe zur Einrichtung vom Bot: ",
         value="""   Um einen Channel festzulegen, in dem der Bot verwendet werden darf,
                     kannst du den Befehl **!setSparkChannel** in dem gewünschten Kanal eingeben.
+                    Es werden Administrator Berechtigungen dafür benötigt.
                     Wenn kein Channel festgelegt wurde, funktioniert der Bot überall.\n\n
                     Wenn der Server Premium hat, kann zusätzlich noch **!setNewsletterChannel** 
                     verwendet werden, um vom Bot alle Update Infos zu bekommen.""",
