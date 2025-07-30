@@ -257,6 +257,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     if person == None:
@@ -302,6 +303,7 @@ async def topserver(interaction: discord.Interaction):
     guildID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
+    CheckServerExists(connection, guildID)
     await CheckSparkChannel(connection, guildID, channelID, interaction)
 
     if rows:
@@ -348,6 +350,7 @@ async def cooldown(interaction: discord.Interaction):
 async def hug(interaction: discord.Interaction, person: discord.Member):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
     await sendHug(interaction, person)
 
@@ -359,6 +362,7 @@ async def hug(interaction: discord.Interaction, person: discord.Member):
 async def pat(interaction: discord.Interaction, person: discord.Member):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
     await sendPat(interaction, person)
 
@@ -369,6 +373,7 @@ async def pat(interaction: discord.Interaction, person: discord.Member):
 async def help(interaction: discord.Interaction, command: str = None):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     if command is None:
@@ -458,6 +463,7 @@ async def streak(interaction: discord.Interaction):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     embed = discord.Embed(
@@ -577,6 +583,7 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     embed = discord.Embed(
@@ -633,5 +640,5 @@ async def reveal(interaction: discord.Interaction, sparkid: int):
         
 
 
-#bot.run('MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8')
-bot.run('MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg') #richtiger Bot
+bot.run('MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8')
+#bot.run('MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg') #richtiger Bot
