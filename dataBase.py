@@ -1367,7 +1367,7 @@ def setVotePoints(connection, userID):
             cursor.execute('''  UPDATE User
                                 SET VotePunkte = VotePunkte + 1
                                 WHERE UserID = ?''',
-                                (userID))
+                                (userID,))
             connection.commit()
         except sqlite3.Error as e:
             print(f"Fehler beim setzen der VotePoints: {e}")
