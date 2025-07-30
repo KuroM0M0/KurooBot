@@ -330,6 +330,8 @@ async def help(interaction: discord.Interaction, command: str = None):
         await helpSettings(interaction)
     elif command == "streak":
         await helpStreak(interaction)
+    elif command == "reveal":
+        await helpReveal(interaction)
 
 @help.autocomplete("command")
 async def helpAutocomplete(interaction: discord.Interaction, current: str):

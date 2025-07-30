@@ -97,10 +97,25 @@ async def helpStats(interaction):
 
     embed.add_field(
         name="Hilfe zu /stats: ",
-        value="""Um deine **eigenen Stats** anzusehen, musst du aktuell noch **/stats (dein Username)** eingeben. \n
+        value="""Um deine **eigenen Stats** anzusehen, kannst du **/stats** eingeben. \n
                     Der Befehl zeigt dir alle Komplimente (auch Custom Nachrichten) an und wie oft du diese bekommen hast.
-                    \n\n **In Zukunft** ist noch geplant, dass man mit Premium **custom Nachrichten ausblenden** kann. 
-                    Ebenfalls ist noch eine **Trennung von Custom und normalen Sparks** in Planung""",
+                    \n\n **Mit Premium** kannst du mit dem Befehl **/spark_ausblenden** custom Nachrichten ausblenden wenn du die SparkID angibst.
+                    Die SparkID findest du bei deinen Stats neben der custom Nachricht in Klammern. """,
+        inline=False
+    )
+    await interaction.response.send_message(embed=embed)
+
+
+async def helpReveal(interaction):
+    embed = discord.Embed(
+        color=0x005b96
+    )
+
+    embed.add_field(
+        name="Hilfe zu /reveal: ",
+        value="""   Wenn jemand einen Spark macht, kann optional am ende noch reveal als True angegeben werden. \n
+                    Wenn das der Fall ist, kannst du für 2€ dir anschauen, von wem der Spark kommt. Du musst dabei die SparkID angeben.
+                    Diese Funktion ist aktuell noch in Arbeit, reveal kann aber bereits als True angegeben werden.""",
         inline=False
     )
     await interaction.response.send_message(embed=embed)
