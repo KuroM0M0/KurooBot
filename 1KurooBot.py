@@ -87,8 +87,8 @@ async def PremiumDeaktivieren(ctx, member: discord.Member):
     else:
         await ctx.send("Du bist nicht berechtigt dies zu tun!")
 
-@bot.command(name="setRevealUses")
-async def setRevealUses(ctx, member: discord.Member, uses: int):
+@bot.command(name="setReveals")
+async def setReveals(ctx, member: discord.Member, uses: int):
     targetID = member.id
     userID = ctx.author.id
     if userID == KuroID:
@@ -516,9 +516,11 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
     if Premium == True:
         dt = datetime.fromisoformat(PremiumTimestamp)
         unix_timestamp = int(dt.timestamp())
-        embed.add_field(name="Premium seit", value=f"<t:{unix_timestamp}:f>", inline=False)
+        embed.add_field(name="💎 Premium seit", value=f"<t:{unix_timestamp}:f>", inline=False)
 
     embed.add_field(name="\u200b", value="\u200b", inline=False) #leerzeile
+    embed.add_field(name="👀 Reveals", value=getRevealUses(connection, userID), inline=True)
+    embed.add_field(name=" |", value=" |", inline=True)
     embed.add_field(
     name="📨 Versendete Sparks",
     value=f"{sparkCount} Sparks",

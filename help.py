@@ -10,7 +10,9 @@ cmdDescription = [
         "**/cooldown**\n                      Schaue nach, wann du wieder /spark verwenden kannst\n",
         "**/feedback**\n                      Öffnet ein Formular in dem du Feedback für den Bot eingeben kannst\n",
         "**/settings**\n                      Stell einige Dinge ein, zb. ob du private Nachrichten möchtest\n",
-        "**/streak**\n                        Schaue dir alle relevanten Dinge zu deiner Streak an\n"
+        "**/streak**\n                        Schaue dir alle relevanten Dinge zu deiner Streak an\n",
+        "**/profil**\n                        Zeigt dir Infos über dich an\n",
+        "**/reveal**\n                        Lasse dir anzeigen von wem ein Spark gesendet wurde\n"
     ]
 
 async def helpSpark(interaction):
@@ -20,12 +22,12 @@ async def helpSpark(interaction):
 
     embed.add_field(
         name="Hilfe zu /spark: ",
-        value="""\n\n Du kannst täglich **einer** Person ein Anonymes Kompliment geben. \n\n
-                    **Mit Premium** kannst du täglich **2 sparks** verwenden und hast zusätzlich die möglichkeit diese sparks **custom** zu gestalten. 
+        value="""\n\n Du kannst täglich **einer** Person ein anonymes Kompliment geben. \n\n
+                    **Mit Premium** kannst du täglich **2 Sparks** verwenden und hast zusätzlich die Möglichkeit diese Sparks **custom** zu gestalten. 
                     \n\n **/spark (Person) (Kompliment)**\n   Damit kannst du einer Person ein Anonymes kompliment machen. \n
-                    Um einen **Custom Spark** zu senden, einfach beim Feld "Kompliment" deine Nachricht reinsenden.\n
-                    Wenn du möchtest, dass man in Zukunft **nachschauen** kann **wer** den **Spark versendet** hat, kannst du noch **reveal True** angeben. 
-                    Wenn es **Anonym** bleiben soll, kannst du das **Feld einfach weglassen** oder False angeben.\n""",
+                    Um einen **custom Spark** zu senden, einfach beim Feld "Kompliment" deine Nachricht reinsenden.\n
+                    Wenn du möchtest, dass man **nachschauen** kann **wer** den **Spark versendet** hat, kannst du noch **reveal True** angeben. 
+                    Wenn es **anonym** bleiben soll, kannst du das **Feld einfach weglassen** oder False angeben.\n""",
         inline=False
     )
     await interaction.response.send_message(embed=embed)
@@ -54,9 +56,9 @@ async def helpSettings(interaction):
     embed.add_field(
         name="Hilfe zu /settings: ",
         value="""Hier kannst du deine Einstellungen anpassen. \n
-                    Je nachddem ob du Premium hast oder nicht, werden dir andere Buttons angezeigt. 
-                    Um zu wissen was eingestellt war, musst du einmal auf den Button drücken. 
-                    Ich arbeite aktuell noch an einer besseren Lösung.
+                    Je nachdem ob du Premium hast oder nicht, werden dir andere Buttons angezeigt. 
+                    Es wird dir angezeigt was deine aktuellen Einstellungen sind.
+                    Wenn du kein Premium hast, wird dir noch gesagt, was man mit Premium zusätzlich einstellen kann.
                     """,
         inline=False
     )
@@ -98,7 +100,7 @@ async def helpStats(interaction):
     embed.add_field(
         name="Hilfe zu /stats: ",
         value="""Um deine **eigenen Stats** anzusehen, kannst du **/stats** eingeben. \n
-                    Der Befehl zeigt dir alle Komplimente (auch Custom Nachrichten) an und wie oft du diese bekommen hast.
+                    Der Befehl zeigt dir alle Komplimente (auch custom Nachrichten) an und wie oft du diese bekommen hast.
                     \n\n **Mit Premium** kannst du mit dem Befehl **/spark_ausblenden** custom Nachrichten ausblenden wenn du die SparkID angibst.
                     Die SparkID findest du bei deinen Stats neben der custom Nachricht in Klammern. """,
         inline=False
@@ -113,9 +115,16 @@ async def helpReveal(interaction):
 
     embed.add_field(
         name="Hilfe zu /reveal: ",
-        value="""   Wenn jemand einen Spark macht, kann optional am ende noch reveal als True angegeben werden. \n
-                    Wenn das der Fall ist, kannst du für 2€ dir anschauen, von wem der Spark kommt. Du musst dabei die SparkID angeben.
-                    Diese Funktion ist aktuell noch in Arbeit, reveal kann aber bereits als True angegeben werden.""",
+        value="""   Wenn jemand einen Spark macht, kann optional am Ende noch reveal als True angegeben werden. \n
+                    Wenn True angegeben wurde, kannst du den Befehl **/reveal** mit der SparkID verwenden.
+                    Du brauchst dazu einen Reveal (wie viele du hast, siehst du mit /profil).\n
+                    **Preise:**
+                    2 Reveals = 3€
+                    ([3€ über Freunde&Familie senden und deine DiscordID oder Namen angeben](https://www.paypal.com/paypalme/KuroPixel?country.x=DE&locale.x=de_DE))
+                    1 Reveal = 20 Streakpunkte (WIP)
+                    1 Reveal = 30 Votepunkte (WIP)
+                    \n In Zukunft ist noch geplant, dass man den Sender anfragen kann, ob es revealed werden darf.
+                    """,
         inline=False
     )
     await interaction.response.send_message(embed=embed)
