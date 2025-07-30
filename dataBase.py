@@ -1184,9 +1184,11 @@ def getSparkReveal(connection, SparkID):
         try:
             cursor.execute('''  SELECT UserName, ServerName
                                 FROM Logs
-                                WHERE ID = ?''',
+                                WHERE ID = ? AND Reveal = 1''',
                                 (SparkID,))
             result = cursor.fetchone()
+            if result is None:
+                return None
             return result[0]
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von Reveal: {e}")
@@ -1245,5 +1247,112 @@ def setRevealUses(connection, userID, RevealUses):
             connection.commit()
         except sqlite3.Error as e:
             print(f"Fehler beim setzen der RevealUses Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setChannelSparkID(connection, serverID, channelID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Server
+                                SET ChannelSparkID = ?
+                                WHERE ServerID = ?''',
+                                (channelID, serverID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der ChannelSparkID Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getChannelSparkID(connection, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ChannelSparkID
+                                FROM Server
+                                WHERE ServerID = ?''',
+                                (serverID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von ChannelSparkID: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setChannelNewsletterID(connection, serverID, channelID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Server
+                                SET ChannelNewsletterID = ?
+                                WHERE ServerID = ?''',
+                                (channelID, serverID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der ChannelNewsletterID Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getChannelNewsletterID(connection, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ChannelNewsletterID
+                                FROM Server
+                                WHERE ServerID = ?''',
+                                (serverID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von ChannelNewsletterID: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def insertServer(connection, ServerID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  INSERT INTO Server
+                                (ServerID, ChannelSparkID, ChannelNewsletterID, AktivsterServer, Premium, PremiumTimestamp)
+                                VALUES (?, NULL, NULL, 0, 0, NULL)''',
+                                (ServerID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Insert von Server: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def checkServerExists(connection, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ServerID
+                                FROM Server
+                                WHERE ServerID = ?''',
+                                (serverID,))
+            result = cursor.fetchone()
+            if result is None:
+                return False
+            return True
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Server: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
