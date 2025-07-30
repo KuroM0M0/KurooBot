@@ -544,12 +544,6 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
 
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
-    if privacy == True:
-        if userID != interaction.user.id:
-            await interaction.response.send_message("Diese Person hat ihr Profil auf Privat.", ephemeral=True)
-            return
-
-
     embed = discord.Embed(
         title=f"Profil von {userName}",
         color=0x005b96)
@@ -568,7 +562,15 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
     embed.add_field(name="👀 Reveals", value=getRevealUses(connection, userID), inline=True)
     embed.add_field(name=" |", value=" |", inline=True)
     embed.add_field(name="📨 Versendete Sparks", value=f"{sparkCount} Sparks", inline=True)
-    await interaction.response.send_message(embed=embed)
+
+    if privacy == True:
+        if userID != interaction.user.id:
+            await interaction.response.send_message("Diese Person hat ihr Profil auf Privat.", ephemeral=True)
+            return
+        else:
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+    else:
+        await interaction.response.send_message(embed=embed)
 
 
 @bot.tree.command(name="reveal", description="Lasse dir anzeigen von wem ein Spark gesendet wurde!")
