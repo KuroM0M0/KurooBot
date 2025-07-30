@@ -1,4 +1,5 @@
 import discord
+from dataBase import *
 async def SparkCheck(cooldown, SparkUses, Premium, date, interaction):
 
     """prüft ob User heute schon gesparkt hat"""
@@ -16,8 +17,8 @@ async def SparkCheck(cooldown, SparkUses, Premium, date, interaction):
 
 
 async def sendSparkDM(targetID, interaction):
-    BotID = 1306244838504665169
-    #BotID = 1310744379228426290#TestbotID
+    #BotID = 1306244838504665169
+    BotID = 1310744379228426290#TestbotID
 
     channel = interaction.channel
 
@@ -26,3 +27,12 @@ async def sendSparkDM(targetID, interaction):
         target = await interaction.client.fetch_user(int(targetID))
         embed = discord.Embed(title="Du wurdest gesparkt!", description=messages[0].jump_url, color=0x005b96)
         await target.send(embed=embed)
+
+
+
+async def CheckSparkChannel(connection, guildID, channelID, interaction):
+    sparkChannel = getChannelSparkID(connection, guildID)
+    if sparkChannel != channelID and sparkChannel != None:
+        await interaction.followup.send("Du kannst hier keine Befehle nutzen! Nutze den vorgesehenen Channel dafür.", ephemeral=True)
+        raise Exception("Wrong Channel")
+    

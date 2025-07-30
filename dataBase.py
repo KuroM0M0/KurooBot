@@ -562,8 +562,8 @@ def insertUser(connection, userID):
         cursor = connection.cursor()
         try:
             cursor.execute('''  INSERT INTO User
-                                (UserID, HugPatUses, SparkUses, HugPatLastReset, HugPatTimestamp, SparkTimestamp, Streak, StreakPoints, HatGevotet, HatPremium, PremiumTimestamp, VoteTimestamp, StreakPointsTimestamp)
-                                VALUES(?, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)''',
+                                (UserID, HugPatUses, SparkUses, HugPatLastReset, HugPatTimestamp, SparkTimestamp, Streak, StreakPoints, HatGevotet, HatPremium, PremiumTimestamp, VoteTimestamp, StreakPointsTimestamp, AktivsterUser, VotePunkte, Birthday, RevealUses)
+                                VALUES(?, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)''',
                                 (userID,))
             connection.commit()
             print("TestErfolg")
@@ -946,6 +946,25 @@ def getNewsletterSubs(connection):
 
 
 
+
+def getCustomSparkSetting(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT CustomSpark
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von CustomSpark: {e}")
+
+            
+            
+            
 def getStatDisabled(connection, SparkID):
     """
     Gibt den Wert von Disabled für den Spark mit der SparkID zurück.
@@ -975,6 +994,24 @@ def getStatDisabled(connection, SparkID):
 
 
 
+
+def setCustomSparkSetting(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET CustomSpark = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der CustomSpark Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+        
+        
+        
 def setStatDisabled(connection, SparkID, an): #an = true/false
     if connection is not None:
         cursor = connection.cursor()
@@ -988,4 +1025,408 @@ def setStatDisabled(connection, SparkID, an): #an = true/false
             print(f"Fehler beim setzen der StatDisabled Setting: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
-        #überprüfung ob User wirklich seine eigenen disabled ist nötig
+
+
+
+
+def getGhostpingSetting(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Ghostping
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Ghostping: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setGhostpingSetting(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET Ghostping = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Ghostping Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getProfilPrivateSetting(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ProfilePrivate
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Profil: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setProfilPrivateSetting(connection, userID, an): #an = true/false
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET ProfilePrivate = ?
+                                WHERE UserID = ?''',
+                                (an, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der ProfilPrivate Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getBirthday(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Birthday
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Birthday: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getSparkCount(connection, userID):
+    """Gibt zurück wie oft der User gesparkt hat. (UserID)"""
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT COUNT(ID)
+                                FROM Logs
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von SparkCount: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getSparkCountDisabled(connection, userID):
+    """Gibt zurück wie viele Sparks jemand Disabled hat (TargetID)"""
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT COUNT(ID)
+                                FROM Logs
+                                WHERE TargetID = ? AND Disabled = 1''',
+                                (userID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von SparkCountDisabled: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getSparkCountSelf(connection, userID):
+    """"Gibt zurück wie oft man selbst gesparkt wurde. (TargetID)"""
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT COUNT(ID)
+                                FROM Logs
+                                WHERE TargetID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von SparkTargetCount: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getSparkReveal(connection, SparkID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT UserName, ServerName
+                                FROM Logs
+                                WHERE ID = ? AND Reveal = 1''',
+                                (SparkID,))
+            result = cursor.fetchone()
+            if result is None:
+                return None
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Reveal: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getSparkTargetID(connection, SparkID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT TargetID
+                                FROM Logs
+                                WHERE ID = ?''',
+                                (SparkID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von SenderID: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getRevealUses(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT RevealUses
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von RevealUses: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setRevealUses(connection, userID, RevealUses):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET RevealUses = ?
+                                WHERE UserID = ?''',
+                                (RevealUses, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der RevealUses Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setChannelSparkID(connection, serverID, channelID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Server
+                                SET ChannelSparkID = ?
+                                WHERE ServerID = ?''',
+                                (channelID, serverID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der ChannelSparkID Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getChannelSparkID(connection, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ChannelSparkID
+                                FROM Server
+                                WHERE ServerID = ?''',
+                                (serverID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von ChannelSparkID: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setChannelNewsletterID(connection, serverID, channelID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Server
+                                SET ChannelNewsletterID = ?
+                                WHERE ServerID = ?''',
+                                (channelID, serverID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der ChannelNewsletterID Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getChannelNewsletterID(connection, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ChannelNewsletterID
+                                FROM Server
+                                WHERE ServerID = ?''',
+                                (serverID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von ChannelNewsletterID: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def insertServer(connection, ServerID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  INSERT INTO Server
+                                (ServerID, ChannelSparkID, ChannelNewsletterID, AktivsterServer, Premium, PremiumTimestamp)
+                                VALUES (?, NULL, NULL, 0, 0, NULL)''',
+                                (ServerID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim Insert von Server: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def checkServerExists(connection, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ServerID
+                                FROM Server
+                                WHERE ServerID = ?''',
+                                (serverID,))
+            result = cursor.fetchone()
+            if result is None:
+                return False
+            return True
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Server: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setVotePoints(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET VotePunkte = VotePunkte + 1
+                                WHERE UserID = ?''',
+                                (userID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der VotePoints: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getVotePoints(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT VotePunkte
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von VotePoints: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setVoteTimestamp(connection, userID, VoteTimestamp):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET VoteTimestamp = ?
+                                WHERE UserID = ?''',
+                                (VoteTimestamp, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der VoteTimestamp Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getVoteTimestamp(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT VoteTimestamp
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von VoteTimestamp: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
