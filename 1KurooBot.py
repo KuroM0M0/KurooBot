@@ -21,6 +21,7 @@ from settings import Settings, PremiumSettings, settingStuff
 from newsletter import NewsletterModal
 from disableCustomSpark import disableCustomSparkModal
 from stats import *
+from vote import *
 import sqlite3
 
 intents = discord.Intents.default()
@@ -29,6 +30,7 @@ intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 KuroID = 308660164137844736
 cooldownDuration = 24
+VoteCooldown = 12 #in Stunden
 
 connection = createConnection()
 
@@ -484,7 +486,31 @@ async def premium(interaction: discord.Interaction):
 
 @bot.tree.command(name="vote", description="Wenn du den Bot kostenlos unterstützen möchtest :)")
 async def vote(interaction: discord.Interaction):
-    await interaction.response.send_message("https://top.gg/bot/1306244838504665169/vote", ephemeral=True)
+    userID = str(interaction.user.id)
+    now = datetime.now()
+    Vote = await checkVote(userID)
+    LastVote = getVoteTimestamp(connection, userID)
+
+    if LastVote:
+        lastVoteDt = datetime.fromisoformat(LastVote)
+    else:
+        lastVoteDt = datetime.min
+
+    if Vote:
+        if now - lastVoteDt >= timedelta(hours=VoteCooldown):
+            setVotePoints(connection, userID)
+            setVoteTimestamp(connection, userID, now.isoformat())
+            await interaction.response.send_message(
+                "✅ Danke für deinen Vote! Du hast einen VotePunkt erhalten. ❤️", 
+                ephemeral=True)
+        else:
+            await interaction.response.send_message(
+                "⚠️ Du hast schon vor Kurzem gevotet! Bitte warte, bis du erneut voten kannst.",
+                ephemeral=True)
+    else:
+        await interaction.response.send_message(
+            "ℹ️ Du hast noch nicht gevotet. Bitte stimme hier ab: https://top.gg/bot/1306244838504665169/vote",
+            ephemeral=True)
 
 
 
@@ -519,6 +545,8 @@ class TopServerButton(ui.View):
             embed.description = description
         await interaction.response.edit_message(embed=embed)
 
+
+
 @bot.tree.command(name="spark_ausblenden", description="Verberge bestimmte Custom Sparks in deinen Stats (Premium)")
 async def sparkDisable(interaction: discord.Interaction):
     userID = str(interaction.user.id)
@@ -527,6 +555,8 @@ async def sparkDisable(interaction: discord.Interaction):
         await interaction.response.send_modal(disableCustomSparkModal())
     else:
         await interaction.response.send_message("Dieser Befehl ist nur für Premium Nutzer verfügbar.", ephemeral=True)
+
+
 
 @bot.tree.command(name="profil", description="Zeige dein Profil an")
 async def profil(interaction: discord.Interaction, user: discord.User = None):

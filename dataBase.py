@@ -562,8 +562,8 @@ def insertUser(connection, userID):
         cursor = connection.cursor()
         try:
             cursor.execute('''  INSERT INTO User
-                                (UserID, HugPatUses, SparkUses, HugPatLastReset, HugPatTimestamp, SparkTimestamp, Streak, StreakPoints, HatGevotet, HatPremium, PremiumTimestamp, VoteTimestamp, StreakPointsTimestamp)
-                                VALUES(?, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)''',
+                                (UserID, HugPatUses, SparkUses, HugPatLastReset, HugPatTimestamp, SparkTimestamp, Streak, StreakPoints, HatGevotet, HatPremium, PremiumTimestamp, VoteTimestamp, StreakPointsTimestamp, AktivsterUser, VotePunkte, Birthday, RevealUses)
+                                VALUES(?, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)''',
                                 (userID,))
             connection.commit()
             print("TestErfolg")
@@ -1354,5 +1354,79 @@ def checkServerExists(connection, serverID):
             return True
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von Server: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setVotePoints(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET VotePunkte = VotePunkte + 1
+                                WHERE UserID = ?''',
+                                (userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der VotePoints: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getVotePoints(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT VotePunkte
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von VotePoints: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setVoteTimestamp(connection, userID, VoteTimestamp):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET VoteTimestamp = ?
+                                WHERE UserID = ?''',
+                                (VoteTimestamp, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der VoteTimestamp Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getVoteTimestamp(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT VoteTimestamp
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            if result is None:
+                return 0
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von VoteTimestamp: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
