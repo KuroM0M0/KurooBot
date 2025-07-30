@@ -128,3 +128,20 @@ async def helpReveal(interaction):
         inline=False
     )
     await interaction.response.send_message(embed=embed)
+
+
+async def helpAdmin(interaction):
+    embed = discord.Embed(
+         color=0x005b96
+    )
+
+    embed.add_field(
+        name="Hilfe zur Einrichtung vom Bot: ",
+        value="""   Um einen Channel festzulegen, in dem der Bot verwendet werden darf,
+                    kannst du den Befehl **!setSparkChannel** in dem gewünschten Kanal eingeben.
+                    Wenn kein Channel festgelegt wurde, funktioniert der Bot überall.\n\n
+                    Wenn der Server Premium hat, kann zusätzlich noch **!setNewsletterChannel** 
+                    verwendet werden, um vom Bot alle Update Infos zu bekommen.""",
+        inline=False
+    )
+    await interaction.response.send_message(embed=embed)
