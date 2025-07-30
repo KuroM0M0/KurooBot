@@ -66,3 +66,14 @@ async def CheckTarget(targetID, userID, interaction):
     if targetID == userID:
         await interaction.followup.send("Eigenlob stinkt :^)")
         raise Exception("Eigenlob")
+    
+
+
+
+def CheckServerExists(connection, serverID):
+    """
+    Prüft ob Server in der Datenbank existiert, wenn nicht wird er hinzugefügen
+    """
+    exists = checkServerExists(connection, serverID)
+    if exists == False:
+        insertServer(connection, serverID)
