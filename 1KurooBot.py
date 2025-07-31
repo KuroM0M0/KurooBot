@@ -510,7 +510,7 @@ async def vote(interaction: discord.Interaction):
                 ephemeral=True)
         else:
             await interaction.response.send_message(
-                "⚠️ Du hast schon vor Kurzem gevotet! Bitte warte, bis du erneut voten kannst.",
+                "⚠️ Du kannst nur alle 12 Stunden einmal Voten!",
                 ephemeral=True)
     else:
         await interaction.response.send_message(
