@@ -383,7 +383,7 @@ async def help(interaction: discord.Interaction, command: str = None):
 
         embed.add_field(
             name="ℹ️ Befehle: ",
-            value="\n".join(cmdDescription),
+            value=cmdDescription,
             inline=False
         )
         await interaction.response.send_message(embed=embed)

@@ -2,19 +2,29 @@ import discord
 import textwrap
 from discord import app_commands
 
-cmdDescription = [
-        "**/spark (Person) (Kompliment)**\n   Damit kannst du einer Person ein Anonymes kompliment machen.\n",
-        "**/stats (Person)**\n                Zeige alle Komplimente an, die diese Person bisher bekommen hat\n",
-        "**/topserver**\n                     Zeigt die 2 meistgenutzten Server an\n",
-        "**/hug (Person)**\n                  Umarme diese Person Anonym\n",
-        "**/pat (Person)**\n                  gib der Person ein Anonymes pat\n",
-        "**/cooldown**\n                      Schaue nach, wann du wieder /spark verwenden kannst\n",
-        "**/feedback**\n                      Öffnet ein Formular in dem du Feedback für den Bot eingeben kannst\n",
-        "**/settings**\n                      Stell einige Dinge ein, zb. ob du private Nachrichten möchtest\n",
-        "**/streak**\n                        Schaue dir alle relevanten Dinge zu deiner Streak an\n",
-        "**/profil**\n                        Zeigt dir Infos über dich an\n",
-        "**/reveal**\n                        Lasse dir anzeigen von wem ein Spark gesendet wurde\n"
-    ]
+cmdDescription = textwrap.dedent(
+        "**/spark (Person) (Kompliment) (reveal)**\n"
+        "Damit kannst du einer Person ein Anonymes kompliment machen.\n\n"
+        "**/stats (Person)**\n"
+        "Zeige alle Komplimente an, die diese Person bisher bekommen hat\n\n"
+        "**/topserver**\n"
+        "Zeigt die 5 meistgenutzten Server an\n\n"
+        "**/hug (Person)**\n"
+        "Umarme diese Person Anonym\n\n"
+        "**/pat (Person)**\n"
+        "gib der Person ein Anonymes pat\n\n"
+        "**/cooldown**\n"
+        "Schaue nach, wann du wieder /spark verwenden kannst\n\n"
+        "**/feedback**\n"
+        "Öffnet ein Formular in dem du Feedback für den Bot eingeben kannst\n\n"
+        "**/settings**\n"
+        "Stell einige Dinge ein, zb. ob du private Nachrichten möchtest\n\n"
+        "**/streak**\n"
+        "Schaue dir alle relevanten Dinge zu deiner Streak an\n\n"
+        "**/profil**\n"
+        "Zeigt dir Infos über dich an\n\n"
+        "**/reveal**\n"
+        "Lasse dir anzeigen von wem ein Spark gesendet wurde\n\n")
 
 async def helpSpark(interaction):
     embed = discord.Embed(
