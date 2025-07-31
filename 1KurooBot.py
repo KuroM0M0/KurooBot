@@ -403,10 +403,12 @@ async def help(interaction: discord.Interaction, command: str = None):
         await helpReveal(interaction)
     elif command == "admin":
         await helpAdmin(interaction)
+    elif command == "vote":
+        await helpVote(interaction)
 
 @help.autocomplete("command")
 async def helpAutocomplete(interaction: discord.Interaction, current: str):
-    befehle = ["spark", "stats", "hug", "pat", "settings", "streak", "reveal", "admin"]
+    befehle = ["admin", "spark", "stats", "hug", "pat", "settings", "streak", "reveal", "vote"]
     return [
         app_commands.Choice(name=b, value=b)
         for b in befehle
@@ -516,7 +518,7 @@ async def vote(interaction: discord.Interaction):
                 ephemeral=True)
         else:
             await interaction.response.send_message(
-                "⚠️ Du hast schon vor Kurzem gevotet! Bitte warte, bis du erneut voten kannst.",
+                "⚠️ Du kannst nur alle 12 Stunden einmal Voten!",
                 ephemeral=True)
     else:
         await interaction.response.send_message(
