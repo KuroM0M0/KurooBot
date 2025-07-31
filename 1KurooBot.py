@@ -257,6 +257,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     if person == None:
@@ -302,6 +303,7 @@ async def topserver(interaction: discord.Interaction):
     guildID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
+    CheckServerExists(connection, guildID)
     await CheckSparkChannel(connection, guildID, channelID, interaction)
 
     if rows:
@@ -348,6 +350,7 @@ async def cooldown(interaction: discord.Interaction):
 async def hug(interaction: discord.Interaction, person: discord.Member):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
     await sendHug(interaction, person)
 
@@ -359,6 +362,7 @@ async def hug(interaction: discord.Interaction, person: discord.Member):
 async def pat(interaction: discord.Interaction, person: discord.Member):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
     await sendPat(interaction, person)
 
@@ -369,6 +373,7 @@ async def pat(interaction: discord.Interaction, person: discord.Member):
 async def help(interaction: discord.Interaction, command: str = None):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     if command is None:
@@ -398,10 +403,12 @@ async def help(interaction: discord.Interaction, command: str = None):
         await helpReveal(interaction)
     elif command == "admin":
         await helpAdmin(interaction)
+    elif command == "vote":
+        await helpVote(interaction)
 
 @help.autocomplete("command")
 async def helpAutocomplete(interaction: discord.Interaction, current: str):
-    befehle = ["spark", "stats", "hug", "pat", "settings", "streak", "reveal", "admin"]
+    befehle = ["admin", "spark", "stats", "hug", "pat", "settings", "streak", "reveal", "vote"]
     return [
         app_commands.Choice(name=b, value=b)
         for b in befehle
@@ -458,6 +465,7 @@ async def streak(interaction: discord.Interaction):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     embed = discord.Embed(
@@ -577,6 +585,7 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
+    CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     embed = discord.Embed(

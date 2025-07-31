@@ -1,4 +1,5 @@
 import discord
+import textwrap
 from discord import app_commands
 
 cmdDescription = [
@@ -19,15 +20,16 @@ async def helpSpark(interaction):
     embed = discord.Embed(
         color=0x005b96
     )
+    text = textwrap.dedent( "\n\n Du kannst täglich **einer** Person ein anonymes Kompliment geben. \n\n"
+                            "**Mit Premium** kannst du täglich **2 Sparks** verwenden und hast zusätzlich die Möglichkeit diese Sparks **custom** zu gestalten. "
+                            "\n\n**/spark (Person) (Kompliment)**\nDamit kannst du einer Person ein Anonymes kompliment machen. \n"
+                            "Um einen **custom Spark** zu senden, einfach beim Feld 'Kompliment' deine Nachricht reinsenden.\n"
+                            "Wenn du möchtest, dass man **nachschauen** kann **wer** den **Spark versendet** hat, kannst du noch **reveal True** angeben. "
+                            "Wenn es **anonym** bleiben soll, kannst du das **Feld einfach weglassen** oder False angeben.\n")
 
     embed.add_field(
         name="Hilfe zu /spark: ",
-        value="""\n\n Du kannst täglich **einer** Person ein anonymes Kompliment geben. \n\n
-                    **Mit Premium** kannst du täglich **2 Sparks** verwenden und hast zusätzlich die Möglichkeit diese Sparks **custom** zu gestalten. 
-                    \n\n **/spark (Person) (Kompliment)**\n   Damit kannst du einer Person ein Anonymes kompliment machen. \n
-                    Um einen **custom Spark** zu senden, einfach beim Feld "Kompliment" deine Nachricht reinsenden.\n
-                    Wenn du möchtest, dass man **nachschauen** kann **wer** den **Spark versendet** hat, kannst du noch **reveal True** angeben. 
-                    Wenn es **anonym** bleiben soll, kannst du das **Feld einfach weglassen** oder False angeben.\n""",
+        value=text,
         inline=False
     )
     await interaction.response.send_message(embed=embed)
@@ -37,13 +39,13 @@ async def helpStreak(interaction):
     embed = discord.Embed(
         color=0x005b96
     )
+    text = textwrap.dedent("Hier siehst du alle relevanten Infos zu deiner Streak. \n"
+                           "Jedes mal wenn deine Streak durch 3 teilbar ist, gibt es einen Streakpunkt."
+                           "Mit Streakpunkten kannst du dir in Zukunft im Shop unterschiedliche Dinge kaufen, wie zb. Premium")
 
     embed.add_field(
         name="Hilfe zu /streak: ",
-        value="""Hier siehst du alle relevanten Infos zu deiner Streak. \n
-                    Jedes mal wenn deine Streak durch 3 teilbar ist, gibt es einen Streakpunkt.
-                    Mit Streakpunkten kannst du dir in Zukunft im Shop unterschiedliche Dinge kaufen, wie zb. Premium
-                    """,
+        value=text,
         inline=False
     )
     await interaction.response.send_message(embed=embed)
@@ -52,14 +54,14 @@ async def helpSettings(interaction):
     embed = discord.Embed(
         color=0x005b96
     )
+    text = textwrap.dedent("Hier kannst du deine Einstellungen anpassen. \n"
+                           "Je nachdem ob du Premium hast oder nicht, werden dir andere Buttons angezeigt."
+                           "Es wird dir angezeigt was deine aktuellen Einstellungen sind."
+                           "Wenn du kein Premium hast, wird dir noch gesagt, was man mit Premium zusätzlich einstellen kann.")
 
     embed.add_field(
         name="Hilfe zu /settings: ",
-        value="""Hier kannst du deine Einstellungen anpassen. \n
-                    Je nachdem ob du Premium hast oder nicht, werden dir andere Buttons angezeigt. 
-                    Es wird dir angezeigt was deine aktuellen Einstellungen sind.
-                    Wenn du kein Premium hast, wird dir noch gesagt, was man mit Premium zusätzlich einstellen kann.
-                    """,
+        value=text,
         inline=False
     )
     await interaction.response.send_message(embed=embed)
@@ -68,12 +70,12 @@ async def helpHug(interaction):
     embed = discord.Embed(
         color=0x005b96
     )
+    text = textwrap.dedent("Du kannst taglich einer Person **einen Hug oder Pat** geben. \n"
+                           "**Mit Premium** sind Hug/Pats **3x taglich** verwendbar.")
 
     embed.add_field(
         name="Hilfe zu /hug: ",
-        value="""Du kannst täglich einer Person **einen Hug oder Pat** geben. \n
-                    **Mit Premium** sind Hug/Pats **3x täglich** verwendbar.
-                    """,
+        value=text,
         inline=False
     )
     await interaction.response.send_message(embed=embed)
@@ -82,12 +84,12 @@ async def helpPat(interaction):
     embed = discord.Embed(
         color=0x005b96
     )
+    text = textwrap.dedent("Du kannst täglich einer Person **einen Hug oder Pat** geben. \n"
+                           " **Mit Premium** sind Hug/Pats **3x täglich** verwendbar.")
 
     embed.add_field(
         name="Hilfe zu /pat: ",
-        value="""Du kannst täglich einer Person **einen Hug oder Pat** geben. \n
-                    **Mit Premium** sind Hug/Pats **3x täglich** verwendbar.
-                    """,
+        value=text,
         inline=False
     )
     await interaction.response.send_message(embed=embed)
@@ -96,13 +98,14 @@ async def helpStats(interaction):
     embed = discord.Embed(
         color=0x005b96
     )
+    text = textwrap.dedent("Um deine **eigenen Stats** anzusehen, kannst du **/stats** eingeben. \n"
+                           "Der Befehl zeigt dir alle Komplimente (auch custom Nachrichten) an und wie oft du diese bekommen hast."
+                           "\n\n **Mit Premium** kannst du mit dem Befehl **/spark_ausblenden** custom Nachrichten ausblenden wenn du die SparkID angibst."
+                           "Die SparkID findest du bei deinen Stats neben der custom Nachricht in Klammern. ")
 
     embed.add_field(
         name="Hilfe zu /stats: ",
-        value="""Um deine **eigenen Stats** anzusehen, kannst du **/stats** eingeben. \n
-                    Der Befehl zeigt dir alle Komplimente (auch custom Nachrichten) an und wie oft du diese bekommen hast.
-                    \n\n **Mit Premium** kannst du mit dem Befehl **/spark_ausblenden** custom Nachrichten ausblenden wenn du die SparkID angibst.
-                    Die SparkID findest du bei deinen Stats neben der custom Nachricht in Klammern. """,
+        value=text,
         inline=False
     )
     await interaction.response.send_message(embed=embed)
@@ -112,19 +115,19 @@ async def helpReveal(interaction):
     embed = discord.Embed(
         color=0x005b96
     )
+    text = textwrap.dedent( "Wenn jemand einen Spark macht, kann optional am Ende noch reveal als True angegeben werden. \n"
+                            "Wenn True angegeben wurde, kannst du den Befehl **/reveal** mit der SparkID verwenden."
+                            "Du brauchst dazu einen Reveal (wie viele du hast, siehst du mit /profil).\n"
+                            "**Preise:**"
+                            "2 Reveals = 3€"
+                            "([3€ über Freunde&Familie senden und deine DiscordID oder Namen angeben](https://www.paypal.com/paypalme/KuroPixel?country.x=DE&locale.x=de_DE))"
+                            "1 Reveal = 20 Streakpunkte (WIP)"
+                            "1 Reveal = 30 Votepunkte (WIP)"
+                            "\n In Zukunft ist noch geplant, dass man den Sender anfragen kann, ob es revealed werden darf.")
 
     embed.add_field(
         name="Hilfe zu /reveal: ",
-        value="""   Wenn jemand einen Spark macht, kann optional am Ende noch reveal als True angegeben werden. \n
-                    Wenn True angegeben wurde, kannst du den Befehl **/reveal** mit der SparkID verwenden.
-                    Du brauchst dazu einen Reveal (wie viele du hast, siehst du mit /profil).\n
-                    **Preise:**
-                    2 Reveals = 3€
-                    ([3€ über Freunde&Familie senden und deine DiscordID oder Namen angeben](https://www.paypal.com/paypalme/KuroPixel?country.x=DE&locale.x=de_DE))
-                    1 Reveal = 20 Streakpunkte (WIP)
-                    1 Reveal = 30 Votepunkte (WIP)
-                    \n In Zukunft ist noch geplant, dass man den Sender anfragen kann, ob es revealed werden darf.
-                    """,
+        value=text,
         inline=False
     )
     await interaction.response.send_message(embed=embed)
@@ -134,15 +137,32 @@ async def helpAdmin(interaction):
     embed = discord.Embed(
          color=0x005b96
     )
+    text = textwrap.dedent("Um einen Channel festzulegen, in dem der Bot verwendet werden darf,"
+                            "kannst du den Befehl **!setSparkChannel** in dem gewünschten Kanal eingeben."
+                            "Es werden Administrator Berechtigungen dafür benötigt."
+                            "Wenn kein Channel festgelegt wurde, funktioniert der Bot überall.\n\n"
+                            "Wenn der Server Premium hat, kann zusätzlich noch **!setNewsletterChannel** "
+                            "verwendet werden, um vom Bot alle Update Infos zu bekommen.")
 
     embed.add_field(
         name="Hilfe zur Einrichtung vom Bot: ",
-        value="""   Um einen Channel festzulegen, in dem der Bot verwendet werden darf,
-                    kannst du den Befehl **!setSparkChannel** in dem gewünschten Kanal eingeben.
-                    Es werden Administrator Berechtigungen dafür benötigt.
-                    Wenn kein Channel festgelegt wurde, funktioniert der Bot überall.\n\n
-                    Wenn der Server Premium hat, kann zusätzlich noch **!setNewsletterChannel** 
-                    verwendet werden, um vom Bot alle Update Infos zu bekommen.""",
+        value=text,
+        inline=False
+    )
+    await interaction.response.send_message(embed=embed)
+
+
+async def helpVote(interaction):
+    embed = discord.Embed(
+        color=0x005b96
+    )
+    text = textwrap.dedent("Um an VotePunkte zu kommen, kannst du alle 12 Stunden einmal Voten.\n"
+                           "Wichtig dabei ist, dass du nach dem Voten nocheinmal /vote eingeben musst, um deinen Votepunkt zu erhalten."
+                           "Mit diesen Punkten kannst du aktuell noch nichts machen, bald aber Premium und Reveals kaufen.")
+
+    embed.add_field(
+        name="Hilfe zu /vote: ",
+        value=text,
         inline=False
     )
     await interaction.response.send_message(embed=embed)
