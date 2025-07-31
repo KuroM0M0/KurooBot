@@ -17,8 +17,8 @@ async def SparkCheck(cooldown, SparkUses, Premium, date, interaction):
 
 
 async def sendSparkDM(targetID, interaction):
-    #BotID = 1306244838504665169
-    BotID = 1310744379228426290#TestbotID
+    BotID = 1306244838504665169
+    #BotID = 1310744379228426290#TestbotID
 
     channel = interaction.channel
 
