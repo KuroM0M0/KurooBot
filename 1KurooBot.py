@@ -403,10 +403,12 @@ async def help(interaction: discord.Interaction, command: str = None):
         await helpReveal(interaction)
     elif command == "admin":
         await helpAdmin(interaction)
+    elif command == "vote":
+        await helpVote(interaction)
 
 @help.autocomplete("command")
 async def helpAutocomplete(interaction: discord.Interaction, current: str):
-    befehle = ["spark", "stats", "hug", "pat", "settings", "streak", "reveal", "admin"]
+    befehle = ["admin", "spark", "stats", "hug", "pat", "settings", "streak", "reveal", "vote"]
     return [
         app_commands.Choice(name=b, value=b)
         for b in befehle
