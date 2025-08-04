@@ -1112,6 +1112,8 @@ def getBirthday(connection, userID):
                                 WHERE UserID = ?''',
                                 (userID,))
             result = cursor.fetchone()
+            if result is None:
+                return 0
             return result[0]
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von Birthday: {e}")
@@ -1428,5 +1430,112 @@ def getVoteTimestamp(connection, userID):
             return result[0]
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von VoteTimestamp: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+        
+
+
+
+def getReveals(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ID, Timestamp, Compliment
+                                FROM Logs
+                                WHERE TargetID = ? AND Reveal = 1 AND isRevealed = 0 AND Typ = 'Compliment' ''',
+                                (userID,))
+            result = cursor.fetchall()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Reveals: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getRevealsCustom(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ID, Timestamp, Compliment
+                                FROM Logs
+                                WHERE TargetID = ? AND Reveal = 1 AND isRevealed = 0 AND Typ = 'Custom' ''',
+                                (userID,))
+            result = cursor.fetchall()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Reveals: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setIsRevealed(connection, SparkID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Logs
+                                SET isRevealed = 1
+                                WHERE ID = ?''',
+                                (SparkID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Reveal: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getIsRevealed(connection, SparkID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT isRevealed
+                                FROM Logs
+                                WHERE ID = ?''',
+                                (SparkID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Reveal: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getRevealedSparks(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ID, Timestamp, Compliment, UserName
+                                FROM Logs
+                                WHERE TargetID = ? AND isRevealed = 1 AND Typ = 'Compliment' ''',
+                                (userID,))
+            result = cursor.fetchall()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von RevealedSparks: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getRevealedSparksCustom(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ID, Timestamp, Compliment, UserName
+                                FROM Logs
+                                WHERE TargetID = ? AND isRevealed = 1 AND Typ = 'Custom' ''',
+                                (userID,))
+            result = cursor.fetchall()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von RevealedSparks: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
