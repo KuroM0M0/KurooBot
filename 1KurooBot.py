@@ -22,6 +22,7 @@ from newsletter import NewsletterModal
 from disableCustomSpark import disableCustomSparkModal
 from stats import *
 from vote import *
+from reveal import RevealMainView, RevealCustomView, revealEmbed
 import sqlite3
 
 intents = discord.Intents.default()
@@ -126,7 +127,7 @@ async def setNewsletterChannel(ctx):
 
 @bot.tree.command(name="spark", description="Mache einer Person ein anonymes Kompliment")
 @app_commands.describe(person="Wähle eine Person aus", kompliment="Wähle ein Kompliment aus der Liste")
-async def spark(interaction: discord.Interaction, person: discord.Member, kompliment: str, reveal: bool = None):
+async def spark(interaction: discord.Interaction, person: discord.Member, kompliment: str, reveal: bool):
     await interaction.response.defer(ephemeral=True)
     userID = str(interaction.user.id)
     userName = interaction.user.display_name
@@ -383,7 +384,7 @@ async def help(interaction: discord.Interaction, command: str = None):
 
         embed.add_field(
             name="ℹ️ Befehle: ",
-            value="\n".join(cmdDescription),
+            value=cmdDescription,
             inline=False
         )
         await interaction.response.send_message(embed=embed)
@@ -425,12 +426,12 @@ async def settings(interaction: discord.Interaction):
     premium = getPremium(connection, userID)
 
     settingStuff(userID)
-    await interaction.followup.send(embed=settingStuff(userID), ephemeral=True)
+    await interaction.followup.send(embed=settingStuff(userID), ephemeral=True) #TODO in einer Nachricht abschicken
     if premium == True:
         await interaction.followup.send(view=PremiumSettings(), ephemeral=True)
         return
     else:
-        await interaction.followup.send(view=Settings(), ephemeral=True)
+        await interaction.followup.send(view=Settings(), ephemeral=True) #TODO Premiumbuttons trotzdem anzeigen, aber ausgegraut
         await interaction.followup.send("Folgende Settings sind nur für Premium Nutzer einstellbar: \nStatsPrivate \nSparkDM \nNewsletter \nHug/Pat DM", ephemeral=True)
         return
 
@@ -503,6 +504,7 @@ async def vote(interaction: discord.Interaction):
     now = datetime.now()
     Vote = await checkVote(userID)
     LastVote = getVoteTimestamp(connection, userID)
+    votePoints = getVotePoints(connection, userID)
 
     if LastVote:
         lastVoteDt = datetime.fromisoformat(LastVote)
@@ -513,16 +515,17 @@ async def vote(interaction: discord.Interaction):
         if now - lastVoteDt >= timedelta(hours=VoteCooldown):
             setVotePoints(connection, userID)
             setVoteTimestamp(connection, userID, now.isoformat())
+            votePoints = getVotePoints(connection, userID)
             await interaction.response.send_message(
-                "✅ Danke für deinen Vote! Du hast einen VotePunkt erhalten. ❤️", 
+                f"✅ Danke für deinen Vote! Du hast einen VotePunkt erhalten. ❤️\n Du hast nun {votePoints} Punkte.", 
                 ephemeral=True)
         else:
             await interaction.response.send_message(
-                "⚠️ Du kannst nur alle 12 Stunden einmal Voten!",
+                f"⚠️ Du kannst nur alle 12 Stunden einmal Voten! \n Du hast gerade {votePoints} Punkte.", #Du kannst in {VoteCooldown - (now - lastVoteDt).seconds // 60}h wieder voten.
                 ephemeral=True)
     else:
         await interaction.response.send_message(
-            "ℹ️ Du hast noch nicht gevotet. Bitte stimme hier ab: https://top.gg/bot/1306244838504665169/vote",
+            f"ℹ️ Du hast noch nicht gevotet. Bitte stimme hier ab: https://top.gg/bot/1306244838504665169/vote \n Deine aktuellen Punkte: {votePoints}",
             ephemeral=True)
 
 
@@ -584,6 +587,7 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
     privacy = getProfilPrivateSetting(connection, userID)
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
+    Birthday = getBirthday(connection, userID)
 
     CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
@@ -594,7 +598,7 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
     embed.set_thumbnail(url=user.display_avatar.url)
     embed.add_field(name="🗓️Beigetreten am", value=user.joined_at.strftime("%d.%m.%Y"), inline=True)
 
-    if getBirthday(connection, userID) is not None:
+    if Birthday is not None and Birthday != 0:
         embed.add_field(name="🎂Geburtstag", value=getBirthday(connection, userID), inline=True)
 
     if Premium == True:
@@ -618,29 +622,77 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
 
 
 @bot.tree.command(name="reveal", description="Lasse dir anzeigen von wem ein Spark gesendet wurde!")
-async def reveal(interaction: discord.Interaction, sparkid: int):
+async def reveal(interaction: discord.Interaction, sparkid: int = None):
     await interaction.response.defer(ephemeral=True)
     userID = str(interaction.user.id)
     revealUses = getRevealUses(connection, userID)
+    reveals = getReveals(connection, userID) #noch nicht revealed
+    customReveals = getRevealsCustom(connection, userID) #noch nicht revealede custom sparks
+    revealed = getRevealedSparks(connection, userID) #schon revealed
+    revealedCustom = getRevealedSparksCustom(connection, userID)
+    if sparkid is not None:
+        isRevealed = getIsRevealed(connection, sparkid)
+        if revealUses < 1:
+            await interaction.followup.send("Du hast keine Reveals mehr. Um dir neue zu holen, gib '/help reveal' ein.", ephemeral=True)
+            return
 
-    if revealUses < 1:
-        await interaction.followup.send("Du hast keine Reveals mehr. Um dir neue zu holen, gib '/help reveal' ein.", ephemeral=True)
-        return
-    
-    if userID != getSparkTargetID(connection, sparkid):
-        await interaction.followup.send("Du kannst nur Sparks revealen, die du selbst erhalten hast!", ephemeral=True)
-        return
+        if userID != getSparkTargetID(connection, sparkid):
+            await interaction.followup.send("Du kannst nur Sparks revealen, die du selbst erhalten hast!", ephemeral=True)
+            return
 
-    result = getSparkReveal(connection, sparkid)
-    if result is None:
-        await interaction.followup.send("Dieser Spark existiert nicht oder der Sender möchte Anonym bleiben.", ephemeral=True)
-        return
+        result = getSparkReveal(connection, sparkid)
+        if result is None:
+            await interaction.followup.send("Dieser Spark existiert nicht oder der Sender möchte Anonym bleiben.", ephemeral=True)
+            return
+        elif isRevealed == True:
+            await interaction.followup.send(f"Dieser Spark wurde bereits von dir aufgedeckt!", ephemeral=True)
+            return
+        else:
+            await interaction.followup.send(f"Dieser Spark wurde von {result} gesendet.", ephemeral=True)
+            setRevealUses(connection, userID, revealUses - 1)
+            setIsRevealed(connection, sparkid)
     else:
-        await interaction.followup.send(f"Dieser Spark wurde von {result} gesendet.", ephemeral=True)
-        setRevealUses(connection, userID, revealUses - 1)
+        description_lines = []
+        if not reveals and not customReveals:
+            embed = discord.Embed(
+                title="✨ Revealbare Sparks:",
+                description="Du hast aktuell keine revealbaren Sparks.",
+                color=0x00ff00)
+            
+        else:
+            if revealed or revealedCustom:
+                description_lines.append("**Bereits revealed:**")
+            if revealed:
+                description_lines.extend(revealEmbed(revealed))
+
+            # 2️⃣ Noch nicht revealed Sparks
+            if reveals:
+                if description_lines:
+                    description_lines.append("")  # Leerzeile zur Trennung
+                description_lines.append("**Noch revealbar:**")
+                for spark_id, timestamp, compliment in reveals:
+                    try:
+                        dt = datetime.fromisoformat(timestamp)
+                        unix_ts = int(dt.timestamp())
+                    except ValueError:
+                        unix_ts = 0
+                    line = f"{compliment} — <t:{unix_ts}:R> — ID `{spark_id}`"
+                    description_lines.append(line)
+
+            # Falls gar nichts vorhanden ist
+            if not description_lines:
+                description_lines.append("Du hast aktuell keine revealbaren Sparks.")
+
+            # Embed erstellen
+            embed = discord.Embed(
+                title="✨ Revealbare Sparks:",
+                description="\n".join(description_lines),
+                color=0x005b96
+            )
+        await interaction.followup.send(embed=embed, view=RevealMainView(reveals, revealed, customReveals, revealedCustom), ephemeral=True)
 
         
 
 
-#bot.run('MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8')
-bot.run('MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg') #richtiger Bot
+bot.run('MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8')
+#bot.run('MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg') #richtiger Bot
