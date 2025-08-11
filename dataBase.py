@@ -82,7 +82,6 @@ def checkHugPatCooldown(connection, user_id, cooldown_duration):
                                 WHERE UserID = ?''', 
                                 (user_id,))
             result = cursor.fetchone()
-            print(result)
             if result[0] == '0' or result[0] is None:
                 return True
             else:
@@ -937,9 +936,27 @@ def getNewsletterSubs(connection):
             result = cursor.fetchall()
             if result is None:
                 return 0
-            return result[0]
+            return result
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von NewsletterSubscriber: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getNewsletterChannel(connection):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ChannelNewsletterID
+                                FROM Server
+                                WHERE ChannelNewsletterID IS NOT NULL''',
+                                )
+            result = cursor.fetchall()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von NewsletterServer: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
 
