@@ -131,7 +131,7 @@ async def helpAdmin(interaction):
                             "kannst du den Befehl **!setSparkChannel** in dem gewünschten Kanal eingeben."
                             "Es werden Administrator Berechtigungen dafür benötigt."
                             "Wenn kein Channel festgelegt wurde, funktioniert der Bot überall.\n\n"
-                            "Wenn der Server Premium hat, kann zusätzlich noch **!setNewsletterChannel** "
+                            "Es kann zusätzlich noch **!setNewsletterChannel** "
                             "verwendet werden, um vom Bot alle Update Infos zu bekommen.")
     embed.add_field(
         name="Hilfe zur Einrichtung vom Bot: ",
