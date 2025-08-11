@@ -32,6 +32,8 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 KuroID = 308660164137844736
 cooldownDuration = 24
 VoteCooldown = 12 #in Stunden
+BotToken = "MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8"
+#BotToken = "MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg" #richtiger Bot
 
 connection = createConnection()
 
@@ -67,61 +69,18 @@ async def on_ready():
         print(f'- {guild.name} (ID: {guild.id})')
     bot.loop.create_task(setBotActivity())
 
+async def loadCommands():
+    await bot.load_extension("commands.AdminCommands")
+    print("AdminCommands geladen ✅")
+    await bot.load_extension("commands.KuroCommands")
+    print("KuroCommands geladen ✅")
+    await bot.load_extension("commands.SecretCommands")
+    print("SecretCommands geladen ✅")
 
+async def main():
+    await loadCommands()
+    await bot.start(BotToken)
 
-
-@bot.command(name="PremiumAktivieren")
-async def PremiumAktivieren(ctx, member: discord.Member):
-    targetID = member.id
-    userID = ctx.author.id
-    if userID == KuroID:
-        await ctx.send(f"{member} hat nun Premium!")
-        setPremium(connection, datetime.now().isoformat(), targetID)
-    else:
-        await ctx.send("Du bist nicht berechtigt dies zu tun!")
-
-@bot.command(name="PremiumDeaktivieren")
-async def PremiumDeaktivieren(ctx, member: discord.Member):
-    targetID = member.id
-    userID = ctx.author.id
-    if userID == KuroID:
-        await ctx.send(f"{member} hat nun kein Premium mehr!")
-        resetPremium(connection, targetID)
-    else:
-        await ctx.send("Du bist nicht berechtigt dies zu tun!")
-
-@bot.command(name="setReveals")
-async def setReveals(ctx, member: discord.Member, uses: int):
-    targetID = member.id
-    userID = ctx.author.id
-    if userID == KuroID:
-        await ctx.send(f"{member} hat nun {uses} Reveals!")
-        setRevealUses(connection, targetID, uses)
-    else:
-        await ctx.send("Du bist nicht berechtigt dies zu tun!")
-
-@bot.command(name="setSparkChannel")
-@commands.has_permissions(administrator=True)
-async def setSparkChannel(ctx):
-    channel = ctx.channel
-    serverID = ctx.guild.id
-    CheckServerExists(connection, serverID)
-    await ctx.send(f"{channel} ist nun der Spark Channel!")
-    setChannelSparkID(connection, serverID, channel.id)
-
-@setSparkChannel.error
-async def setSparkChannel_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
-
-@bot.command(name="setNewsletterChannel")
-@commands.has_permissions(administrator=True)
-async def setNewsletterChannel(ctx):
-    channel = ctx.channel
-    serverID = ctx.guild.id
-    CheckServerExists(connection, serverID)
-    await ctx.send(f"{channel} ist nun der Newsletter Channel!")
-    setChannelNewsletterID(connection, serverID, channel.id)
 
 
 
@@ -693,6 +652,4 @@ async def reveal(interaction: discord.Interaction, sparkid: int = None):
 
         
 
-
-bot.run('MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8')
-#bot.run('MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg') #richtiger Bot
+asyncio.run(main())
