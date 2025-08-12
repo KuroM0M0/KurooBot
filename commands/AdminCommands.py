@@ -7,9 +7,6 @@ from Methoden import *
 connection = createConnection()
 
 class AdminCommands(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
     @commands.command(name="setSparkChannel")
     @commands.has_permissions(administrator=True)
     async def setSparkChannel(self, ctx):
@@ -45,3 +42,4 @@ class AdminCommands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(AdminCommands(bot))
+    print("AdminCommands geladen ✅")

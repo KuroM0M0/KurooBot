@@ -28,3 +28,4 @@ class SecretCommands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(SecretCommands(bot))
+    print("SecretCommands geladen ✅")
