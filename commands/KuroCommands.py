@@ -50,6 +50,26 @@ class KuroCommands(commands.Cog):
         else:
             await ctx.send("Du bist nicht berechtigt dies zu tun!")
 
+    @commands.command(name="insertItem")
+    async def insertItem(self, ctx, Name, Beschreibung, Preis, PreisTyp, ItemURL):
+        userID = ctx.author.id
+        if userID == KuroID:
+            insertItem(connection, Name, Beschreibung, Preis, PreisTyp, ItemURL)
+            await ctx.send(f"{Name} wurde hinzugefügt!")
+        else:
+            await ctx.send("Du bist nicht berechtigt dies zu tun!")
+
+
+    @commands.command(name="setVotePunkte")
+    async def setVotePunkte(self, ctx, member: discord.Member, Punkte: int):
+        targetID = member.id
+        userID = ctx.author.id
+        if userID == KuroID:
+            await ctx.send(f"{member} hat nun {Punkte} Vote Punkte!")
+            setVotePunkte(connection, targetID, Punkte)
+        else:
+            await ctx.send("Du bist nicht berechtigt dies zu tun!")
+
 
 async def setup(bot):
     await bot.add_cog(KuroCommands(bot))

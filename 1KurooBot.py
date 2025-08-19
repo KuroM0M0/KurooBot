@@ -23,6 +23,7 @@ from disableCustomSpark import disableCustomSparkModal
 from stats import *
 from vote import *
 from reveal import RevealMainView, RevealCustomView, revealEmbed
+from Shop.shop import ShopButtons, ShopEmbed
 import sqlite3
 
 intents = discord.Intents.default()
@@ -71,11 +72,9 @@ async def on_ready():
 
 async def loadCommands():
     await bot.load_extension("commands.AdminCommands")
-    print("AdminCommands geladen ✅")
-    await bot.load_extension("commands.KuroCommands")
-    print("KuroCommands geladen ✅")
     await bot.load_extension("commands.SecretCommands")
-    print("SecretCommands geladen ✅")
+    await bot.load_extension("commands.KuroCommands")
+    
 
 async def main():
     await loadCommands()
@@ -535,6 +534,7 @@ async def sparkDisable(interaction: discord.Interaction):
 
 @bot.tree.command(name="profil", description="Zeige dein Profil an")
 async def profil(interaction: discord.Interaction, user: discord.User = None):
+    await interaction.response.defer()
     if user is None:
         user = interaction.user
 
@@ -572,12 +572,14 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
 
     if privacy == True:
         if userID != interaction.user.id:
-            await interaction.response.send_message("Diese Person hat ihr Profil auf Privat.", ephemeral=True)
+            await interaction.followup.send("Diese Person hat ihr Profil auf Privat.", ephemeral=True)
             return
         else:
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
     else:
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
+
+
 
 
 @bot.tree.command(name="reveal", description="Lasse dir anzeigen von wem ein Spark gesendet wurde!")
@@ -650,6 +652,15 @@ async def reveal(interaction: discord.Interaction, sparkid: int = None):
             )
         await interaction.followup.send(embed=embed, view=RevealMainView(reveals, revealed, customReveals, revealedCustom), ephemeral=True)
 
-        
+
+@bot.tree.command(name="shop", description="Hier kannst du dir unterschiedliche Items mit Vote/Streakpunkten kaufen :)")
+async def shop(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    embed = ShopEmbed(1, interaction, connection)
+    try:
+        await interaction.followup.send(embed=embed, view=ShopButtons(connection))
+    except Exception as e:
+        print("Fehler beim Senden des Shops:", e)
+        await interaction.followup.send(f"Fehler: {e}", ephemeral=True)
 
 asyncio.run(main())
