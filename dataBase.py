@@ -1746,7 +1746,7 @@ def updateUserInventar(connection, userID, itemID, count):
 
 
 
-def getUserInventar(connection, userID):
+def getUserItems(connection, userID):
     if connection is not None:
         cursor = connection.cursor()
         try:

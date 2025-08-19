@@ -663,4 +663,16 @@ async def shop(interaction: discord.Interaction):
         print("Fehler beim Senden des Shops:", e)
         await interaction.followup.send(f"Fehler: {e}", ephemeral=True)
 
+
+
+@bot.tree.command(name="inventar", description="Hier siehst du welche Items du hast c:")
+async def inventar(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    embed = InventarEmbed(1, interaction, connection)
+    try:
+        await interaction.followup.send(embed=embed, view=InventarButtons(connection))
+    except Exception as e:
+        print("Fehler beim Senden des Inventars:", e)
+        await interaction.followup.send(f"Fehler: {e}", ephemeral=True)
+
 asyncio.run(main())
