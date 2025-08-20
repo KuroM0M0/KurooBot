@@ -675,4 +675,11 @@ async def inventar(interaction: discord.Interaction):
         print("Fehler beim Senden des Inventars:", e)
         await interaction.followup.send(f"Fehler: {e}", ephemeral=True)
 
+
+
+@bot.tree.command(name="setbirthday", description="Setze deinen Geburtstag")
+async def setBirthday(interaction: discord.Interaction):
+    await interaction.response.defer()
+    await interaction.followup.send(view=setBirthdayView) # TODO: View erstellen 
+
 asyncio.run(main())
