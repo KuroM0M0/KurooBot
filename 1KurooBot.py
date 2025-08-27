@@ -17,13 +17,15 @@ from Methoden import *
 from help import *
 from hug import sendHug, sendPat
 from spark import *
-from settings import Settings, PremiumSettings, settingStuff
+from user.settings import Settings, PremiumSettings, settingStuff
 from newsletter import NewsletterModal
 from disableCustomSpark import disableCustomSparkModal
 from stats import *
-from vote import *
+from user.vote import *
 from reveal import RevealMainView, RevealCustomView, revealEmbed
 from Shop.shop import ShopButtons, ShopEmbed
+from Shop.inventar import *
+from user.birthday import *
 import sqlite3
 
 intents = discord.Intents.default()
@@ -113,8 +115,8 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         resetSparkUses(connection, userID)
         SparkUses = 0
 
-    await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
-    await CheckTarget(targetID, userID, interaction)
+    #await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
+    #await CheckTarget(targetID, userID, interaction)
     await CheckSparkChannel(connection, guildID, channelID, interaction)
 
     if SparkUses < 1:
@@ -679,7 +681,11 @@ async def inventar(interaction: discord.Interaction):
 
 @bot.tree.command(name="setbirthday", description="Setze deinen Geburtstag")
 async def setBirthday(interaction: discord.Interaction):
-    await interaction.response.defer()
-    await interaction.followup.send(view=setBirthdayView) # TODO: View erstellen 
+    #await interaction.response.defer()
+    view = BirthdayView(owner_id=interaction.user.id, save_callback=save_cb, default_month=None)
+
+    embed = view.build_embed()
+    sent = await interaction.original_response()
+    view.message = sent
 
 asyncio.run(main())
