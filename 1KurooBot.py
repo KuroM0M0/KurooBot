@@ -84,6 +84,14 @@ async def main():
 
 
 
+def replace_colon_emojis(bot: discord.Client, text: str) -> str:
+    """Ersetzt :name: durch <:name:id> wenn der Bot den Emoji kennt."""
+    for guild in bot.guilds:
+        for emoji in guild.emojis:
+            code = f":{emoji.name}:"
+            if code in text:
+                text = text.replace(code, str(emoji))
+    return text
 
 @bot.tree.command(name="spark", description="Mache einer Person ein anonymes Kompliment")
 @app_commands.describe(person="Wähle eine Person aus", kompliment="Wähle ein Kompliment aus der Liste")
@@ -172,10 +180,13 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
             updateCooldown(connection, userID)
             updateSparkUses(connection, userID)
 
+            parsed_text = replace_colon_emojis(interaction.client, kompliment)
+
             embed = discord.Embed(
                 title=f"{targetName} hier eine Persönliche Nachricht für dich!",
-                description=f"{person.mention} ||| {kompliment}",
-                color=0x008B00)
+                description=f"{person.mention} ||| {parsed_text}",
+                color=0x008B00
+            )
         
             embed.set_footer(text=f"Spark ID: {getSparkID(connection)}")
             await channel.send(embed=embed)
