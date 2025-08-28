@@ -6,7 +6,6 @@ from discord.ext import commands
 from discord import app_commands
 from discord import ButtonStyle, ui
 from datetime import datetime, timedelta
-from collections import Counter
 #für Paypal
 #import requests
 #from flask import Flask, request, jsonify
@@ -26,7 +25,6 @@ from reveal import RevealMainView, RevealCustomView, revealEmbed
 from Shop.shop import ShopButtons, ShopEmbed
 from Shop.inventar import *
 from user.birthday import *
-import sqlite3
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -84,14 +82,6 @@ async def main():
 
 
 
-def replace_colon_emojis(bot: discord.Client, text: str) -> str:
-    """Ersetzt :name: durch <:name:id> wenn der Bot den Emoji kennt."""
-    for guild in bot.guilds:
-        for emoji in guild.emojis:
-            code = f":{emoji.name}:"
-            if code in text:
-                text = text.replace(code, str(emoji))
-    return text
 
 @bot.tree.command(name="spark", description="Mache einer Person ein anonymes Kompliment")
 @app_commands.describe(person="Wähle eine Person aus", kompliment="Wähle ein Kompliment aus der Liste")
@@ -180,11 +170,11 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
             updateCooldown(connection, userID)
             updateSparkUses(connection, userID)
 
-            parsed_text = replace_colon_emojis(interaction.client, kompliment)
+            kompliment = replaceEmotes(kompliment, interaction.guild, interaction.client)
 
             embed = discord.Embed(
                 title=f"{targetName} hier eine Persönliche Nachricht für dich!",
-                description=f"{person.mention} ||| {parsed_text}",
+                description=f"{person.mention} ||| {kompliment}",
                 color=0x008B00
             )
         
@@ -234,7 +224,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
 
     if person == None:
         StatsPrivateSelf = getStatsPrivate(connection, userID)
-        embedSelf = await StatsSelf(user)
+        embedSelf = await StatsSelf(user, interaction)
         if embedSelf == None:
             await interaction.followup.send(f"{user.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
             return
@@ -249,7 +239,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
     else:
         targetID = str(person.id)
         targetName = person.display_name
-        embedTarget = await StatsTarget(person)
+        embedTarget = await StatsTarget(person, interaction)
         StatsPrivateTarget = getStatsPrivate(connection, targetID)
         if embedTarget == None:
             await interaction.delete_original_response()
@@ -259,7 +249,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
             await interaction.followup.send(f"{targetName} hat seine Stats versteckt.", ephemeral=True)
             return
         else:
-            await StatsTarget(person)
+            await StatsTarget(person, interaction)
             await interaction.delete_original_response()
             await channel.send(embed=embedTarget)
             return

@@ -1,15 +1,16 @@
 from dataBase import *
+from Methoden import replaceEmotes
 import discord
 
 connection = createConnection()
 
-async def StatsSelf(user):
+async def StatsSelf(user, interaction):
     complimentStats = getCompliments(connection, user.id)
 
     if complimentStats["Normal"] or complimentStats["Custom"]:
         def format_stats(data, show_x=True):
             return "\n".join([
-                f"{compliment} {count}{'x' if show_x else ''}"
+                replaceEmotes(f"{compliment} {count}{'x' if show_x else ''}", interaction.guild, interaction.client)
                 for compliment, count in data.items()
             ])
 
@@ -42,13 +43,13 @@ async def StatsSelf(user):
     return None
 
 
-async def StatsTarget(target):
+async def StatsTarget(target, interaction):
     complimentStats = getCompliments(connection, target.id)
 
     if complimentStats["Normal"] or complimentStats["Custom"]:
         def format_stats(data, show_x=True):
             return "\n".join([
-                f"{compliment} {count}{'x' if show_x else ''}"
+                replaceEmotes(f"{compliment} {count}{'x' if show_x else ''}", interaction.guild, interaction.client)
                 for compliment, count in data.items()
             ])
 

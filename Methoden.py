@@ -1,4 +1,7 @@
 from dataBase import *;
+from typing import Optional
+import re
+import discord
 
 
 def UserExists(connection, userID): 
@@ -77,3 +80,31 @@ def CheckServerExists(connection, serverID):
     exists = checkServerExists(connection, serverID)
     if exists == False:
         insertServer(connection, serverID)
+
+
+
+
+# :name: – aber NICHT, wenn davor "<" steht und NICHT, wenn direkt danach ":<digits>>" kommt
+_COLON_NAME = re.compile(r"(?<!<):([A-Za-z0-9_]+):(?!\d+>)")
+
+def replaceEmotes(text: str, guild: discord.Guild, bot: discord.Client) -> str:
+    def pick_emoji(name: str) -> Optional[str]:
+        # 1) bevorzugt Emojis aus dem aktuellen Server
+        for e in getattr(guild, "emojis", []):
+            if e.name == name:
+                return str(e)
+        # 2) sonst irgendein anderer Server, in dem der Bot ist
+        for g in bot.guilds:
+            if guild and g.id == guild.id:
+                continue
+            for e in g.emojis:
+                if e.name == name:
+                    return str(e)
+        return None
+
+    def repl(m: re.Match) -> str:
+        name = m.group(1)
+        chosen = pick_emoji(name)
+        return chosen if chosen is not None else m.group(0)
+
+    return _COLON_NAME.sub(repl, text)
