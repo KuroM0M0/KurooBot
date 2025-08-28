@@ -6,7 +6,6 @@ from discord.ext import commands
 from discord import app_commands
 from discord import ButtonStyle, ui
 from datetime import datetime, timedelta
-from collections import Counter
 #für Paypal
 #import requests
 #from flask import Flask, request, jsonify
@@ -212,10 +211,13 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
             updateCooldown(connection, userID)
             updateSparkUses(connection, userID)
 
+            kompliment = replaceEmotes(kompliment, interaction.guild, interaction.client)
+
             embed = discord.Embed(
                 title=f"{targetName} hier eine Persönliche Nachricht für dich!",
                 description=f"{person.mention} ||| {kompliment}",
-                color=0x008B00)
+                color=0x008B00
+            )
         
             embed.set_footer(text=f"Spark ID: {getSparkID(connection)}")
             await channel.send(embed=embed)
@@ -263,7 +265,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
 
     if person == None:
         StatsPrivateSelf = getStatsPrivate(connection, userID)
-        embedSelf = await StatsSelf(user)
+        embedSelf = await StatsSelf(user, interaction)
         if embedSelf == None:
             await interaction.followup.send(f"{user.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
             return
@@ -278,7 +280,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
     else:
         targetID = str(person.id)
         targetName = person.display_name
-        embedTarget = await StatsTarget(person)
+        embedTarget = await StatsTarget(person, interaction)
         StatsPrivateTarget = getStatsPrivate(connection, targetID)
         if embedTarget == None:
             await interaction.delete_original_response()
@@ -288,7 +290,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
             await interaction.followup.send(f"{targetName} hat seine Stats versteckt.", ephemeral=True)
             return
         else:
-            await StatsTarget(person)
+            await StatsTarget(person, interaction)
             await interaction.delete_original_response()
             await channel.send(embed=embedTarget)
             return
