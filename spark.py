@@ -1,5 +1,13 @@
 import discord
+from discord import ButtonStyle, ui
 from dataBase import *
+
+class WhatIsSparkButton(ui.View):
+    @ui.button(label="Was ist ein Spark?", style=discord.ButtonStyle.secondary)
+    async def what_is_spark(self, interaction: discord.Interaction, button: ui.Button):
+        await interaction.response.send_message("Ein Spark ist ein **anonymes** Kompliment an dich. Jeder kann **täglich einmal** einer Person einen Spark senden. Wenn du mehr zu bestimmten Befehlen wissen willst, kannst du einfach **/help (CommandName)** eingeben c:", ephemeral=True)
+
+            
 async def SparkCheck(cooldown, SparkUses, Premium, date, interaction):
 
     """prüft ob User heute schon gesparkt hat"""
@@ -17,8 +25,8 @@ async def SparkCheck(cooldown, SparkUses, Premium, date, interaction):
 
 
 async def sendSparkDM(targetID, interaction):
-    BotID = 1306244838504665169
-    #BotID = 1310744379228426290#TestbotID
+    #BotID = 1306244838504665169
+    BotID = 1310744379228426290#TestbotID
 
     channel = interaction.channel
 
@@ -26,7 +34,7 @@ async def sendSparkDM(targetID, interaction):
     if messages and messages[0].author.id == BotID:
         target = await interaction.client.fetch_user(int(targetID))
         embed = discord.Embed(title="Du wurdest gesparkt!", description=messages[0].jump_url, color=0x005b96)
-        await target.send(embed=embed)
+        await target.send(embed=embed, view=WhatIsSparkButton())
 
 
 

@@ -1746,7 +1746,7 @@ def updateUserInventar(connection, userID, itemID, count):
 
 
 
-def getUserInventar(connection, userID):
+def getUserItems(connection, userID):
     if connection is not None:
         cursor = connection.cursor()
         try:
@@ -1760,6 +1760,24 @@ def getUserInventar(connection, userID):
             print(f"Fehler beim selecten von Inventar: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getUserItemCount(connection, userID, itemID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Anzahl
+                                FROM Inventar
+                                WHERE UserID = ?
+                                AND ItemID = ?''',
+                                (userID, itemID))
+            result = cursor.fetchone()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Inventar: {e}")
+    
 
 
 

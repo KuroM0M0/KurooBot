@@ -11,7 +11,7 @@ class ShopButtons(ui.View):
 
         # Shop und aktuelles Item laden
         shop = Shop(connection)
-        items = shop.get_items_on_page(site, per_page=1)
+        items = shop.getItemsOnPage(site, per_page=1)
         self.current_item = items[0] if items else None
 
         if site <= 1:
@@ -60,14 +60,12 @@ class ShopButtons(ui.View):
             updateStreakPunkte(self.connection, userID, -item.price)
 
         #Item hinzufügen
-        print(item.itemID)
-        print(userInventar)
         if item.itemID in userInventar:
             updateUserInventar(self.connection, userID, item.itemID, 1)
-            userInventar = getUserInventar(self.connection, userID)
+            userInventar = getUserItems(self.connection, userID)
         else:
             addItemToInventar(self.connection, userID, item.itemID, 1)
-            userInventar = getUserInventar(self.connection, userID)
+            userInventar = getUserItems(self.connection, userID)
 
         await interaction.response.send_message(
             f"✅ Du hast **{item.name}** für {item.price} {item.priceType.value} gekauft!",
@@ -91,7 +89,7 @@ def ShopEmbed(site: int, interaction: discord.Interaction, connection) -> discor
     embed.add_field(name="", value="", inline=True)
     embed.add_field(name="--------", value="", inline=False)
 
-    items = shop.get_items_on_page(site, per_page=1)
+    items = shop.getItemsOnPage(site, per_page=1)
     if items:  # falls es ein Item gibt
         item = items[0]
         priceEmote = item.priceType.value
@@ -115,9 +113,9 @@ class Shop:
     def __init__(self, connection):
         self.connection = connection
         # Items aus der DB laden
-        self.items = self.load_items()
+        self.items = self.loadItems()
 
-    def load_items(self) -> list[ShopItem]:
+    def loadItems(self) -> list[ShopItem]:
         rows = getAllShopItems(self.connection)
 
         items = []
@@ -136,13 +134,13 @@ class Shop:
                 print("Fehler beim Laden von Item:", row, e)
         return items
 
-    def get_item_by_id(self, item_id: int) -> ShopItem | None:
+    def getItemByID(self, itemId: int) -> ShopItem | None:
         for item in self.items:
-            if item.itemID == item_id:
+            if item.itemID == itemId:
                 return item
         return None
 
-    def get_items_on_page(self, page: int, per_page: int = 1) -> list[ShopItem]:
+    def getItemsOnPage(self, page: int, per_page: int = 1) -> list[ShopItem]:
         start = (page - 1) * per_page
         end = start + per_page
         return self.items[start:end]

@@ -6,7 +6,6 @@ from discord.ext import commands
 from discord import app_commands
 from discord import ButtonStyle, ui
 from datetime import datetime, timedelta
-from collections import Counter
 #für Paypal
 #import requests
 #from flask import Flask, request, jsonify
@@ -17,14 +16,15 @@ from Methoden import *
 from help import *
 from hug import sendHug, sendPat
 from spark import *
-from settings import Settings, PremiumSettings, settingStuff
+from user.settings import Settings, PremiumSettings, settingStuff
 from newsletter import NewsletterModal
 from disableCustomSpark import disableCustomSparkModal
 from stats import *
-from vote import *
+from user.vote import *
 from reveal import RevealMainView, RevealCustomView, revealEmbed
 from Shop.shop import ShopButtons, ShopEmbed
-import sqlite3
+from Shop.inventar import *
+from user.birthday import *
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -113,8 +113,8 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         resetSparkUses(connection, userID)
         SparkUses = 0
 
-    await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
-    await CheckTarget(targetID, userID, interaction)
+    #await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
+    #await CheckTarget(targetID, userID, interaction)
     await CheckSparkChannel(connection, guildID, channelID, interaction)
 
     if SparkUses < 1:
@@ -170,10 +170,13 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
             updateCooldown(connection, userID)
             updateSparkUses(connection, userID)
 
+            kompliment = replaceEmotes(kompliment, interaction.guild, interaction.client)
+
             embed = discord.Embed(
                 title=f"{targetName} hier eine Persönliche Nachricht für dich!",
                 description=f"{person.mention} ||| {kompliment}",
-                color=0x008B00)
+                color=0x008B00
+            )
         
             embed.set_footer(text=f"Spark ID: {getSparkID(connection)}")
             await channel.send(embed=embed)
@@ -221,7 +224,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
 
     if person == None:
         StatsPrivateSelf = getStatsPrivate(connection, userID)
-        embedSelf = await StatsSelf(user)
+        embedSelf = await StatsSelf(user, interaction)
         if embedSelf == None:
             await interaction.followup.send(f"{user.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
             return
@@ -236,7 +239,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
     else:
         targetID = str(person.id)
         targetName = person.display_name
-        embedTarget = await StatsTarget(person)
+        embedTarget = await StatsTarget(person, interaction)
         StatsPrivateTarget = getStatsPrivate(connection, targetID)
         if embedTarget == None:
             await interaction.delete_original_response()
@@ -246,7 +249,7 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
             await interaction.followup.send(f"{targetName} hat seine Stats versteckt.", ephemeral=True)
             return
         else:
-            await StatsTarget(person)
+            await StatsTarget(person, interaction)
             await interaction.delete_original_response()
             await channel.send(embed=embedTarget)
             return
@@ -662,5 +665,28 @@ async def shop(interaction: discord.Interaction):
     except Exception as e:
         print("Fehler beim Senden des Shops:", e)
         await interaction.followup.send(f"Fehler: {e}", ephemeral=True)
+
+
+
+@bot.tree.command(name="inventar", description="Hier siehst du welche Items du hast c:")
+async def inventar(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    embed = InventarEmbed(1, interaction, connection)
+    try:
+        await interaction.followup.send(embed=embed, view=InventarButtons(connection))
+    except Exception as e:
+        print("Fehler beim Senden des Inventars:", e)
+        await interaction.followup.send(f"Fehler: {e}", ephemeral=True)
+
+
+
+@bot.tree.command(name="setbirthday", description="Setze deinen Geburtstag")
+async def setBirthday(interaction: discord.Interaction):
+    #await interaction.response.defer()
+    view = BirthdayView(owner_id=interaction.user.id, save_callback=save_cb, default_month=None)
+
+    embed = view.build_embed()
+    sent = await interaction.original_response()
+    view.message = sent
 
 asyncio.run(main())

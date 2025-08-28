@@ -1,6 +1,7 @@
 import discord
 from datetime import datetime
 from discord import ButtonStyle, ui
+from Methoden import replaceEmotes
 
 class RevealMainView(ui.View):
     def __init__(self, normal_reveals, revealed, custom_reveals, revealed_custom):
@@ -13,7 +14,7 @@ class RevealMainView(ui.View):
     @ui.button(label="Custom Sparks", style=discord.ButtonStyle.primary)
     async def show_custom(self, interaction: discord.Interaction, button: ui.Button):
         # Wechsel zu Custom-View
-        custom_embed = buildCustomEmbed(self.custom_reveals, self.revealed_custom)
+        custom_embed = buildCustomEmbed(self.custom_reveals, self.revealed_custom, interaction)
         await interaction.response.edit_message(embed=custom_embed, view=RevealCustomView(
             self.normal_reveals, self.revealed, self.custom_reveals, self.revealed_custom
         ))
@@ -30,7 +31,7 @@ class RevealCustomView(ui.View):
     @ui.button(label="Zurück", style=discord.ButtonStyle.secondary)
     async def back_to_main(self, interaction: discord.Interaction, button: ui.Button):
         # Wechsel zurück zur Haupt-View
-        main_embed = buildMainEmbed(self.normal_reveals, self.revealed)
+        main_embed = buildMainEmbed(self.normal_reveals, self.revealed, interaction)
         await interaction.response.edit_message(embed=main_embed, view=RevealMainView(
             self.normal_reveals, self.revealed, self.custom_reveals, self.revealed_custom
         ))
@@ -52,12 +53,13 @@ def revealEmbed(revealed):
     return descLines
 
 
-def buildMainEmbed(reveals, revealed):
+def buildMainEmbed(reveals, revealed, interaction):
     description_lines = []
 
     if revealed:
         description_lines.append("**Bereits revealed:**")
         for spark_id, timestamp, compliment, sender_name in revealed:
+            compliment = replaceEmotes(compliment, interaction.guild, interaction.client)
             try:
                 dt = datetime.fromisoformat(timestamp)
                 unix_ts = int(dt.timestamp())
@@ -70,6 +72,7 @@ def buildMainEmbed(reveals, revealed):
             description_lines.append("")  # Leerzeile
         description_lines.append("**Noch revealbar:**")
         for spark_id, timestamp, compliment in reveals:
+            compliment = replaceEmotes(compliment, interaction.guild, interaction.client)
             try:
                 dt = datetime.fromisoformat(timestamp)
                 unix_ts = int(dt.timestamp())
@@ -87,12 +90,13 @@ def buildMainEmbed(reveals, revealed):
     )
 
 
-def buildCustomEmbed(custom_reveals, revealed_custom):
+def buildCustomEmbed(custom_reveals, revealed_custom, interaction):
     description_lines = []
 
     if revealed_custom:
         description_lines.append("**Bereits revealed (Custom):**")
         for spark_id, timestamp, compliment, sender_name in revealed_custom:
+            compliment = replaceEmotes(compliment, interaction.guild, interaction.client)
             try:
                 dt = datetime.fromisoformat(timestamp)
                 unix_ts = int(dt.timestamp())
@@ -106,6 +110,7 @@ def buildCustomEmbed(custom_reveals, revealed_custom):
             description_lines.append("")  # Leerzeile
         description_lines.append("**Noch revealbar (Custom):**")
         for spark_id, timestamp, compliment in custom_reveals:
+            compliment = replaceEmotes(compliment, interaction.guild, interaction.client)
             try:
                 dt = datetime.fromisoformat(timestamp)
                 unix_ts = int(dt.timestamp())
