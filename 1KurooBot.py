@@ -681,11 +681,23 @@ async def inventar(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="setbirthday", description="Setze deinen Geburtstag")
-async def setBirthday(interaction: discord.Interaction):
-    #await interaction.response.defer()
+async def Birthday(interaction: discord.Interaction):
+    # Wrapper für save_callback, da die View nur (user_id, year, month, day) übergibt
+    def save_cb(user_id: int, year: Optional[int], month: int, day: int):
+        # Wenn Jahr optional, erstelle ein date-Objekt
+        if year:
+            date_str = f"{day:02d}--{month:02d}-{year:04d}"
+        else:
+            # nur Monat+Tag: setze Jahr auf 2000 oder NULL-String (je nach DB)
+            date_str = f"{day:02d}-{month:02d}-2000"  # Beispiel: Jahres-Platzhalter
+        setBirthday(connection, user_id, date_str)
+
+    # View erstellen, owner_id = wer den Command aufruft
     view = BirthdayView(owner_id=interaction.user.id, save_callback=save_cb, default_month=None)
 
     embed = view.build_embed()
+    # Nachricht senden
+    await interaction.response.send_message(embed=embed, view=view, ephemeral=False)
     sent = await interaction.original_response()
     view.message = sent
 

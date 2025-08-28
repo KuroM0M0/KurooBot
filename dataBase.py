@@ -1192,6 +1192,23 @@ def getBirthday(connection, userID):
 
 
 
+def setBirthday(connection, userID, date):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET Birthday = ?
+                                WHERE UserID = ?''',
+                                (date, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Birthday Setting: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
 def getSparkCount(connection, userID):
     """Gibt zurück wie oft der User gesparkt hat. (UserID)"""
     if connection is not None:

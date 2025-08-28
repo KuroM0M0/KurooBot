@@ -13,13 +13,15 @@ class BirthdayModal(discord.ui.Modal, title="Tag & optionales Jahr eingeben"):
         label="Tag (Zahl)",
         placeholder="1-31",
         required=True,
-        max_length=3
+        min_length=1,
+        max_length=2
     )
     year = discord.ui.TextInput(
         label="Jahr (optional)",
-        placeholder="z. B. 2004 — leer lassen, wenn du kein Jahr speichern möchtest",
+        placeholder="z. B. 2004 — wenn leer, wird 2000 genutzt",
         required=False,
-        max_length=6
+        min_length=4,
+        max_length=4
     )
 
     def __init__(self, parent_view: "BirthdayView"):
@@ -104,90 +106,85 @@ class MonthSelect(discord.ui.Select):
             discord.SelectOption(label=MONTHS[i], value=str(i+1))
             for i in range(12)
         ]
-        super().__init__(placeholder="Monat wählen...", min_values=1, max_values=1, options=options)
+        super().__init__(placeholder="Monat wählen...", min_values=1, max_values=1, options=options, row=0)
         self.parent_view = parent_view
         # set default
         self.default = [str(default_month)]
 
     async def callback(self, interaction: discord.Interaction):
         if interaction.user.id != self.parent_view.owner_id:
-            await interaction.response.send_message("Nur du kannst den Kalender steuern.", ephemeral=True)
+            await interaction.response.send_message(f"Nur <@{self.parent_view.owner_id}> kann den Kalender steuern.", ephemeral=True)
             return
         chosen = int(self.values[0])
         self.parent_view.selected_month = chosen
         # Update embed to reflect selection
         await interaction.response.edit_message(embed=self.parent_view.build_embed(), view=self.parent_view)
 
+
+
 class BirthdayView(discord.ui.View):
-    def __init__(self, owner_id: int, save_callback: Optional[Callable[[int, Optional[int], int, int], Awaitable]] = None, default_month: Optional[int] = None, timeout: float = 300):
+    def __init__(
+        self,
+        owner_id: int,
+        save_callback: Optional[Callable[[int, Optional[int], int, int], Awaitable]] = None,
+        default_month: Optional[int] = None,
+        timeout: float = 300
+    ):
         super().__init__(timeout=timeout)
         self.owner_id = owner_id
         self.save_callback = save_callback
         self.selected_month = default_month or datetime.utcnow().month
+        self.message: Optional[discord.Message] = None
 
-        # add MonthSelect
+        # MonthSelect hinzufügen
         self.add_item(MonthSelect(self, default_month=self.selected_month))
-
-        # Button: Modal öffnen
-        self.add_item(discord.ui.Button(label="Tag & Jahr eingeben", style=discord.ButtonStyle.primary, custom_id="enter_day_year"))
-        # Button: Abbrechen
-        self.add_item(discord.ui.Button(label="Abbrechen", style=discord.ButtonStyle.danger, custom_id="cancel"))
 
     def build_embed(self) -> discord.Embed:
         m = self.selected_month
-        emb = discord.Embed(title="Geburtstag setzen", description=f"Monat: **{MONTHS[m-1]}**\nWähle den Tag und optional das Jahr.", color=0x2b90d9)
-        emb.add_field(name="Hinweis", value="Klicke auf **Tag & Jahr eingeben**, um ein kleines Formular zu öffnen.", inline=False)
+        emb = discord.Embed(
+            title="Geburtstag setzen",
+            description=f"Monat: **{MONTHS[m-1]}**\nWähle den Tag und optional das Jahr.",
+            color=0x2b90d9
+        )
+        emb.add_field(
+            name="Hinweis",
+            value="Klicke auf **Tag & Jahr eingeben**, um ein Formular zu öffnen.",
+            inline=False
+        )
         return emb
 
-    # Buttons: wir nutzen die default callbacks durch custom_id checks
-    @discord.ui.button(label="Leer", style=discord.ButtonStyle.secondary, row=1, disabled=True)
-    async def placeholder(self, interaction: discord.Interaction, button: discord.ui.Button):
-        pass  # wird nie angezeigt — nur Platzhalter, falls du Reihen brauchst
-
-    # override interaction check for the custom buttons
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        # allow only owner to interact with the view (except maybe admins — an option you can add)
+        """Nur der Besitzer darf mit der View interagieren"""
         if interaction.user.id != self.owner_id:
-            await interaction.response.send_message("Nur du kannst diese Auswahl bedienen.", ephemeral=True)
+            await interaction.response.send_message(
+                f"Nur <@{self.owner_id}> kann den Kalender steuern.",
+                ephemeral=True
+            )
             return False
         return True
 
+    @discord.ui.button(label="Tag & Jahr eingeben", style=discord.ButtonStyle.primary, row=1)
+    async def enter_day_year_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Öffnet das Modal für Tag + optionales Jahr"""
+        await interaction.response.send_modal(BirthdayModal(self))
+
+    @discord.ui.button(label="Abbrechen", style=discord.ButtonStyle.danger, row=1)
+    async def cancel_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Bricht die Eingabe ab"""
+        await interaction.response.edit_message(content="❌ Abgebrochen.", embed=None, view=None)
+
     async def on_timeout(self):
-        # disable components on timeout
+        """View deaktivieren, wenn Zeit abläuft"""
         for child in self.children:
             child.disabled = True
         try:
-            if hasattr(self, "message") and self.message:
+            if self.message:
                 await self.message.edit(view=self)
         except Exception:
             pass
 
     async def on_error(self, error: Exception, item, interaction: discord.Interaction):
-        # einfache Fehlerbehandlung — du kannst hier Logging einbauen
         try:
             await interaction.response.send_message(f"Ein Fehler ist aufgetreten: {error}", ephemeral=True)
         except Exception:
             pass
-
-    # low-level listener für Button clicks (da wir custom_id für Buttons gesetzt haben)
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.owner_id:
-            await interaction.response.send_message("Nur du kannst diese View bedienen.", ephemeral=True)
-            return False
-        return True
-
-    async def _handle_custom_id(self, interaction: discord.Interaction):
-        # Buttons reagieren anhand custom_id
-        cid = interaction.data.get("custom_id")
-        if cid == "enter_day_year":
-            modal = BirthdayModal(self)
-            await interaction.response.send_modal(modal)
-        elif cid == "cancel":
-            await interaction.response.edit_message(content="Abgebrochen.", embed=None, view=None)
-
-    # hook für alle Interaktionen (Selects Buttons)
-    async def on_interaction(self, interaction: discord.Interaction):
-        # sometimes discord.py doesn't route custom button callbacks — handle them here
-        if interaction.data.get("component_type") == 2:  # button
-            await self._handle_custom_id(interaction)
-        # select callbacks are handled by MonthSelect.callback automatically
