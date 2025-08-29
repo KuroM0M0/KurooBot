@@ -73,48 +73,98 @@ def updateCooldown(connection, user_id):
 
 
 
-def checkHugPatCooldown(connection, user_id, cooldown_duration):
-    if connection is not None:
-        cursor = connection.cursor()
-        try:
-            cursor.execute('''  SELECT HugPatTimestamp 
-                                FROM User 
-                                WHERE UserID = ?''', 
-                                (user_id,))
-            result = cursor.fetchone()
-            print(result)
-            if result[0] == '0' or result[0] is None:
-                return True
-            else:
-                last_used = datetime.fromisoformat(result[0])
-                now = datetime.now()
-                if now < last_used + timedelta(hours=cooldown_duration):
-                    return False
-            return True
-        except sqlite3.Error as e:
-            print(f"Fehler beim Überprüfen des HugPat-Cooldowns: {e}")
-            return False
-    else:
+def checkHugPatCooldown(connection, user_id, cooldown_duration_hours):
+    """Gibt True zurück, wenn der Befehl erlaubt ist, sonst False."""
+    if connection is None:
         print("Keine Datenbankverbindung verfügbar.")
+        return False
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute('SELECT HugPatTimestamp FROM User WHERE UserID = ?', (user_id,))
+        row = cursor.fetchone()
+        if not row:
+            return True
+
+        ts = row[0]
+        if ts in (None, '0', ''):
+            return True
+
+        try:
+            last_used = datetime.fromisoformat(ts)
+        except ValueError:
+            # Falls das Format unerwartet ist, erlauben (oder alternativ: blockieren)
+            print(f"Ungültiges Timestamp-Format in DB: {ts}")
+            return True
+
+        now = datetime.now()
+        if now < last_used + timedelta(hours=cooldown_duration_hours):
+            return False
+        return True
+    except sqlite3.Error as e:
+        print(f"Fehler beim Überprüfen des HugPat-Cooldowns: {e}")
         return False
 
 
 
 
 def updateHugPatCooldown(connection, userID):
-    if connection is not None:
-        cursor = connection.cursor()
-        try:
-            now = datetime.now().date().isoformat()
-            cursor.execute('''  UPDATE User
-                                SET HugPatTimestamp = ?
-                                WHERE UserID = ?''',
-                                (now, userID))
-            connection.commit()
-        except sqlite3.Error as e:
-            print(f"Fehler beim Aktualisieren des HugPat-Cooldowns: {e}")
-    else:
+    """Speichert den kompletten Timestamp (Datum+Uhrzeit) als ISO-String."""
+    if connection is None:
         print("Keine Datenbankverbindung verfügbar.")
+        return
+
+    cursor = connection.cursor()
+    try:
+        now_iso = datetime.now().isoformat()
+        cursor.execute('UPDATE User SET HugPatTimestamp = ? WHERE UserID = ?', (now_iso, userID))
+        connection.commit()
+    except sqlite3.Error as e:
+        print(f"Fehler beim Aktualisieren des HugPat-Cooldowns: {e}")
+
+
+
+
+def getNextHugAvailable(connection, userID, cooldownHours):
+    """Gibt die nächste Verfügbarkeits-<datetime> zurück, falls Cooldown noch aktiv ist.
+    Ansonsten None.
+
+    Args:
+        userID: str
+        cooldownHours: int/float
+
+    Returns:
+        datetime | None
+    """
+    if connection is None:
+        return None
+
+    try:
+        cur = connection.cursor()
+        cur.execute('SELECT HugPatTimestamp FROM User WHERE UserID = ?', (userID,))
+        row = cur.fetchone()
+        if not row:
+            return None
+
+        ts = row[0]
+        if ts in (None, '0', ''):
+            return None
+
+        try:
+            last_used = datetime.fromisoformat(ts)
+        except Exception:
+            # Ungültiges Format -> treat as no cooldown
+            return None
+
+        next_available = last_used + timedelta(hours=float(cooldownHours))
+        now = datetime.now()
+        if now < next_available:
+            return next_available
+        return None
+
+    except sqlite3.Error as e:
+        print(f"DB-Fehler in getNextHugAvailable: {e}")
+        return None
 
 
 
@@ -148,7 +198,8 @@ def updateHugPatUses(connection, user_id, max_uses):
                                 SET HugPatUses = ?, HugPatLastReset = ? 
                                 WHERE UserID = ?''',
                                 (count, last_reset, user_id))
-            return True #TODO Testen ob jetzt mehr als einmal hug genutzt werden kann
+            connection.commit()
+            return True 
         else:
             # Falls der User nicht existiert, neu anlegen
             count = 1
@@ -937,9 +988,27 @@ def getNewsletterSubs(connection):
             result = cursor.fetchall()
             if result is None:
                 return 0
-            return result[0]
+            return result
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von NewsletterSubscriber: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getNewsletterChannel(connection):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ChannelNewsletterID
+                                FROM Server
+                                WHERE ChannelNewsletterID IS NOT NULL''',
+                                )
+            result = cursor.fetchall()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von NewsletterServer: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
 
@@ -957,7 +1026,7 @@ def getCustomSparkSetting(connection, userID):
                                 (userID,))
             result = cursor.fetchone()
             if result is None:
-                return 0
+                return True
             return result[0]
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von CustomSpark: {e}")
@@ -1117,6 +1186,23 @@ def getBirthday(connection, userID):
             return result[0]
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von Birthday: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setBirthday(connection, userID, date):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET Birthday = ?
+                                WHERE UserID = ?''',
+                                (date, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Birthday Setting: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
 
@@ -1537,5 +1623,193 @@ def getRevealedSparksCustom(connection, userID):
             return result
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von RevealedSparks: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def insertItem(connection, Name, Beschreibung, Preis, PreisTyp, ItemURL):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  INSERT INTO Item (Name, Beschreibung, Preis, PreisTyp, ItemURL)
+                                VALUES (?, ?, ?, ?, ?)''',
+                                (Name, Beschreibung, Preis, PreisTyp, ItemURL))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim inserten von Items: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getItemPrice(connection, Name):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Preis, PreisTyp
+                                FROM Item
+                                WHERE Name = ?''',
+                                (Name,))
+            result = cursor.fetchone()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Items: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getAllShopItems(connection):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT *
+                                FROM Item''')
+            result = cursor.fetchall()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Items: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setVotePunkte(connection, targetID, Punkte):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET VotePunkte = ?
+                                WHERE UserID = ?''',
+                                (Punkte, targetID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Punkte: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def updateVotePunkte(connection, targetID, Punkte):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET VotePunkte = VotePunkte + ?
+                                WHERE UserID = ?''',
+                                (Punkte, targetID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der VotePunkte: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def updateStreakPunkte(connection, targetID, Punkte):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET StreakPoints = StreakPoints + ?
+                                WHERE UserID = ?''',
+                                (Punkte, targetID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der StreakPunkte: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+def addItemToInventar(connection, userID, itemID, count):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  INSERT INTO Inventar (UserID, ItemID, Anzahl)
+                                VALUES (?, ?, ?)''',
+                                (userID, itemID, count))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim inserten von UserItems: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def updateUserInventar(connection, userID, itemID, count):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Inventar
+                                SET Anzahl = Anzahl + ?
+                                WHERE UserID = ?
+                                AND ItemID = ?''',
+                                (count, userID, itemID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Punkte: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getUserItems(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ItemID, Anzahl
+                                FROM Inventar
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchall()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Inventar: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getUserItemCount(connection, userID, itemID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT Anzahl
+                                FROM Inventar
+                                WHERE UserID = ?
+                                AND ItemID = ?''',
+                                (userID, itemID))
+            result = cursor.fetchone()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Inventar: {e}")
+    
+
+
+
+
+def getUserItemID(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ItemID
+                                FROM Inventar
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchall()
+            return [row[0] for row in result]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Inventar: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
