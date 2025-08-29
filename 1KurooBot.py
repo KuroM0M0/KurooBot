@@ -74,6 +74,7 @@ async def PremiumAktivieren(ctx, member: discord.Member):
     targetID = member.id
     userID = ctx.author.id
     if userID == KuroID:
+        UserExists(connection, userID)
         await ctx.send(f"{member} hat nun Premium!")
         setPremium(connection, datetime.now().isoformat(), targetID)
     else:
@@ -94,6 +95,7 @@ async def setReveals(ctx, member: discord.Member, uses: int):
     targetID = member.id
     userID = ctx.author.id
     if userID == KuroID:
+        UserExists(connection, userID)
         await ctx.send(f"{member} hat nun {uses} Reveals!")
         setRevealUses(connection, targetID, uses)
     else:
@@ -121,6 +123,11 @@ async def setNewsletterChannel(ctx):
     CheckServerExists(connection, serverID)
     await ctx.send(f"{channel} ist nun der Newsletter Channel!")
     setChannelNewsletterID(connection, serverID, channel.id)
+
+@setNewsletterChannel.error
+async def setNewsletterChannel_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
 
 
 

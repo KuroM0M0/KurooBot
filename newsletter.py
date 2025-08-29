@@ -3,7 +3,6 @@ import asyncio
 from dataBase import *
 
 connection = createConnection()
-UpdateChannelID = 1310607294026747954
 
 
 
@@ -13,8 +12,6 @@ class NewsletterModal(discord.ui.Modal, title="Newsletter"):
     fazit = discord.ui.TextInput(label="Zusammenfassung", style=discord.TextStyle.paragraph, required=False)
 
     async def on_submit(self, interaction: discord.Interaction):
-        channel = interaction.client.get_channel(UpdateChannelID)
-
         embed = discord.Embed(title=f"Update {self.updateNr.value}", color=discord.Color.green())
         embed.add_field(name="Was ist neu?", value=self.new.value, inline=False)
         if self.fazit.value:
@@ -23,9 +20,15 @@ class NewsletterModal(discord.ui.Modal, title="Newsletter"):
             embed.add_field(name="Zusammenfassung", value=self.fazit.value, inline=False)
 
         NewsletterSubs = getNewsletterSubs(connection)
+        NewsletterChannel = getNewsletterChannel(connection)
         for subscriber in NewsletterSubs:
-            Subs = await interaction.client.fetch_user(subscriber)
+            userID = subscriber[0]
+            Subs = await interaction.client.fetch_user(userID)
             await Subs.send(embed=embed)
             await asyncio.sleep(1)
 
-        await channel.send(embed=embed)
+        for server in NewsletterChannel:
+            channelID = server[0]
+            newsChannel = interaction.client.get_channel(int(channelID))
+            await newsChannel.send(embed=embed)
+            await asyncio.sleep(1)
