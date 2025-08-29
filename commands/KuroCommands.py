@@ -14,6 +14,7 @@ class KuroCommands(commands.Cog):
         targetID = member.id
         userID = ctx.author.id
         if userID == KuroID:
+            UserExists(connection, targetID)
             await ctx.send(f"{member} hat nun Premium!")
             setPremium(connection, datetime.now().isoformat(), targetID)
         else:
@@ -34,6 +35,7 @@ class KuroCommands(commands.Cog):
         targetID = member.id
         userID = ctx.author.id
         if userID == KuroID:
+            UserExists(connection, targetID)
             await ctx.send(f"{member} hat nun {uses} Reveals!")
             setRevealUses(connection, targetID, uses)
         else:
@@ -44,6 +46,7 @@ class KuroCommands(commands.Cog):
         targetID = member.id
         userID = ctx.author.id
         if userID == KuroID:
+            UserExists(connection, targetID)
             uses = getRevealUses(connection, targetID) + addUses
             await ctx.send(f"{member} hat nun {uses} Reveals!")
             setRevealUses(connection, targetID, uses)
