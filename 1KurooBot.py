@@ -671,7 +671,7 @@ async def shop(interaction: discord.Interaction):
 @bot.tree.command(name="inventar", description="Hier siehst du welche Items du hast c:")
 async def inventar(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
-    embed = InventarEmbed(1, interaction, connection)
+    embed = InventarEmbed(interaction, connection)
     try:
         await interaction.followup.send(embed=embed, view=InventarButtons(connection))
     except Exception as e:

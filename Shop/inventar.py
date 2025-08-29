@@ -17,19 +17,28 @@ class Inventory():
 
 def InventarEmbed(interaction, connection):
     shop = Shop(connection)
-    items = shop.loadItems()
     userID = interaction.user.id
     userItems = getUserItems(connection, userID)
-    
 
-    for item in userItems:
-        itemID = item[0]
-        count = item[1]
-
-#TODO: Tedten obs geht
-    
     embed = discord.Embed(title="Inventar", color=0x005b96)
-    for item in items:
-        inventory = Inventory(item, getUserItemCount(connection, userID, item.itemID))
-        embed.add_field(name=item.name, value=inventory, inline=False)
+
+    if not userItems:
+        embed.add_field(name="Leer", value="Du hast noch keine Items.", inline=False)
+        return embed
+
+    for itemID, count in userItems:
+        shopItem = shop.getItemByID(itemID)
+        if shopItem:
+            embed.add_field(
+                name=shopItem.name,
+                value=f"Anzahl: {count}",
+                inline=False
+            )
+        else:
+            embed.add_field(
+                name=f"Unbekanntes Item (ID: {itemID})",
+                value=f"Anzahl: {count}",
+                inline=False
+            )
+
     return embed

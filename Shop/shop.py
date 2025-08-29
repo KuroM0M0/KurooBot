@@ -1,25 +1,29 @@
 import discord
+import math
 from discord import ButtonStyle, ui
 from dataBase import *
 from Shop.items import ShopItem, PriceType
 
+
+
 class ShopButtons(ui.View):
-    def __init__(self, connection, site: int = 1):
+    def __init__(self, connection, site: int = 1, per_page: int = 1):
         super().__init__()
         self.site = site
         self.connection = connection
+        self.per_page = per_page
 
-        # Shop und aktuelles Item laden
         shop = Shop(connection)
-        items = shop.getItemsOnPage(site, per_page=1)
+        items = shop.getItemsOnPage(site, per_page=per_page)
         self.current_item = items[0] if items else None
+
+        # Maximal mögliche Seiten berechnen
+        max_pages = math.ceil(len(shop.items) / per_page)
 
         if site <= 1:
             self.back.disabled = True
-
-        if site >= 3:
+        if site >= max_pages:
             self.next.disabled = True
-
 
     @ui.button(label="<", style=discord.ButtonStyle.secondary, row=0)
     async def back(self, interaction: discord.Interaction, button: ui.Button):
