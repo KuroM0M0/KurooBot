@@ -1026,7 +1026,7 @@ def getCustomSparkSetting(connection, userID):
                                 (userID,))
             result = cursor.fetchone()
             if result is None:
-                return 0
+                return True
             return result[0]
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von CustomSpark: {e}")
