@@ -9,11 +9,6 @@ class InventarButtons(ui.View):
         super().__init__(timeout=None)
         self.connection = connection
 
-@dataclass
-class Inventory():
-    item: object
-    count: int
-
 
 def InventarEmbed(interaction, connection):
     shop = Shop(connection)
@@ -21,6 +16,7 @@ def InventarEmbed(interaction, connection):
     userItems = getUserItems(connection, userID)
 
     embed = discord.Embed(title="Inventar", color=0x005b96)
+    embed.set_footer(text="Nutze /use (item) um dein Item zu verwenden!")
 
     if not userItems:
         embed.add_field(name="Leer", value="Du hast noch keine Items.", inline=False)

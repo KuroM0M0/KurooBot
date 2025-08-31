@@ -66,10 +66,10 @@ class ShopButtons(ui.View):
         #Item hinzufügen
         if item.itemID in userInventar:
             updateUserInventar(self.connection, userID, item.itemID, 1)
-            userInventar = getUserItems(self.connection, userID)
+            userInventar = getUserItemID(self.connection, userID)
         else:
             addItemToInventar(self.connection, userID, item.itemID, 1)
-            userInventar = getUserItems(self.connection, userID)
+            userInventar = getUserItemID(self.connection, userID)
 
         await interaction.response.send_message(
             f"✅ Du hast **{item.name}** für {item.price} {item.priceType.value} gekauft!",
