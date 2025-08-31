@@ -2,6 +2,7 @@ import json
 import discord
 import asyncio
 import random
+import logging
 from discord.ext import commands
 from discord import app_commands
 from discord import ButtonStyle, ui
@@ -22,7 +23,7 @@ from disableCustomSpark import disableCustomSparkModal
 from stats import *
 from user.vote import *
 from reveal import RevealMainView, RevealCustomView, revealEmbed
-from Shop.shop import ShopButtons, ShopEmbed
+from Shop.shop import ShopButtons, Shop, ShopEmbed
 from Shop.inventar import *
 from user.birthday import *
 
@@ -35,6 +36,8 @@ cooldownDuration = 24
 VoteCooldown = 12 #in Stunden
 BotToken = "MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8"
 #BotToken = "MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg" #richtiger Bot
+
+#logging.basicConfig(level=logging.DEBUG) #AKTIVIEREN FÜR LOGGING
 
 connection = createConnection()
 
@@ -203,6 +206,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
 async def kompliment_autocomplete(interaction: discord.Interaction, current: str):
     choices = []
     for compliment in compliments:
+        print(choices)
         choices.append(app_commands.Choice(name=compliment, value=compliment))
     return [choice for choice in choices if current.lower() in choice.name.lower()]
 
@@ -670,7 +674,7 @@ async def shop(interaction: discord.Interaction):
 
 @bot.tree.command(name="inventar", description="Hier siehst du welche Items du hast c:")
 async def inventar(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
+    await interaction.response.defer()
     embed = InventarEmbed(interaction, connection)
     try:
         await interaction.followup.send(embed=embed, view=InventarButtons(connection))
@@ -686,7 +690,7 @@ async def Birthday(interaction: discord.Interaction):
     def save_cb(user_id: int, year: Optional[int], month: int, day: int):
         # Wenn Jahr optional, erstelle ein date-Objekt
         if year:
-            date_str = f"{day:02d}--{month:02d}-{year:04d}"
+            date_str = f"{day:02d}-{month:02d}-{year:04d}"
         else:
             # nur Monat+Tag: setze Jahr auf 2000 oder NULL-String (je nach DB)
             date_str = f"{day:02d}-{month:02d}-2000"  # Beispiel: Jahres-Platzhalter
@@ -700,5 +704,37 @@ async def Birthday(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, view=view, ephemeral=False)
     sent = await interaction.original_response()
     view.message = sent
+
+
+@bot.tree.command(name="use", description="Nutze deine Items aus dem /Inventar")
+async def use(interaction: discord.Interaction, item: str):
+    await interaction.response.defer()
+    await interaction.followup.send("Test")
+    
+
+@use.autocomplete("item")
+async def itemName_autocomplete(interaction: discord.Interaction, current: str):
+    shop = Shop(connection)
+    itemIDs = getUserItemID(connection, interaction.user.id)
+    allItems = shop.loadItems()
+    print(allItems[0])
+    #print(itemIDs)
+    itemNameList = []
+    for item in allItems:
+        
+        if item.itemID in itemIDs:
+            itemNameList.append(item.name)
+
+    # Erstelle Choice-Objekte
+    choices = [
+        app_commands.Choice(name=name, value=name)
+        for name in itemNameList
+    ]
+
+    # Filtere die Choice-Objekte nach dem aktuellen Suchbegriff
+    return [
+        choice for choice in choices
+        if current.lower() in choice.name.lower()
+    ]
 
 asyncio.run(main())
