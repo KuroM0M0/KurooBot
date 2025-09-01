@@ -16,7 +16,7 @@ class KuroCommands(commands.Cog):
         if userID == KuroID:
             UserExists(connection, targetID)
             await ctx.send(f"{member} hat nun Premium!")
-            setPremium(connection, datetime.now().isoformat(), targetID)
+            setPremium(connection, targetID)
         else:
             await ctx.send("Du bist nicht berechtigt dies zu tun!")
 
@@ -70,6 +70,17 @@ class KuroCommands(commands.Cog):
         if userID == KuroID:
             await ctx.send(f"{member} hat nun {Punkte} Vote Punkte!")
             setVotePunkte(connection, targetID, Punkte)
+        else:
+            await ctx.send("Du bist nicht berechtigt dies zu tun!")
+
+
+    @commands.command(name="setStreakPunkte")
+    async def setStreakPunkte(self, ctx, member: discord.Member, Punkte: int):
+        targetID = member.id
+        userID = ctx.author.id
+        if userID == KuroID:
+            await ctx.send(f"{member} hat nun {Punkte} Vote Punkte!")
+            updateStreakPunkte(connection, targetID, Punkte)
         else:
             await ctx.send("Du bist nicht berechtigt dies zu tun!")
 

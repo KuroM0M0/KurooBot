@@ -23,6 +23,8 @@ def InventarEmbed(interaction, connection):
         return embed
 
     for itemID, count in userItems:
+        if count == 0:
+            continue
         shopItem = shop.getItemByID(itemID)
         if shopItem:
             embed.add_field(

@@ -16,19 +16,19 @@ class disableCustomSparkModal(discord.ui.Modal, title="Disable Custom Spark"):
 async def checkStatCanBeDisabled(SparkID, userID, interaction):
     disabledStat = getStatDisabled(connection, SparkID)
     if disabledStat is None:
-        await interaction.response.send_message("Gib eine gültige Zahl ein!", ephemeral=True)
+        await interaction.followup.send("Gib eine gültige Zahl ein!", ephemeral=True)
         return
     elif disabledStat[1] == userID and disabledStat[0] == 0:
         setStatDisabled(connection, SparkID, 1)
-        await interaction.response.send_message(f"Spark mit der ID {SparkID} wurde deaktiviert.", ephemeral=True)
+        await interaction.followup.send(f"Spark mit der ID {SparkID} wurde deaktiviert.", ephemeral=True)
         return
     elif disabledStat[1] == userID and disabledStat[0] == 1:
         setStatDisabled(connection, SparkID, 0)
-        await interaction.response.send_message(f"Spark mit der ID {SparkID} wurde aktiviert.", ephemeral=True)
+        await interaction.followup.send(f"Spark mit der ID {SparkID} wurde aktiviert.", ephemeral=True)
         return
     elif disabledStat[1] != userID:
-        await interaction.response.send_message("Du kannst nur deine eigenen Sparks deaktivieren.", ephemeral=True)
+        await interaction.followup.send("Du kannst nur deine eigenen Sparks deaktivieren.", ephemeral=True)
         return
     elif disabledStat[0] == 1:
-        await interaction.response.send_message("Dieser Spark ist bereits deaktiviert.", ephemeral=True)
+        await interaction.followup.send("Dieser Spark ist bereits deaktiviert.", ephemeral=True)
         return
