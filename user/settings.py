@@ -11,230 +11,151 @@ connection = createConnection()
 #link = link benötigt
 #premium = sku_id benötigt
 
-class Settings(ui.View):
-    @ui.button(label="StreakPrivate", style=discord.ButtonStyle.green)
-    async def StreakPrivate(self, interaction: discord.Interaction, button: ui.Button):
-        await interaction.response.defer(ephemeral=True)
-        userID = interaction.user.id
-        StreakPrivate = getStreakPrivate(connection, userID)
+class newSettings(discord.ui.View):
+    def __init__(self, premium: bool, userID: int):
+        super().__init__(timeout=60)
+        self.userID = userID
+        self.premium = premium
 
-        if StreakPrivate == True:
-            button.label = "Streak: Öffentlich🌐"
-            await interaction.edit_original_response(view=self)
-            setStreakPrivate(connection, userID, False)
+        # Daten laden
+        self.settingStuff(userID)
 
-        else:
-            button.label = "Streak: Privat🔒"
-            await interaction.edit_original_response(view=self)
-            setStreakPrivate(connection, userID, True)
+    # ---- Format-Helfer ----
+    @staticmethod
+    def format_privacy(val): 
+        return "Privat 🔒" if val == 1 else "Öffentlich 🌐"
 
-    @ui.button(label="Ghostping", style=discord.ButtonStyle.primary)
-    async def Ghostping(self, interaction: discord.Interaction, button: ui.Button):
-        userID = interaction.user.id
-        Ghostping = getGhostpingSetting(connection, userID)
+    @staticmethod
+    def format_toggle(val): 
+        return "Aktiv ✅" if val == 1 else "Deaktiv ❌"
 
-        if Ghostping == True:
-            button.label = "Ghostping: deaktiv❌"
-            await interaction.response.edit_message(view=self)
-            setGhostpingSetting(connection, userID, False)
+    # ---- Daten laden (normal) ----
+    def settingStuff(self, userID):
+        self.streakPrivate = self.format_privacy(getStreakPrivate(connection, userID))
+        self.statsPrivate = self.format_privacy(getStatsPrivate(connection, userID))
+        self.profilPrivate = self.format_privacy(getProfilPrivateSetting(connection, userID))
+        self.newsletter = self.format_toggle(getNewsletter(connection, userID))
+        self.sparkDM = self.format_toggle(getSparkDM(connection, userID))
+        self.ghostPing = self.format_toggle(getGhostpingSetting(connection, userID))
+        self.customSpark = self.format_toggle(getCustomSparkSetting(connection, userID))
 
-        else:
-            button.label = "Ghostping: aktiv✅"
-            await interaction.response.edit_message(view=self)
-            setGhostpingSetting(connection, userID, True)
+    def settingEmbed(self):
+        embed = discord.Embed(title="Einstellungen", color=0x005b96)
 
-    @ui.button(label="Profil", style=discord.ButtonStyle.primary)
-    async def Profil(self, interaction: discord.Interaction, button: ui.Button):
-        userID = interaction.user.id
-        Profil = getProfilPrivateSetting(connection, userID)
+        embed.add_field(
+            name="🔒 Privatsphären Einstellungen",
+            value=f">>> `Streak` → {self.streakPrivate}\n"
+                  f"`Profil` → {self.profilPrivate}",
+            inline=False
+        )
 
-        if Profil == True:
-            button.label = "Profil: Öffentlich🌐"
-            await interaction.response.edit_message(view=self)
-            setProfilPrivateSetting(connection, userID, False)
+        embed.add_field(
+            name="⚙️ Allgemeine Einstellungen",
+            value=f">>> `Ghostping` → {self.ghostPing}",
+            inline=False
+        )
 
-        else:
-            button.label = "Profil: Privat🔒"
-            await interaction.response.edit_message(view=self)
-            setProfilPrivateSetting(connection, userID, True)
+        embed.add_field(
+            name="💎 Premium Einstellungen",
+            value=f">>> `Newsletter` → {self.newsletter}\n"
+                  f"`SparkDM` → {self.sparkDM}\n"
+                  f"`Stats` → {self.statsPrivate}\n"
+                  f"`Custom Sparks` → {self.customSpark}",
+            inline=False
+        )
 
+        return embed
 
-
-class PremiumSettings(ui.View):
-    @ui.button(label="StreakPrivate", style=discord.ButtonStyle.primary)
-    async def StreakPrivate(self, interaction: discord.Interaction, button: ui.Button):
-        userID = interaction.user.id
-        StreakPrivate = getStreakPrivate(connection, userID)
-
-        if StreakPrivate == True:
-            button.label = "Streak: Öffentlich🌐"
-            await interaction.response.edit_message(view=self)
-            setStreakPrivate(connection, userID, False)
-            #await interaction.followup.send("Deine Streak ist jetzt wieder für alle sichtbar!", ephemeral=True)
-
-        else:
-            button.label = "Streak: Privat🔒"
-            await interaction.response.edit_message(view=self)
-            setStreakPrivate(connection, userID, True)
-            #await interaction.followup.send("Deine Streak ist nun nur für dich Sichtbar!", ephemeral=True)
-
-
-    @ui.button(label="StatsPrivate", style=discord.ButtonStyle.primary)
-    async def StatsPrivate(self, interaction: discord.Interaction, button: ui.Button):
-        userID = interaction.user.id
-        StatsPrivate = getStatsPrivate(connection, userID)
-
-        if StatsPrivate == True:
-            button.label = "Stats: Öffentlich🌐"
-            await interaction.response.edit_message(view=self)
-            setStatsPrivate(connection, userID, False)
-            #await interaction.response.send_message("Deine Stats sind jetzt wieder öffentlich sichtbar!", ephemeral=True)
-
-        else:
-            button.label = "Stats: Privat🔒"
-            await interaction.response.edit_message(view=self)
-            setStatsPrivate(connection, userID, True)
-            #await interaction.response.send_message("Deine Stats sind nun Privat!", ephemeral=True)
-
-
-    @ui.button(label="Newsletter", style=discord.ButtonStyle.green)
-    async def Newsletter(self, interaction: discord.Interaction, button: ui.Button):
-        userID = interaction.user.id
-        Newsletter = getNewsletter(connection, userID)
-
-        if Newsletter == True:
-            button.label = "Newsletter: deaktiv❌"
-            await interaction.response.edit_message(view=self)
-            setNewsletter(connection, userID, False)
-            #await interaction.response.send_message("Du erhältst nun keine Updates mehr in deinen DMs!", ephemeral=True)
-
-        else:
-            button.label = "Newsletter: aktiv✅"
-            await interaction.response.edit_message(view=self)
-            setNewsletter(connection, userID, True)
-            #await interaction.response.send_message("Du erhältst nun Updates in deine DMs!", ephemeral=True)
-
-    @ui.button(label="SparkDM", style=discord.ButtonStyle.primary)
-    async def SparkDM(self, interaction: discord.Interaction, button: ui.Button):
-        userID = interaction.user.id
-        SparkDM = getSparkDM(connection, userID)
-
-        if SparkDM == True:
-            button.label = "Sparks per DM: deaktiv❌"
-            await interaction.response.edit_message(view=self)
-            setSparkDM(connection, userID, False)
-            #await interaction.response.send_message("Du erhaltet nun keine private Nachricht mehr, wenn du gesparkt wurdest!", ephemeral=True)
-
-        else:
-            button.label = "Sparks per DM: aktiv✅"
-            await interaction.response.edit_message(view=self)
-            setSparkDM(connection, userID, True)
-            #await interaction.response.send_message("Du erhaltet nun private Nachrichten, wenn du gesparkt wurdest!", ephemeral=True)
-
-    @ui.button(label="CustomSparks", style=discord.ButtonStyle.primary)
-    async def CustomSparks(self, interaction: discord.Interaction, button: ui.Button):
-        userID = interaction.user.id
-        CustomSpark = getCustomSparkSetting(connection, userID)
-
-        if CustomSpark == True:
-            button.label = "Custom Sparks: deaktiv❌"
-            await interaction.response.edit_message(view=self)
-            setCustomSparkSetting(connection, userID, False)
-            #await interaction.response.send_message("Du erhaltet nun keine private Nachricht mehr, wenn du gesparkt wurdest!", ephemeral=True)
-
-        else:
-            button.label = "Custom Sparks: aktiv✅"
-            await interaction.response.edit_message(view=self)
-            setCustomSparkSetting(connection, userID, True)
-            #await interaction.response.send_message("Du erhaltet nun private Nachrichten, wenn du gesparkt wurdest!", ephemeral=True)
-
-    @ui.button(label="Ghostping", style=discord.ButtonStyle.primary)
-    async def Ghostping(self, interaction: discord.Interaction, button: ui.Button):
-        userID = interaction.user.id
-        Ghostping = getGhostpingSetting(connection, userID)
-
-        if Ghostping == True:
-            button.label = "Ghostping: deaktiv❌"
-            await interaction.response.edit_message(view=self)
-            setGhostpingSetting(connection, userID, False)
-
-        else:
-            button.label = "Ghostping: aktiv✅"
-            await interaction.response.edit_message(view=self)
-            setGhostpingSetting(connection, userID, True)
-
-    @ui.button(label="Profil", style=discord.ButtonStyle.primary)
-    async def Profil(self, interaction: discord.Interaction, button: ui.Button):
-        userID = interaction.user.id
-        Profil = getProfilPrivateSetting(connection, userID)
-
-        if Profil == True:
-            button.label = "Profil: Öffentlich🌐"
-            await interaction.response.edit_message(view=self)
-            setProfilPrivateSetting(connection, userID, False)
-
-        else:
-            button.label = "Profil: Privat🔒"
-            await interaction.response.edit_message(view=self)
-            setProfilPrivateSetting(connection, userID, True)
-
-
-def settingStuff(userID):
-    """Prüft ob User in der Datenbank Settings hat, wenn nicht wird er hinzugefügt"""
-    userHaveSettings = checkUserSetting(connection, userID)
+    # Premium-Embed (Platzhalter)
+    def settingEmbedPremium(self):
+        embed = discord.Embed(title="Einstellungen", color=0x005b96)
+        embed.add_field(
+            name="🔒 Privatsphären Einstellungen",
+            value=f">>> `Streak` → {self.streakPrivate}\n"
+                f"`Profil` → {self.profilPrivate}\n"
+                f"`Stats` → {self.statsPrivate}",
+            inline=False
+        )
+        embed.add_field(
+            name="⚙️ Allgemeine Einstellungen",
+            value=f">>> `Ghostping` → {self.ghostPing}\n"
+                f"`Newsletter` → {self.newsletter}\n"
+                f"`SparkDM` → {self.sparkDM}\n"
+                f"`Custom Sparks` → {self.customSpark}",
+            inline=False
+        )
+        return embed
     
-    if not userHaveSettings:
-        insertUserSetting(connection, userID)
+    def getEmbed(self):
+        if self.premium:
+            return self.settingEmbedPremium()
+        else:
+            return self.settingEmbed()
 
-    streakPrivate = getStreakPrivate(connection, userID)
-    statsPrivate = getStatsPrivate(connection, userID)
-    newsletter = getNewsletter(connection, userID)
-    sparkDM = getSparkDM(connection, userID)
-    ghostPing = getGhostpingSetting(connection, userID)
-    customSpark = getCustomSparkSetting(connection, userID)
-    profilPrivate = getProfilPrivateSetting(connection, userID)
 
-    if streakPrivate == 1:
-        streakPrivate = "Privat🔒"
-    elif streakPrivate == 0:
-        streakPrivate = "Öffentlich🌐"
 
-    if statsPrivate == 1:
-        statsPrivate = "Privat🔒"
-    elif statsPrivate == 0:
-        statsPrivate = "Öffentlich🌐"
+class SettingSelect(discord.ui.Select):
+    def __init__(self, hatPremium, userID):
+        self.userID = userID
+        self.hatPremium = hatPremium
+        options = [
+                discord.SelectOption(label="Streak", description="Stelle ein, ob deine Streak Privat oder Öffentlich angezeigt werden soll", value="streak", emoji="<:Streakpunkt:1406583255934963823>"),
+                discord.SelectOption(label="Profil", description="Stelle ein, ob dein Profil Privat oder Öffentlich angezeigt werden soll", value="profil", emoji="👤")
+            ]
+        
+        if hatPremium:
+            options.append(discord.SelectOption(label="Stats", description="Stelle ein, ob deine Stats Privat oder Öffentlich angezeigt werden sollen", value="stats", emoji="📊"))
+            options.append(discord.SelectOption(label="Ghostping", description="Stelle ein, ob du Ghostpings erhalten möchtest", value="ghostping", emoji="<:PeepoPing:1412450415986872461>"))
+            options.append(discord.SelectOption(label="Newsletter", description="Stelle ein, ob du Updates vom Bot in deine DMs erhalten möchtest", value="newsletter", emoji="📰"))
+            options.append(discord.SelectOption(label="SparkDM", description="Stelle ein, ob du vom Bot angeschrieben werden willst, wenn du gesparkt wurdest", value="sparkdm", emoji="<:Schaufel:1410610904361472031>"))
+            options.append(discord.SelectOption(label="Custom Sparks", description="Stelle ein, ob du Custom Sparks erhalten möchtest", value="customsparks", emoji="✨"))
+        else: #Damit bei Premium alles in richtiger Reihenfolge angezeigt wird
+            options.append(discord.SelectOption(label="Ghostping", description="Stelle ein, ob du Ghostpings erhalten möchtest", value="ghostping", emoji="<:PeepoPing:1412450415986872461>"))
+            
+        super().__init__(placeholder="Einstellungen ändern", min_values=1, max_values=1, options=options)
 
-    if newsletter == 1:
-        newsletter = "Aktiv✅"
-    elif newsletter == 0:
-        newsletter = "Deaktiv❌"
 
-    if sparkDM == 1:
-        sparkDM = "Aktiv✅"
-    elif sparkDM == 0:
-        sparkDM = "Deaktiv❌"
+    async def callback(self, interaction: discord.Interaction):
+        userID = str(interaction.user.id)
+        value = self.values[0]  # der ausgewählte Wert
 
-    if customSpark == 1:
-        customSpark = "Aktiv✅"
-    elif customSpark == 0:
-        customSpark = "Deaktiv❌"
+        # ----- Umschalt-Logik -----
+        if value == "streak":
+            val = getStreakPrivate(connection, userID)
+            setStreakPrivate(connection, userID, not val)
 
-    if ghostPing == 1:
-        ghostPing = "Aktiv✅"
-    elif ghostPing == 0:
-        ghostPing = "Deaktiv❌"
+        elif value == "profil":
+            val = getProfilPrivateSetting(connection, userID)
+            setProfilPrivateSetting(connection, userID, not val)
 
-    if profilPrivate == 1:
-        profilPrivate = "Privat🔒"
-    elif profilPrivate == 0:
-        profilPrivate = "Öffentlich🌐"
+        elif value == "ghostping":
+            val = getGhostpingSetting(connection, userID)
+            setGhostpingSetting(connection, userID, not val)
 
-    embed = discord.Embed(title="Settings", color=0x005b96)
-    embed.add_field(name="Streak", value=streakPrivate, inline=False)
-    embed.add_field(name="Stats", value=statsPrivate, inline=False)
-    embed.add_field(name="Newsletter", value=newsletter, inline=False)
-    embed.add_field(name="SparkDM", value=sparkDM, inline=False)
-    embed.add_field(name="Custom Sparks", value=customSpark, inline=False)
-    embed.add_field(name="Ghostping", value=ghostPing, inline=False)
-    embed.add_field(name="Profil", value=profilPrivate, inline=False)
-    return embed
+        elif value == "newsletter":
+            val = getNewsletter(connection, userID)
+            setNewsletter(connection, userID, not val)
+
+        elif value == "sparkdm":
+            val = getSparkDM(connection, userID)
+            setSparkDM(connection, userID, not val)
+
+        elif value == "stats":
+            val = getStatsPrivate(connection, userID)
+            setStatsPrivate(connection, userID, not val)
+
+        elif value == "customsparks":
+            val = getCustomSparkSetting(connection, userID)
+            setCustomSparkSetting(connection, userID, not val)
+
+        # ----- Embed neu aufbauen -----
+        settingsObj = newSettings(self.hatPremium, userID)
+        await interaction.response.edit_message(embed=settingsObj.getEmbed(), view=self.view)
+
+
+
+
+class SettingsView(discord.ui.View):
+    def __init__(self, hatPremium: bool, userID: int):
+        super().__init__(timeout=60)
+        self.add_item(SettingSelect(hatPremium, userID))

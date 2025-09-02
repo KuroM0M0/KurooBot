@@ -17,7 +17,7 @@ from Methoden import *
 from help import *
 from hug import sendHug, sendPat
 from spark import *
-from user.settings import Settings, PremiumSettings, settingStuff
+from user.settings import *
 from newsletter import NewsletterModal
 from disableCustomSpark import disableCustomSparkModal
 from stats import *
@@ -67,6 +67,7 @@ async def on_ready():
     try:
         synced = await bot.tree.sync()
         print(f"Slash-Commands synchronisiert: {len(synced)} Befehle")
+        bot.add_view(WhatIsSparkButton())
     except Exception as e:
         print(f"Fehler beim Synchronisieren: {e}")
     #zeigt in Konsole an, auf welchen Servern der Bot ist
@@ -388,15 +389,10 @@ async def settings(interaction: discord.Interaction):
     userID = str(interaction.user.id)
     premium = getPremium(connection, userID)
 
-    settingStuff(userID)
-    await interaction.followup.send(embed=settingStuff(userID), ephemeral=True) #TODO in einer Nachricht abschicken
-    if premium == True:
-        await interaction.followup.send(view=PremiumSettings(), ephemeral=True)
-        return
-    else:
-        await interaction.followup.send(view=Settings(), ephemeral=True) #TODO Premiumbuttons trotzdem anzeigen, aber ausgegraut
-        await interaction.followup.send("Folgende Settings sind nur für Premium Nutzer einstellbar: \nStatsPrivate \nSparkDM \nNewsletter \nHug/Pat DM", ephemeral=True)
-        return
+    settingsObj = newSettings(premium, userID)
+    view = SettingsView(premium, userID)
+    embed = settingsObj.getEmbed()
+    await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
 
 
@@ -434,7 +430,7 @@ async def streak(interaction: discord.Interaction):
 
     embed = discord.Embed(
             title=f"Streak von {userName}",
-            description=f"Streak: {streak} Tage\nStreak Punkte: {streakPunkte}",
+            description=f"Streak: {streak} Tage\nStreak Punkte: {streakPunkte} <:Streakpunkt:1406583255934963823>",
             color=0x005b96
         )
     embed.set_thumbnail(url=interaction.user.display_avatar.url)
