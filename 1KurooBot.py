@@ -229,11 +229,13 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
 
     if person is None:
         StatsPrivateSelf = getStatsPrivate(connection, userID)
+
         embedSelf = await StatsSelf(user, interaction, "global")
         if not embedSelf:
             await interaction.followup.send(
                 f"{user.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:"
             )
+
             return
         if StatsPrivateSelf == 1:
             await interaction.followup.send(embed=embedSelf, view=StatView(user, None, interaction))

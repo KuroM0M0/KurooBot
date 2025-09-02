@@ -21,11 +21,11 @@ class NewsletterModal(discord.ui.Modal, title="Newsletter"):
 
         NewsletterSubs = getNewsletterSubs(connection)
         NewsletterChannel = getNewsletterChannel(connection)
-        #for subscriber in NewsletterSubs:
-            #userID = subscriber[0]
-            #Subs = await interaction.client.fetch_user(userID)
-            #await Subs.send(embed=embed)
-            #await asyncio.sleep(1)
+        for subscriber in NewsletterSubs:
+            userID = subscriber[0]
+            Subs = await interaction.client.fetch_user(userID)
+            await Subs.send(embed=embed)
+            await asyncio.sleep(1)
 
         for server in NewsletterChannel:
             channelID = server[0]

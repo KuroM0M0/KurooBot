@@ -151,7 +151,7 @@ async def sendPat(interaction, person):
 
 
     embed = discord.Embed(
-        title="Pat <a:neko_pat:1309638933658865744>",
+        title="Pat <a:Neko_Pat:1393185072370159646>",
         description=f"{person.mention}, du bekommst anonyme pat pats <3",
         color=0x005b96
     )
