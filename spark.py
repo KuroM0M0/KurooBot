@@ -3,7 +3,10 @@ from discord import ButtonStyle, ui
 from dataBase import *
 
 class WhatIsSparkButton(ui.View):
-    @ui.button(label="Was ist ein Spark?", style=discord.ButtonStyle.secondary)
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @ui.button(label="Was ist ein Spark?", style=discord.ButtonStyle.secondary, custom_id="whatIsSpark")
     async def what_is_spark(self, interaction: discord.Interaction, button: ui.Button):
         await interaction.response.send_message("Ein Spark ist ein **anonymes** Kompliment an dich. Jeder kann **täglich einmal** einer Person einen Spark senden. Wenn du mehr zu bestimmten Befehlen wissen willst, kannst du einfach **/help (CommandName)** eingeben c:", ephemeral=True)
 
