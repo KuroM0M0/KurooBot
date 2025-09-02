@@ -64,7 +64,7 @@ async def sendHug(interaction, person):
     #    return
 
     # --- Cooldown setzen und Loggen ---
-    updateHugPatCooldown(connection, userID, now.isoformat())
+    updateHugPatCooldown(connection, userID)
     insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, "Umarmung 🫂", "Hug", guildID, guildName)
 
     # --- Komplimente aktualisieren, Embed senden, Ghostping ---
