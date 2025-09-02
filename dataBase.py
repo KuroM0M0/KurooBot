@@ -266,6 +266,44 @@ def getCompliments(connection, userID):
     
 
 
+
+def getServerCompliments(connection, userID, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''
+                                SELECT Compliment, Typ, ID
+                                FROM Logs
+                                WHERE TargetID = ? AND Disabled = 0 AND ServerID = ?
+                            ''', (userID, serverID))
+            results = cursor.fetchall()
+
+            normal_types = {"Compliment", "Hug", "Pat"}
+
+            stats = {
+                "Normal": {},  # Dict[compliment] = count
+                "Custom": {}   # Dict[compliment] = list of IDs
+            }
+
+            for compliment, cType, spark_id in results: #cType = Typ
+                if cType in normal_types:
+                    stats["Normal"][compliment] = stats["Normal"].get(compliment, 0) + 1
+                elif cType == "Custom":
+                    if compliment not in stats["Custom"]:
+                        stats["Custom"][compliment] = []
+                    stats["Custom"][compliment].append(spark_id)
+
+            return stats
+        
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen der Kompliment-Statistiken: {e}")
+            return {}
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+        return {}
+    
+
+
 def getCustomCompliments(connection, userID):
     """
     Liefert eine Liste mit allen Custom-Komplimenten für einen bestimmten User aus der Logs Tabelle
@@ -1248,6 +1286,24 @@ def getSparkCountDisabled(connection, userID):
 
 
 
+def getSparkCountDisabledServer(connection, userID, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT COUNT(ID)
+                                FROM Logs
+                                WHERE TargetID = ? AND Disabled = 1 AND ServerID = ?''',
+                                (userID, serverID))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von SparkCountDisabled: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
 def getSparkCountSelf(connection, userID):
     """"Gibt zurück wie oft man selbst gesparkt wurde. (TargetID)"""
     if connection is not None:
@@ -1257,6 +1313,24 @@ def getSparkCountSelf(connection, userID):
                                 FROM Logs
                                 WHERE TargetID = ?''',
                                 (userID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von SparkTargetCount: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getSparkCountSelfServer(connection, userID, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT COUNT(ID)
+                                FROM Logs
+                                WHERE TargetID = ? AND ServerID = ?''',
+                                (userID, serverID))
             result = cursor.fetchone()
             return result[0]
         except sqlite3.Error as e:
