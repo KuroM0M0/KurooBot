@@ -38,7 +38,7 @@ VoteCooldown = 12 #in Stunden
 BotToken = "MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8"
 #BotToken = "MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg" #richtiger Bot
 
-#logging.basicConfig(level=logging.DEBUG) #AKTIVIEREN FÜR LOGGING
+logging.basicConfig(level=logging.DEBUG) #AKTIVIEREN FÜR LOGGING
 
 connection = createConnection()
 
@@ -544,16 +544,16 @@ async def sparkDisable(interaction: discord.Interaction):
 
 @bot.tree.command(name="profil", description="Zeige dein Profil an")
 async def profil(interaction: discord.Interaction, user: discord.User = None):
-    await interaction.response.defer()
     if user is None:
         user = interaction.user
-
     userID = user.id
+    privacy = getProfilPrivateSetting(connection, userID)
+    await interaction.response.defer(ephemeral=privacy)
+    
     userName = user.display_name
     sparkCount = getSparkCount(connection, userID)
     Premium = getPremium(connection, userID)
     PremiumTimestamp = getPremiumTimestamp(connection, userID)
-    privacy = getProfilPrivateSetting(connection, userID)
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
     Birthday = getBirthday(connection, userID)
