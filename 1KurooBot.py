@@ -217,7 +217,7 @@ async def kompliment_autocomplete(interaction: discord.Interaction, current: str
 @app_commands.describe(person="Wähle die Person aus, von der du die Stats sehen möchtest.")
 async def stats(interaction: discord.Interaction, person: discord.Member = None):
     await interaction.response.defer(ephemeral=True)
-    user = (interaction.user)
+    user = interaction.user
     userID = str(interaction.user.id)
     channel = interaction.channel
     serverID = str(interaction.guild.id)
@@ -226,37 +226,35 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
     CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
-    if person == None:
+    if person is None:
         StatsPrivateSelf = getStatsPrivate(connection, userID)
-        embedSelf = await StatsSelf(user, interaction)
-        if embedSelf == None:
-            await interaction.followup.send(f"{user.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
+        embedSelf = await StatsSelf(user, interaction, "global")
+        if not embedSelf:
+            await interaction.followup.send(
+                f"{user.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:"
+            )
             return
         if StatsPrivateSelf == 1:
-            await interaction.followup.send(embed=embedSelf)
-            return
+            await interaction.followup.send(embed=embedSelf, view=StatView(user, None, interaction))
         else:
             await interaction.delete_original_response()
-            await channel.send(embed=embedSelf)
-            return
-
+            await channel.send(embed=embedSelf, view=StatView(user, None, interaction))
     else:
         targetID = str(person.id)
         targetName = person.display_name
-        embedTarget = await StatsTarget(person, interaction)
+        embedTarget = await StatsTarget(person, interaction, "global")
         StatsPrivateTarget = getStatsPrivate(connection, targetID)
-        if embedTarget == None:
+        if not embedTarget:
             await interaction.delete_original_response()
-            await channel.send(f"{person.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
+            await channel.send(
+                f"{person.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:"
+            )
             return
         if StatsPrivateTarget == 1:
             await interaction.followup.send(f"{targetName} hat seine Stats versteckt.", ephemeral=True)
-            return
         else:
-            await StatsTarget(person, interaction)
             await interaction.delete_original_response()
-            await channel.send(embed=embedTarget)
-            return
+            await channel.send(embed=embedTarget, view=StatView(user, person, interaction))
     
         
 
@@ -482,15 +480,22 @@ async def vote(interaction: discord.Interaction):
             setVoteTimestamp(connection, userID, now.isoformat())
             votePoints = getVotePoints(connection, userID)
             await interaction.response.send_message(
-                f"✅ Danke für deinen Vote! Du hast einen VotePunkt erhalten. ❤️\n Du hast nun {votePoints} Punkte.", 
+                f"✅ Dein Vote wurde erkannt und deine Belohnung gutgeschrieben!\n"
+                f"Du hast jetzt **{votePoints} VotePunkte**. ❤️",
                 ephemeral=True)
         else:
             await interaction.response.send_message(
-                f"⚠️ Du kannst nur alle 12 Stunden einmal Voten! \n Du hast gerade {votePoints} Punkte.", #Du kannst in {VoteCooldown - (now - lastVoteDt).seconds // 60}h wieder voten.
+                f"⚠️ Dein letzter Vote ist noch nicht lange genug her.\n"
+                f"⏳ Du kannst alle **{VoteCooldown} Stunden** Punkte abholen.\n"
+                f"Aktuell hast du **{votePoints} VotePunkte**.",
                 ephemeral=True)
     else:
         await interaction.response.send_message(
-            f"ℹ️ Du hast noch nicht gevotet. Bitte stimme hier ab: https://top.gg/bot/1306244838504665169/vote \n Deine aktuellen Punkte: {votePoints}",
+            f"ℹ️ Du hast noch keinen Vote abgeholt.\n"
+            f"👉 Bitte stimme zuerst hier ab: https://top.gg/bot/1306244838504665169/vote\n\n"
+            f"⚡ Danach kannst du **diesen Befehl erneut ausführen**, "
+            f"um deine Punkte zu erhalten.\n"
+            f"Aktuell hast du **{votePoints} VotePunkte**.",
             ephemeral=True)
 
 
