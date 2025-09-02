@@ -89,17 +89,17 @@ _COLON_NAME = re.compile(r"(?<!<):([A-Za-z0-9_]+):(?!\d+>)")
 
 def replaceEmotes(text: str, guild: discord.Guild, bot: discord.Client) -> str:
     def pick_emoji(name: str) -> Optional[str]:
-        # 1) bevorzugt Emojis aus dem aktuellen Server
+    # 1) zuerst im aktuellen Server
         for e in getattr(guild, "emojis", []):
             if e.name == name:
                 return str(e)
-        # 2) sonst irgendein anderer Server, in dem der Bot ist
+
+        # 2) dann global suchen (inkl. current guild, falls oben nichts war)
         for g in bot.guilds:
-            if guild and g.id == guild.id:
-                continue
             for e in g.emojis:
                 if e.name == name:
                     return str(e)
+
         return None
 
     def repl(m: re.Match) -> str:

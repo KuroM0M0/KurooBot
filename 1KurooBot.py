@@ -2,6 +2,7 @@ import json
 import discord
 import asyncio
 import random
+import logging
 from discord.ext import commands
 from discord import app_commands
 from discord import ButtonStyle, ui
@@ -16,13 +17,16 @@ from Methoden import *
 from help import *
 from hug import sendHug, sendPat
 from spark import *
-from settings import Settings, PremiumSettings, settingStuff
+from user.settings import *
 from newsletter import NewsletterModal
 from disableCustomSpark import disableCustomSparkModal
 from stats import *
-from vote import *
+from user.vote import *
 from reveal import RevealMainView, RevealCustomView, revealEmbed
-import sqlite3
+from Shop.shop import ShopButtons, Shop, ShopEmbed
+from Shop.inventar import *
+from user.birthday import *
+from Shop.items import *
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -31,6 +35,10 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 KuroID = 308660164137844736
 cooldownDuration = 24
 VoteCooldown = 12 #in Stunden
+BotToken = "MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8"
+#BotToken = "MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg" #richtiger Bot
+
+#logging.basicConfig(level=logging.DEBUG) #AKTIVIEREN FÜR LOGGING
 
 connection = createConnection()
 
@@ -59,6 +67,7 @@ async def on_ready():
     try:
         synced = await bot.tree.sync()
         print(f"Slash-Commands synchronisiert: {len(synced)} Befehle")
+        bot.add_view(WhatIsSparkButton())
     except Exception as e:
         print(f"Fehler beim Synchronisieren: {e}")
     #zeigt in Konsole an, auf welchen Servern der Bot ist
@@ -66,68 +75,16 @@ async def on_ready():
         print(f'- {guild.name} (ID: {guild.id})')
     bot.loop.create_task(setBotActivity())
 
+async def loadCommands():
+    await bot.load_extension("commands.AdminCommands")
+    await bot.load_extension("commands.SecretCommands")
+    await bot.load_extension("commands.KuroCommands")
+    
 
+async def main():
+    await loadCommands()
+    await bot.start(BotToken)
 
-
-@bot.command(name="PremiumAktivieren")
-async def PremiumAktivieren(ctx, member: discord.Member):
-    targetID = member.id
-    userID = ctx.author.id
-    if userID == KuroID:
-        UserExists(connection, userID)
-        await ctx.send(f"{member} hat nun Premium!")
-        setPremium(connection, datetime.now().isoformat(), targetID)
-    else:
-        await ctx.send("Du bist nicht berechtigt dies zu tun!")
-
-@bot.command(name="PremiumDeaktivieren")
-async def PremiumDeaktivieren(ctx, member: discord.Member):
-    targetID = member.id
-    userID = ctx.author.id
-    if userID == KuroID:
-        await ctx.send(f"{member} hat nun kein Premium mehr!")
-        resetPremium(connection, targetID)
-    else:
-        await ctx.send("Du bist nicht berechtigt dies zu tun!")
-
-@bot.command(name="setReveals")
-async def setReveals(ctx, member: discord.Member, uses: int):
-    targetID = member.id
-    userID = ctx.author.id
-    if userID == KuroID:
-        UserExists(connection, userID)
-        await ctx.send(f"{member} hat nun {uses} Reveals!")
-        setRevealUses(connection, targetID, uses)
-    else:
-        await ctx.send("Du bist nicht berechtigt dies zu tun!")
-
-@bot.command(name="setSparkChannel")
-@commands.has_permissions(administrator=True)
-async def setSparkChannel(ctx):
-    channel = ctx.channel
-    serverID = ctx.guild.id
-    CheckServerExists(connection, serverID)
-    await ctx.send(f"{channel} ist nun der Spark Channel!")
-    setChannelSparkID(connection, serverID, channel.id)
-
-@setSparkChannel.error
-async def setSparkChannel_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
-
-@bot.command(name="setNewsletterChannel")
-@commands.has_permissions(administrator=True)
-async def setNewsletterChannel(ctx):
-    channel = ctx.channel
-    serverID = ctx.guild.id
-    CheckServerExists(connection, serverID)
-    await ctx.send(f"{channel} ist nun der Newsletter Channel!")
-    setChannelNewsletterID(connection, serverID, channel.id)
-
-@setNewsletterChannel.error
-async def setNewsletterChannel_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
 
 
 
@@ -161,8 +118,8 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         resetSparkUses(connection, userID)
         SparkUses = 0
 
-    await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
-    await CheckTarget(targetID, userID, interaction)
+    #await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
+    #await CheckTarget(targetID, userID, interaction)
     await CheckSparkChannel(connection, guildID, channelID, interaction)
 
     if SparkUses < 1:
@@ -195,11 +152,11 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         embed.set_image(url=random.choice(compliments[kompliment].get("link")))
         embed.set_thumbnail(url=person.display_avatar.url)
         embed.set_footer(text=f"Spark ID: {getSparkID(connection)}")
-        await channel.send(embed=embed)
 
         if getGhostpingSetting(connection, targetID) == True:
-            ghostping = await channel.send(f"{person.mention}")
-            await ghostping.delete()
+            await channel.send(embed=embed, content=f"||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​|| {person.mention}")
+        else:
+            await channel.send(embed=embed)
 
         if getSparkDM(connection, targetID) == True:
             await asyncio.sleep(2)
@@ -227,13 +184,13 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
             )
         
             embed.set_footer(text=f"Spark ID: {getSparkID(connection)}")
-            await channel.send(embed=embed)
 
             await interaction.followup.send("Dein anonymer Text war erfolgreich :D", ephemeral=True)
 
             if getGhostpingSetting(connection, targetID) == True:
-                ghostping = await channel.send(f"{person.mention}")
-                await ghostping.delete()
+                await channel.send(embed=embed, content=f"||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​|| {person.mention}")
+            else:
+                await channel.send(embed=embed)
 
 
             if getSparkDM(connection, targetID) == True:
@@ -261,7 +218,7 @@ async def kompliment_autocomplete(interaction: discord.Interaction, current: str
 @app_commands.describe(person="Wähle die Person aus, von der du die Stats sehen möchtest.")
 async def stats(interaction: discord.Interaction, person: discord.Member = None):
     await interaction.response.defer(ephemeral=True)
-    user = (interaction.user)
+    user = interaction.user
     userID = str(interaction.user.id)
     channel = interaction.channel
     serverID = str(interaction.guild.id)
@@ -270,37 +227,37 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
     CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
-    if person == None:
+    if person is None:
         StatsPrivateSelf = getStatsPrivate(connection, userID)
-        embedSelf = await StatsSelf(user, interaction)
-        if embedSelf == None:
-            await interaction.followup.send(f"{user.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
+
+        embedSelf = await StatsSelf(user, interaction, "global")
+        if not embedSelf:
+            await interaction.followup.send(
+                f"{user.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:"
+            )
+
             return
         if StatsPrivateSelf == 1:
-            await interaction.followup.send(embed=embedSelf)
-            return
+            await interaction.followup.send(embed=embedSelf, view=StatView(user, None, interaction))
         else:
             await interaction.delete_original_response()
-            await channel.send(embed=embedSelf)
-            return
-
+            await channel.send(embed=embedSelf, view=StatView(user, None, interaction))
     else:
         targetID = str(person.id)
         targetName = person.display_name
-        embedTarget = await StatsTarget(person, interaction)
+        embedTarget = await StatsTarget(person, interaction, "global")
         StatsPrivateTarget = getStatsPrivate(connection, targetID)
-        if embedTarget == None:
+        if not embedTarget:
             await interaction.delete_original_response()
-            await channel.send(f"{person.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:")
+            await channel.send(
+                f"{person.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:"
+            )
             return
         if StatsPrivateTarget == 1:
             await interaction.followup.send(f"{targetName} hat seine Stats versteckt.", ephemeral=True)
-            return
         else:
-            await StatsTarget(person, interaction)
             await interaction.delete_original_response()
-            await channel.send(embed=embedTarget)
-            return
+            await channel.send(embed=embedTarget, view=StatView(user, person, interaction))
     
         
 
@@ -434,15 +391,10 @@ async def settings(interaction: discord.Interaction):
     userID = str(interaction.user.id)
     premium = getPremium(connection, userID)
 
-    settingStuff(userID)
-    await interaction.followup.send(embed=settingStuff(userID), ephemeral=True) #TODO in einer Nachricht abschicken
-    if premium == True:
-        await interaction.followup.send(view=PremiumSettings(), ephemeral=True)
-        return
-    else:
-        await interaction.followup.send(view=Settings(), ephemeral=True) #TODO Premiumbuttons trotzdem anzeigen, aber ausgegraut
-        await interaction.followup.send("Folgende Settings sind nur für Premium Nutzer einstellbar: \nStatsPrivate \nSparkDM \nNewsletter \nHug/Pat DM", ephemeral=True)
-        return
+    settingsObj = newSettings(premium, userID)
+    view = SettingsView(premium, userID)
+    embed = settingsObj.getEmbed()
+    await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
 
 
@@ -480,7 +432,7 @@ async def streak(interaction: discord.Interaction):
 
     embed = discord.Embed(
             title=f"Streak von {userName}",
-            description=f"Streak: {streak} Tage\nStreak Punkte: {streakPunkte}",
+            description=f"Streak: {streak} Tage\nStreak Punkte: {streakPunkte} <:Streakpunkt:1406583255934963823>",
             color=0x005b96
         )
     embed.set_thumbnail(url=interaction.user.display_avatar.url)
@@ -526,15 +478,22 @@ async def vote(interaction: discord.Interaction):
             setVoteTimestamp(connection, userID, now.isoformat())
             votePoints = getVotePoints(connection, userID)
             await interaction.response.send_message(
-                f"✅ Danke für deinen Vote! Du hast einen VotePunkt erhalten. ❤️\n Du hast nun {votePoints} Punkte.", 
+                f"✅ Dein Vote wurde erkannt und deine Belohnung gutgeschrieben!\n"
+                f"Du hast jetzt **{votePoints} VotePunkte**. ❤️",
                 ephemeral=True)
         else:
             await interaction.response.send_message(
-                f"⚠️ Du kannst nur alle 12 Stunden einmal Voten! \n Du hast gerade {votePoints} Punkte.", #Du kannst in {VoteCooldown - (now - lastVoteDt).seconds // 60}h wieder voten.
+                f"⚠️ Dein letzter Vote ist noch nicht lange genug her.\n"
+                f"⏳ Du kannst alle **{VoteCooldown} Stunden** Punkte abholen.\n"
+                f"Aktuell hast du **{votePoints} VotePunkte**.",
                 ephemeral=True)
     else:
         await interaction.response.send_message(
-            f"ℹ️ Du hast noch nicht gevotet. Bitte stimme hier ab: https://top.gg/bot/1306244838504665169/vote \n Deine aktuellen Punkte: {votePoints}",
+            f"ℹ️ Du hast noch keinen Vote abgeholt.\n"
+            f"👉 Bitte stimme zuerst hier ab: https://top.gg/bot/1306244838504665169/vote\n\n"
+            f"⚡ Danach kannst du **diesen Befehl erneut ausführen**, "
+            f"um deine Punkte zu erhalten.\n"
+            f"Aktuell hast du **{votePoints} VotePunkte**.",
             ephemeral=True)
 
 
@@ -585,6 +544,7 @@ async def sparkDisable(interaction: discord.Interaction):
 
 @bot.tree.command(name="profil", description="Zeige dein Profil an")
 async def profil(interaction: discord.Interaction, user: discord.User = None):
+    await interaction.response.defer()
     if user is None:
         user = interaction.user
 
@@ -622,12 +582,14 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
 
     if privacy == True:
         if userID != interaction.user.id:
-            await interaction.response.send_message("Diese Person hat ihr Profil auf Privat.", ephemeral=True)
+            await interaction.followup.send("Diese Person hat ihr Profil auf Privat.", ephemeral=True)
             return
         else:
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
     else:
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
+
+
 
 
 @bot.tree.command(name="reveal", description="Lasse dir anzeigen von wem ein Spark gesendet wurde!")
@@ -700,8 +662,98 @@ async def reveal(interaction: discord.Interaction, sparkid: int = None):
             )
         await interaction.followup.send(embed=embed, view=RevealMainView(reveals, revealed, customReveals, revealedCustom), ephemeral=True)
 
-        
+
+@bot.tree.command(name="shop", description="Hier kannst du dir unterschiedliche Items mit Vote/Streakpunkten kaufen :)")
+async def shop(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    embed = ShopEmbed(1, interaction, connection)
+    try:
+        await interaction.followup.send(embed=embed, view=ShopButtons(connection))
+    except Exception as e:
+        print("Fehler beim Senden des Shops:", e)
+        await interaction.followup.send(f"Fehler: {e}", ephemeral=True)
 
 
-bot.run('MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8')
-#bot.run('MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg') #richtiger Bot
+
+@bot.tree.command(name="inventar", description="Hier siehst du welche Items du hast c:")
+async def inventar(interaction: discord.Interaction):
+    await interaction.response.defer()
+    embed = InventarEmbed(interaction, connection)
+    try:
+        await interaction.followup.send(embed=embed, view=InventarButtons(connection))
+    except Exception as e:
+        print("Fehler beim Senden des Inventars:", e)
+        await interaction.followup.send(f"Fehler: {e}", ephemeral=True)
+
+
+
+@bot.tree.command(name="setbirthday", description="Setze deinen Geburtstag")
+async def Birthday(interaction: discord.Interaction):
+    # Wrapper für save_callback, da die View nur (user_id, year, month, day) übergibt
+    def save_cb(user_id: int, year: Optional[int], month: int, day: int):
+        # Wenn Jahr optional, erstelle ein date-Objekt
+        if year:
+            date_str = f"{day:02d}-{month:02d}-{year:04d}"
+        else:
+            # nur Monat+Tag: setze Jahr auf 2000 oder NULL-String (je nach DB)
+            date_str = f"{day:02d}-{month:02d}-2000"  # Beispiel: Jahres-Platzhalter
+        setBirthday(connection, user_id, date_str)
+
+    # View erstellen, owner_id = wer den Command aufruft
+    view = BirthdayView(owner_id=interaction.user.id, save_callback=save_cb, default_month=None)
+
+    embed = view.build_embed()
+    # Nachricht senden
+    await interaction.response.send_message(embed=embed, view=view, ephemeral=False)
+    sent = await interaction.original_response()
+    view.message = sent
+
+
+@bot.tree.command(name="use", description="Nutze deine Items aus dem /Inventar")
+async def use(interaction: discord.Interaction, item: str):
+    actionData = ITEM_ACTIONS.get(item)
+    hasItem = checkUserHasItem(connection, interaction.user.id, getItemIDByName(connection, item))
+    if hasItem == False:
+        await interaction.response.send_message(f"❌ Du hast keine **{item}**!", ephemeral=True)
+        return
+    if not actionData:
+        await interaction.response.send_message(f"❌ Für **{item}** gibt es noch keine Funktion.", ephemeral=True)
+        return
+
+    func = actionData["func"]
+    needSparkID = actionData["needSparkID"]
+
+    if needSparkID:
+        # Modal öffnen
+        await interaction.response.send_modal(SparkIDModal(func, item))
+    else:
+        await interaction.response.defer(ephemeral=True)
+        # Direkt ausführen
+        await func(interaction)
+    
+
+@use.autocomplete("item")
+async def itemName_autocomplete(interaction: discord.Interaction, current: str):
+    shop = Shop(connection)
+    userItems = getUserItems(connection, interaction.user.id)  # [(itemID, count), ...]
+    allItems = shop.loadItems()
+
+    itemNameList = []
+    for item in allItems:
+        for userItem in userItems:
+            if item.itemID == userItem[0] and userItem[1] > 0:  # Anzahl > 0
+                itemNameList.append(item.name)
+
+    # Erstelle Choice-Objekte
+    choices = [
+        app_commands.Choice(name=name, value=name)
+        for name in itemNameList
+    ]
+
+    # Filtere nach Suchbegriff
+    return [
+        choice for choice in choices
+        if current.lower() in choice.name.lower()
+    ]
+
+asyncio.run(main())

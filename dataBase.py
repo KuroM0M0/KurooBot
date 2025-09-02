@@ -266,6 +266,44 @@ def getCompliments(connection, userID):
     
 
 
+
+def getServerCompliments(connection, userID, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''
+                                SELECT Compliment, Typ, ID
+                                FROM Logs
+                                WHERE TargetID = ? AND Disabled = 0 AND ServerID = ?
+                            ''', (userID, serverID))
+            results = cursor.fetchall()
+
+            normal_types = {"Compliment", "Hug", "Pat"}
+
+            stats = {
+                "Normal": {},  # Dict[compliment] = count
+                "Custom": {}   # Dict[compliment] = list of IDs
+            }
+
+            for compliment, cType, spark_id in results: #cType = Typ
+                if cType in normal_types:
+                    stats["Normal"][compliment] = stats["Normal"].get(compliment, 0) + 1
+                elif cType == "Custom":
+                    if compliment not in stats["Custom"]:
+                        stats["Custom"][compliment] = []
+                    stats["Custom"][compliment].append(spark_id)
+
+            return stats
+        
+        except sqlite3.Error as e:
+            print(f"Fehler beim Abrufen der Kompliment-Statistiken: {e}")
+            return {}
+    else:
+        print("Keine Datenbankverbindung verfügbar.")
+        return {}
+    
+
+
 def getCustomCompliments(connection, userID):
     """
     Liefert eine Liste mit allen Custom-Komplimenten für einen bestimmten User aus der Logs Tabelle
@@ -497,15 +535,16 @@ def getPremiumTimestamp(connection, userID):
 
 
 
-def setPremium(connection, PremiumTimestamp, userID):
+def setPremium(connection, userID):
     if connection is not None:
         cursor = connection.cursor()
+        time = datetime.now().isoformat()
         try:
             cursor.execute('''  UPDATE User
                                 SET HatPremium = 1,
                                 PremiumTimestamp = ?
                                 WHERE UserID = ?''',
-                                (PremiumTimestamp, userID))
+                                (time, userID))
             connection.commit()
         except sqlite3.Error as e:
             print(f"Fehler beim Updaten von Premium: {e}")
@@ -1247,6 +1286,24 @@ def getSparkCountDisabled(connection, userID):
 
 
 
+def getSparkCountDisabledServer(connection, userID, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT COUNT(ID)
+                                FROM Logs
+                                WHERE TargetID = ? AND Disabled = 1 AND ServerID = ?''',
+                                (userID, serverID))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von SparkCountDisabled: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
 def getSparkCountSelf(connection, userID):
     """"Gibt zurück wie oft man selbst gesparkt wurde. (TargetID)"""
     if connection is not None:
@@ -1256,6 +1313,24 @@ def getSparkCountSelf(connection, userID):
                                 FROM Logs
                                 WHERE TargetID = ?''',
                                 (userID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von SparkTargetCount: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getSparkCountSelfServer(connection, userID, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT COUNT(ID)
+                                FROM Logs
+                                WHERE TargetID = ? AND ServerID = ?''',
+                                (userID, serverID))
             result = cursor.fetchone()
             return result[0]
         except sqlite3.Error as e:
@@ -1334,7 +1409,24 @@ def setRevealUses(connection, userID, RevealUses):
                                 (RevealUses, userID))
             connection.commit()
         except sqlite3.Error as e:
-            print(f"Fehler beim setzen der RevealUses Setting: {e}")
+            print(f"Fehler beim setzen der RevealUses: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def addRevealUses(connection, userID, RevealUses):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET RevealUses = RevealUses + ?
+                                WHERE UserID = ?''',
+                                (RevealUses, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim hinzufügen der RevealUses: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
 
@@ -1351,7 +1443,7 @@ def setChannelSparkID(connection, serverID, channelID):
                                 (channelID, serverID))
             connection.commit()
         except sqlite3.Error as e:
-            print(f"Fehler beim setzen der ChannelSparkID Setting: {e}")
+            print(f"Fehler beim setzen der ChannelSparkID: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
 
@@ -1756,7 +1848,7 @@ def updateUserInventar(connection, userID, itemID, count):
                                 (count, userID, itemID))
             connection.commit()
         except sqlite3.Error as e:
-            print(f"Fehler beim setzen der Punkte: {e}")
+            print(f"Fehler beim updaten vom Inventar: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
 
@@ -1809,6 +1901,24 @@ def getUserItemID(connection, userID):
                                 (userID,))
             result = cursor.fetchall()
             return [row[0] for row in result]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Inventar: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getItemIDByName(connection, name):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ItemID
+                                FROM Item
+                                WHERE Name = ?''',
+                                (name,))
+            result = cursor.fetchone()
+            return result[0]
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von Inventar: {e}")
     else:
