@@ -14,6 +14,7 @@ def InventarEmbed(interaction, connection):
     shop = Shop(connection)
     userID = interaction.user.id
     userItems = getUserItems(connection, userID)
+    hatItems = False
 
     embed = discord.Embed(title="Inventar", color=0x005b96)
     embed.set_footer(text="Nutze /use (item) um dein Item zu verwenden!")
@@ -23,20 +24,23 @@ def InventarEmbed(interaction, connection):
         return embed
 
     for itemID, count in userItems:
-        if count == 0:
-            continue
-        shopItem = shop.getItemByID(itemID)
-        if shopItem:
-            embed.add_field(
-                name=shopItem.name,
-                value=f"Anzahl: {count}",
-                inline=False
-            )
-        else:
-            embed.add_field(
-                name=f"Unbekanntes Item (ID: {itemID})",
-                value=f"Anzahl: {count}",
-                inline=False
-            )
+        if count > 0:
+            hatItems = True
+            shopItem = shop.getItemByID(itemID)
+            if shopItem:
+                embed.add_field(
+                    name=shopItem.name,
+                    value=f"Anzahl: {count}",
+                    inline=False
+                )
+            else:
+                embed.add_field(
+                    name=f"Unbekanntes Item (ID: {itemID})",
+                    value=f"Anzahl: {count}",
+                    inline=False
+                )
+
+    if not hatItems:
+        embed.add_field(name="Leer", value="Du hast noch keine Items.", inline=False)
 
     return embed

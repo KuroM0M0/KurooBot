@@ -26,6 +26,7 @@ from reveal import RevealMainView, RevealCustomView, revealEmbed
 from Shop.shop import ShopButtons, Shop, ShopEmbed
 from Shop.inventar import *
 from user.birthday import *
+from Shop.items import *
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -206,7 +207,6 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
 async def kompliment_autocomplete(interaction: discord.Interaction, current: str):
     choices = []
     for compliment in compliments:
-        print(choices)
         choices.append(app_commands.Choice(name=compliment, value=compliment))
     return [choice for choice in choices if current.lower() in choice.name.lower()]
 
@@ -708,22 +708,38 @@ async def Birthday(interaction: discord.Interaction):
 
 @bot.tree.command(name="use", description="Nutze deine Items aus dem /Inventar")
 async def use(interaction: discord.Interaction, item: str):
-    await interaction.response.defer()
-    await interaction.followup.send("Test")
+    actionData = ITEM_ACTIONS.get(item)
+    hasItem = checkUserHasItem(connection, interaction.user.id, getItemIDByName(connection, item))
+    if hasItem == False:
+        await interaction.response.send_message(f"❌ Du hast keine **{item}**!", ephemeral=True)
+        return
+    if not actionData:
+        await interaction.response.send_message(f"❌ Für **{item}** gibt es noch keine Funktion.", ephemeral=True)
+        return
+
+    func = actionData["func"]
+    needSparkID = actionData["needSparkID"]
+
+    if needSparkID:
+        # Modal öffnen
+        await interaction.response.send_modal(SparkIDModal(func, item))
+    else:
+        await interaction.response.defer(ephemeral=True)
+        # Direkt ausführen
+        await func(interaction)
     
 
 @use.autocomplete("item")
 async def itemName_autocomplete(interaction: discord.Interaction, current: str):
     shop = Shop(connection)
-    itemIDs = getUserItemID(connection, interaction.user.id)
+    userItems = getUserItems(connection, interaction.user.id)  # [(itemID, count), ...]
     allItems = shop.loadItems()
-    print(allItems[0])
-    #print(itemIDs)
+
     itemNameList = []
     for item in allItems:
-        
-        if item.itemID in itemIDs:
-            itemNameList.append(item.name)
+        for userItem in userItems:
+            if item.itemID == userItem[0] and userItem[1] > 0:  # Anzahl > 0
+                itemNameList.append(item.name)
 
     # Erstelle Choice-Objekte
     choices = [
@@ -731,7 +747,7 @@ async def itemName_autocomplete(interaction: discord.Interaction, current: str):
         for name in itemNameList
     ]
 
-    # Filtere die Choice-Objekte nach dem aktuellen Suchbegriff
+    # Filtere nach Suchbegriff
     return [
         choice for choice in choices
         if current.lower() in choice.name.lower()

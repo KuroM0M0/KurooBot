@@ -497,15 +497,16 @@ def getPremiumTimestamp(connection, userID):
 
 
 
-def setPremium(connection, PremiumTimestamp, userID):
+def setPremium(connection, userID):
     if connection is not None:
         cursor = connection.cursor()
+        time = datetime.now().isoformat()
         try:
             cursor.execute('''  UPDATE User
                                 SET HatPremium = 1,
                                 PremiumTimestamp = ?
                                 WHERE UserID = ?''',
-                                (PremiumTimestamp, userID))
+                                (time, userID))
             connection.commit()
         except sqlite3.Error as e:
             print(f"Fehler beim Updaten von Premium: {e}")
@@ -1334,7 +1335,24 @@ def setRevealUses(connection, userID, RevealUses):
                                 (RevealUses, userID))
             connection.commit()
         except sqlite3.Error as e:
-            print(f"Fehler beim setzen der RevealUses Setting: {e}")
+            print(f"Fehler beim setzen der RevealUses: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def addRevealUses(connection, userID, RevealUses):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE User
+                                SET RevealUses = RevealUses + ?
+                                WHERE UserID = ?''',
+                                (RevealUses, userID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim hinzufügen der RevealUses: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
 
@@ -1351,7 +1369,7 @@ def setChannelSparkID(connection, serverID, channelID):
                                 (channelID, serverID))
             connection.commit()
         except sqlite3.Error as e:
-            print(f"Fehler beim setzen der ChannelSparkID Setting: {e}")
+            print(f"Fehler beim setzen der ChannelSparkID: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
 
@@ -1756,7 +1774,7 @@ def updateUserInventar(connection, userID, itemID, count):
                                 (count, userID, itemID))
             connection.commit()
         except sqlite3.Error as e:
-            print(f"Fehler beim setzen der Punkte: {e}")
+            print(f"Fehler beim updaten vom Inventar: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
 
@@ -1809,6 +1827,24 @@ def getUserItemID(connection, userID):
                                 (userID,))
             result = cursor.fetchall()
             return [row[0] for row in result]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Inventar: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getItemIDByName(connection, name):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT ItemID
+                                FROM Item
+                                WHERE Name = ?''',
+                                (name,))
+            result = cursor.fetchone()
+            return result[0]
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von Inventar: {e}")
     else:
