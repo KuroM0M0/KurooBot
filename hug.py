@@ -3,6 +3,7 @@ import asyncio
 import random
 from datetime import datetime, timedelta
 from dataBase import *
+from Methoden import *
 
 connection = createConnection()
 cooldownDurationHugPat = 1#2       #für vote bleibt gleich
@@ -13,7 +14,7 @@ maxUsesPremium = 3
 
 async def sendHug(interaction, person):
     await interaction.response.defer(ephemeral=True)
-    checkUserSetting(connection, interaction.user.id)
+    CheckUserIsInSettings(connection, interaction.user.id)
 
     links = [
         "https://cdn.discordapp.com/attachments/1354078227903283251/1399384130571206656/Hug2.gif",
@@ -46,13 +47,13 @@ async def sendHug(interaction, person):
         return
 
     # --- Cooldown prüfen via ausgelagerter DB-Funktion ---
-    next_available = getNextHugAvailable(connection, userID, cooldownDurationHugPat)
-    if next_available:
-        await interaction.followup.send(
-            f"Du kannst den Hug-Befehl erst wieder <t:{int(next_available.timestamp())}:R> verwenden.",
-            ephemeral=True
-        )
-        return
+    #next_available = getNextHugAvailable(connection, userID, cooldownDurationHugPat)
+    #if next_available:
+    #    await interaction.followup.send(
+    #        f"Du kannst den Hug-Befehl erst wieder <t:{int(next_available.timestamp())}:R> verwenden.",
+    #        ephemeral=True
+    #    )
+    #    return
 
     # --- Uses prüfen und erhöhen ---
     #isPremium = getPremium(connection, userID)
