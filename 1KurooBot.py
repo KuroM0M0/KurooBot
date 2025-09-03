@@ -38,7 +38,7 @@ VoteCooldown = 12 #in Stunden
 BotToken = "MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8"
 #BotToken = "MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg" #richtiger Bot
 
-logging.basicConfig(level=logging.DEBUG) #AKTIVIEREN FÜR LOGGING
+logging.basicConfig(level=logging.WARNING) #AKTIVIEREN FÜR LOGGING
 
 connection = createConnection()
 
@@ -72,7 +72,7 @@ async def on_ready():
         print(f"Fehler beim Synchronisieren: {e}")
     #zeigt in Konsole an, auf welchen Servern der Bot ist
     for guild in bot.guilds:
-        print(f'- {guild.name} (ID: {guild.id})')
+        print(f'- {guild.name} (ID: {guild.id}) | {len(guild.members)} Mitglieder')
     bot.loop.create_task(setBotActivity())
 
 async def loadCommands():
