@@ -3,6 +3,7 @@ import asyncio
 import random
 from datetime import datetime, timedelta
 from dataBase import *
+from Methoden import *
 
 connection = createConnection()
 cooldownDurationHugPat = 1#2       #für vote bleibt gleich
@@ -13,6 +14,7 @@ maxUsesPremium = 3
 
 async def sendHug(interaction, person):
     await interaction.response.defer(ephemeral=True)
+    CheckUserIsInSettings(connection, interaction.user.id)
 
     links = [
         "https://cdn.discordapp.com/attachments/1354078227903283251/1399384130571206656/Hug2.gif",
@@ -44,26 +46,27 @@ async def sendHug(interaction, person):
         await interaction.followup.send("Eigenlob stinkt :^)", ephemeral=True)
         return
 
-    # --- Cooldown prüfen via ausgelagerter DB-Funktion ---
+    # 1. Cooldown prüfen
     next_available = getNextHugAvailable(connection, userID, cooldownDurationHugPat)
     if next_available:
         await interaction.followup.send(
-            f"Du kannst den Hug-Befehl erst wieder <t:{int(next_available.timestamp())}:R> verwenden.",
+            f"Du kannst den Befehl erst wieder <t:{int(next_available.timestamp())}:R> verwenden.",
             ephemeral=True
         )
         return
 
-    # --- Uses prüfen und erhöhen ---
-    #isPremium = getPremium(connection, userID)
-    #allowed = updateHugPatUses(connection, userID, maxUsesPremium if isPremium else maxUses)
-    #if not allowed:
-    #    await interaction.followup.send(
-    #        f"Du hast den Hug-Befehl heute bereits {maxUsesPremium if isPremium else maxUses}x verwendet. Bitte warte bis morgen.",
-    #        ephemeral=True
-    #    )
-    #    return
+    # 2. Tageslimit prüfen
+    isPremium = getPremium(connection, userID)
+    allowed = updateHugPatUses(connection, userID, maxUsesPremium if isPremium else maxUses)
+    if not allowed:
+        await interaction.followup.send(
+            f"Du hast den Befehl heute bereits "
+            f"{maxUsesPremium if isPremium else maxUses}x verwendet. Bitte warte bis morgen.",
+            ephemeral=True
+        )
+        return
 
-    # --- Cooldown setzen und Loggen ---
+    # 3. Cooldown + Log setzen
     updateHugPatCooldown(connection, userID)
     insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, "Umarmung 🫂", "Hug", guildID, guildName)
 
@@ -88,6 +91,7 @@ async def sendHug(interaction, person):
 
 async def sendPat(interaction, person):
     await interaction.response.defer(ephemeral=True)
+    checkUserSetting(connection, interaction.user.id)
     links = [
         "https://cdn.discordapp.com/attachments/1354078227903283251/1399384607237083249/Pat7.gif?ex=6888cdf9&is=68877c79&hm=4371fb99a5fda1edc3441be7fd3a1ebe23f6f4ad6de4d6f001d34a3132c956a7&",
         "https://cdn.discordapp.com/attachments/1354078227903283251/1399384607752851606/Pat2.gif?ex=6888cdf9&is=68877c79&hm=9aa055276b6bf43688a1fe04f34148b51fe1fcfb5c89f0b44406d91250b72309&",
@@ -114,29 +118,27 @@ async def sendPat(interaction, person):
         await interaction.followup.send("Eigenlob stinkt :^)")
         return
 
-    if checkHugPatCooldown(connection, userID, cooldownDurationHugPat) == False:
+    # 1. Cooldown prüfen
+    next_available = getNextHugAvailable(connection, userID, cooldownDurationHugPat)
+    if next_available:
         await interaction.followup.send(
-            f"Du kannst den Pat-Befehl erst wieder <t:{int(now.timestamp()) + cooldownDurationHugPat * 3600}:R> verwenden.",
+            f"Du kannst den Befehl erst wieder <t:{int(next_available.timestamp())}:R> verwenden.",
             ephemeral=True
         )
         return
 
-    #Premium = getPremium(connection, userID)
-    #if Premium:
-    #    if not updateHugPatUses(connection, userID, maxUsesPremium):
-    #        await interaction.followup.send(
-    #            f"Du hast den Pat-Befehl heute bereits {maxUsesPremium}x verwendet. Bitte warte bis morgen.",
-    #            ephemeral=True
-    #        )
-    #        return
-    #else:
-    #    if not updateHugPatUses(connection, userID, maxUses):
-    #        await interaction.followup.send(
-    #            f"Du hast den Pat-Befehl heute bereits {maxUses}x verwendet. Bitte warte bis morgen.",
-    #            ephemeral=True
-    #        )
-    #        return
+    # 2. Tageslimit prüfen
+    isPremium = getPremium(connection, userID)
+    allowed = updateHugPatUses(connection, userID, maxUsesPremium if isPremium else maxUses)
+    if not allowed:
+        await interaction.followup.send(
+            f"Du hast den Befehl heute bereits "
+            f"{maxUsesPremium if isPremium else maxUses}x verwendet. Bitte warte bis morgen.",
+            ephemeral=True
+        )
+        return
 
+    # 3. Cooldown + Log setzen
     updateHugPatCooldown(connection, userID)
     insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, "Pat 🥰", "Pat", guildID, guildName)
     

@@ -83,6 +83,16 @@ def CheckServerExists(connection, serverID):
 
 
 
+def CheckUserIsInSettings(connection, userID):
+    """
+    Prüft ob User in der Datenbank existiert, wenn nicht wird er hinzugefügen
+    """
+    exists = checkUserSetting(connection, userID)
+    if exists == False:
+        insertUserSetting(connection, userID)
+
+
+
 
 # :name: – aber NICHT, wenn davor "<" steht und NICHT, wenn direkt danach ":<digits>>" kommt
 _COLON_NAME = re.compile(r"(?<!<):([A-Za-z0-9_]+):(?!\d+>)")
