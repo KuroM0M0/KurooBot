@@ -13,6 +13,7 @@ maxUsesPremium = 3
 
 async def sendHug(interaction, person):
     await interaction.response.defer(ephemeral=True)
+    checkUserSetting(connection, interaction.user.id)
 
     links = [
         "https://cdn.discordapp.com/attachments/1354078227903283251/1399384130571206656/Hug2.gif",
@@ -88,6 +89,7 @@ async def sendHug(interaction, person):
 
 async def sendPat(interaction, person):
     await interaction.response.defer(ephemeral=True)
+    checkUserSetting(connection, interaction.user.id)
     links = [
         "https://cdn.discordapp.com/attachments/1354078227903283251/1399384607237083249/Pat7.gif?ex=6888cdf9&is=68877c79&hm=4371fb99a5fda1edc3441be7fd3a1ebe23f6f4ad6de4d6f001d34a3132c956a7&",
         "https://cdn.discordapp.com/attachments/1354078227903283251/1399384607752851606/Pat2.gif?ex=6888cdf9&is=68877c79&hm=9aa055276b6bf43688a1fe04f34148b51fe1fcfb5c89f0b44406d91250b72309&",
