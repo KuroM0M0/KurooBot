@@ -27,6 +27,8 @@ from Shop.shop import ShopButtons, Shop, ShopEmbed
 from Shop.inventar import *
 from user.birthday import *
 from Shop.items import *
+from dotenv import load_dotenv
+import os
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -35,10 +37,12 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 KuroID = 308660164137844736
 cooldownDuration = 24
 VoteCooldown = 12 #in Stunden
-BotToken = "MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8"
-#BotToken = "MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg" #richtiger Bot
 
 logging.basicConfig(level=logging.WARNING) #AKTIVIEREN FÜR LOGGING
+
+load_dotenv()
+#BotToken = os.getenv("BotToken")
+BotToken = os.getenv("TestBotToken") #Testbot
 
 connection = createConnection()
 
@@ -445,6 +449,7 @@ async def streak(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="sendnewsletter", description="Newsletter an alle Abonnenten schicken")
+#@app_commands.guilds(discord.Object(id=475295112453423125)) funktioniert nicht, testen worans liegt
 async def sendNewsletter(interaction: discord.Interaction):
     if interaction.user.id != KuroID:
         await interaction.response.send_message("Du darfst diesen Befehl nicht verwenden.", ephemeral=True)
