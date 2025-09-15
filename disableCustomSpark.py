@@ -7,6 +7,7 @@ class disableCustomSparkModal(discord.ui.Modal, title="Disable Custom Spark"):
     SparkID = discord.ui.TextInput(label="SparkID", style=discord.TextStyle.short, required=True)
 
     async def on_submit(self, interaction):
+        await interaction.response.defer(ephemeral=True)
         SparkID = self.SparkID.value
         userID = str(interaction.user.id)
         await checkStatCanBeDisabled(SparkID, userID, interaction)
