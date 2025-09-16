@@ -467,7 +467,7 @@ async def sendNewsletter(interaction: discord.Interaction):
 
 @bot.tree.command(name="premium", description="Hole dir Premium")
 async def premium(interaction: discord.Interaction):
-    await interaction.response.send_message("[Sende hier hin 1€ um Premium zu erhalten](https://paypal.me/KuroPixel?country.x=DE&locale.x=de_DE). In die Nachricht bitte deine Discord ID, damit dir Premium zugewiesen werden kann.", ephemeral=True)
+    await interaction.response.send_message("[Sende über **Freunde&Familie** 1€](https://paypal.me/KuroPixel?country.x=DE&locale.x=de_DE). In die Nachricht bitte deine Discord ID, damit dir Premium zugewiesen werden kann.\n-# Discord ID = Rechtsklick auf dich -> Nutzer-ID Kopieren", ephemeral=True)
 
 
 @bot.tree.command(name="vote", description="Wenn du den Bot kostenlos unterstützen möchtest :)")
