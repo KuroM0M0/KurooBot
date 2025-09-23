@@ -1923,3 +1923,41 @@ def getItemIDByName(connection, name):
             print(f"Fehler beim selecten von Inventar: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def insertPaypalTransaction(connection, userID, transactionID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  Insert INTO Paypal
+                                (DiscordID, TransactionID, Timestamp)
+                                VALUES (?, ?, ?)''',
+                                (userID, transactionID, datetime.now().isoformat()))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der PaypalTransaction: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def checkPaypalTransactionExists(connection, transactionID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT *
+                                FROM Paypal
+                                WHERE TransactionID = ?''',
+                                (transactionID,))
+            result = cursor.fetchone()
+            if result is None:
+                return False
+            else:
+                return True
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Inventar: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")

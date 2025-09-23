@@ -7,11 +7,10 @@ from discord.ext import commands
 from discord import app_commands
 from discord import ButtonStyle, ui
 from datetime import datetime, timedelta
-#für Paypal
-#import requests
-#from flask import Flask, request, jsonify
-#import threading
+from dotenv import load_dotenv
+import os
 #eigene Imports
+import paypal
 from dataBase import *
 from Methoden import *
 from help import *
@@ -27,8 +26,7 @@ from Shop.shop import ShopButtons, Shop, ShopEmbed
 from Shop.inventar import *
 from user.birthday import *
 from Shop.items import *
-from dotenv import load_dotenv
-import os
+
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -78,6 +76,7 @@ async def on_ready():
     for guild in bot.guilds:
         print(f'- {guild.name} (ID: {guild.id}) | {len(guild.members)} Mitglieder')
     await setBotActivity()
+    bot.loop.create_task(paypal.checkPaymentsLoop(bot, connection))
 
 @bot.event
 async def on_guild_join(guild):
