@@ -276,11 +276,12 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
 @bot.tree.command(name="topserver", description="Zeigt an auf welchem Server am meisten gesparkt wird.")
 async def topserver(interaction: discord.Interaction):
     rows = getTopServerSparks(connection)
-    guildID = str(interaction.guild.id)
+    serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
-    CheckServerExists(connection, guildID)
-    await CheckSparkChannel(connection, guildID, channelID, interaction)
+    CheckServerExists(connection, serverID)
+    if serverID is not None:
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     if rows:
         embed = discord.Embed(
@@ -350,7 +351,8 @@ async def help(interaction: discord.Interaction, command: str = None):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
     CheckServerExists(connection, serverID)
-    await CheckSparkChannel(connection, serverID, channelID, interaction)
+    if serverID is not None:
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     if command is None:
         embed = discord.Embed(
@@ -437,7 +439,8 @@ async def streak(interaction: discord.Interaction):
     channelID = str(interaction.channel.id)
 
     CheckServerExists(connection, serverID)
-    await CheckSparkChannel(connection, serverID, channelID, interaction)
+    if serverID is not None:
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     embed = discord.Embed(
             title=f"Streak von {userName}",
@@ -569,7 +572,8 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
     Birthday = getBirthday(connection, userID)
 
     CheckServerExists(connection, serverID)
-    await CheckSparkChannel(connection, serverID, channelID, interaction)
+    if serverID is not None:
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     embed = discord.Embed(
         title=f"Profil von {userName}",
@@ -689,6 +693,10 @@ async def shop(interaction: discord.Interaction):
 async def inventar(interaction: discord.Interaction):
     await interaction.response.defer()
     embed = InventarEmbed(interaction, connection)
+    serverID = str(interaction.guild.id)
+    if serverID is not None:
+        channelID = str(interaction.channel.id)
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
     try:
         await interaction.followup.send(embed=embed, view=InventarButtons(connection))
     except Exception as e:
@@ -699,6 +707,11 @@ async def inventar(interaction: discord.Interaction):
 
 @bot.tree.command(name="setbirthday", description="Setze deinen Geburtstag")
 async def Birthday(interaction: discord.Interaction):
+    serverID = str(interaction.guild.id)
+    if serverID is not None:
+        channelID = str(interaction.channel.id)
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
+        
     # Wrapper für save_callback, da die View nur (user_id, year, month, day) übergibt
     def save_cb(user_id: int, year: Optional[int], month: int, day: int):
         # Wenn Jahr optional, erstelle ein date-Objekt
