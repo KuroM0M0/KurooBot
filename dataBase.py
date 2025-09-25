@@ -1961,3 +1961,64 @@ def checkPaypalTransactionExists(connection, transactionID):
             print(f"Fehler beim selecten von Inventar: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def insertBan(connection, UserID, ServerID, AdminID, Grund):
+    if connection is not None:
+        Timestamp = datetime.now().isoformat()
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  Insert INTO Ban
+                                (UserID, ServerID, AdminID, Timestamp, Grund)
+                                VALUES (?, ?, ?, ?, ?)''',
+                                (UserID, ServerID, AdminID, Timestamp, Grund))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Ban: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def updateBan(connection, ServerID, UserID):
+    if connection is not None:
+        Unban = datetime.now().isoformat()
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Ban
+                                SET Unban = ?
+                                WHERE ID = (
+                                SELECT MAX(ID)
+                                FROM Ban
+                                WHERE ServerID = ? AND UserID = ?)''',
+                                (Unban, ServerID, UserID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der Ban: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getBan(connection, ServerID, UserID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT *
+                                FROM Ban
+                                WHERE ServerID = ?
+                                AND UserID = ?''',
+                                (ServerID, UserID))
+            result = cursor.fetchone()
+            if result is None:
+                return False
+            else:
+                return True
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von Ban: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")

@@ -27,6 +27,24 @@ class AdminCommands(commands.Cog):
         setChannelNewsletterID(connection, serverID, channel.id)
 
 
+    @commands.command(name="ban")
+    @commands.has_permissions(administrator=True)
+    async def ban(self, ctx, member: discord.Member, reason):
+        serverID = str(ctx.guild.id)
+        userID = str(member.id)
+        insertBan(connection, userID, serverID, ctx.author.id, reason)
+        await ctx.send(f"{member} kann auf diesem Server den Bot nun nicht mehr nutzen!")
+
+
+    @commands.command(name="unban")
+    @commands.has_permissions(administrator=True)
+    async def unban(self, ctx, member: discord.Member):
+        serverID = str(ctx.guild.id)
+        userID = str(member.id)
+        updateBan(connection, serverID, userID)
+        await ctx.send(f"{member} kann den Bot auf diesem Server wieder nutzen!")
+
+
 
 
 
@@ -37,6 +55,20 @@ class AdminCommands(commands.Cog):
 
     @setNewsletterChannel.error
     async def setNewsletterChannel_error(ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
+
+    @ban.error
+    async def ban_error(ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
+        if isinstance(error, commands.MissingRequiredFlag):
+            await ctx.send("❌ Bitte gib einen Grund an!", delete_after=10)
+        if isinstance(error, commands.MissingFlagArgument):
+            await ctx.send("❌ Bitte gib einen Grund an!", delete_after=10)
+    
+    @unban.error
+    async def unban_error(ctx, error):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
 
