@@ -25,6 +25,7 @@ from reveal import RevealMainView, RevealCustomView, revealEmbed
 from Shop.shop import ShopButtons, Shop, ShopEmbed
 from Shop.inventar import *
 from user.birthday import *
+from user.premiumDM import startPremiumChecker
 from Shop.items import *
 
 
@@ -76,7 +77,8 @@ async def on_ready():
     for guild in bot.guilds:
         print(f'- {guild.name} (ID: {guild.id}) | {len(guild.members)} Mitglieder')
     await setBotActivity()
-    bot.loop.create_task(paypal.checkPaymentsLoop(bot, connection))
+    #bot.loop.create_task(paypal.checkPaymentsLoop(bot, connection))
+    startPremiumChecker(bot, connection)
 
 @bot.event
 async def on_guild_join(guild):
@@ -127,7 +129,6 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
     date = datetime.now().date().isoformat()
     SparkUses = getSparkUses(connection, userID)
 
-    ResetPremium(connection, userID)
     ResetStreak(connection, userID)
     CheckServerExists(connection, guildID)
 
@@ -633,7 +634,7 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
     embed.set_thumbnail(url=user.display_avatar.url)
     embed.add_field(name="🗓️Beigetreten am", value=user.joined_at.strftime("%d.%m.%Y"), inline=True)
 
-    if Birthday is not None and Birthday != 0:
+    if Birthday is not None and Birthday != '0':
         embed.add_field(name="🎂Geburtstag", value=getBirthday(connection, userID), inline=True)
 
     if Premium == True:

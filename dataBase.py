@@ -542,7 +542,8 @@ def setPremium(connection, userID):
         try:
             cursor.execute('''  UPDATE User
                                 SET HatPremium = 1,
-                                PremiumTimestamp = ?
+                                PremiumTimestamp = ?,
+                                PremiumInMonths = PremiumInMonths + 1
                                 WHERE UserID = ?''',
                                 (time, userID))
             connection.commit()
@@ -652,7 +653,7 @@ def insertUser(connection, userID):
         cursor = connection.cursor()
         try:
             cursor.execute('''  INSERT INTO User
-                                (UserID, HugPatUses, SparkUses, HugPatLastReset, HugPatTimestamp, SparkTimestamp, Streak, StreakPoints, HatGevotet, HatPremium, PremiumTimestamp, VoteTimestamp, StreakPointsTimestamp, AktivsterUser, VotePunkte, Birthday, RevealUses)
+                                (UserID, HugPatUses, SparkUses, HugPatLastReset, HugPatTimestamp, SparkTimestamp, Streak, StreakPoints, HatGevotet, HatPremium, PremiumTimestamp, VoteTimestamp, PremiumInMonths, AktivsterUser, VotePunkte, Birthday, RevealUses)
                                 VALUES(?, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)''',
                                 (userID,))
             connection.commit()
@@ -2011,7 +2012,8 @@ def getBan(connection, ServerID, UserID):
             cursor.execute('''  SELECT *
                                 FROM Ban
                                 WHERE ServerID = ?
-                                AND UserID = ?''',
+                                AND UserID = ?
+                                AND Unban IS NULL''',
                                 (ServerID, UserID))
             result = cursor.fetchone()
             if result is None:
@@ -2020,5 +2022,78 @@ def getBan(connection, ServerID, UserID):
                 return True
         except sqlite3.Error as e:
             print(f"Fehler beim selecten von Ban: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getPremiumDMSetting(connection, UserID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT PremiumDM
+                                FROM Settings
+                                WHERE UserID = ?''',
+                                (UserID,))
+            result = cursor.fetchone()
+            if result[0] == 1:
+                return 1
+            else:
+                return 0
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von PremiumDM Settings: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setPremiumDMSetting(connection, UserID, value):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE Settings
+                                SET PremiumDM = ?
+                                WHERE UserID = ?''',
+                                (value, UserID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der PremiumDM Settings: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getPremiumInMonths(connection, userID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT PremiumInMonths
+                                FROM User
+                                WHERE UserID = ?''',
+                                (userID,))
+            result = cursor.fetchone()
+            return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von PremiumInMonths: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getAllPremiumUser(connection):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT UserID
+                                FROM User
+                                WHERE PremiumInMonths > 0''')
+            result = cursor.fetchall()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von PremiumUser: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
