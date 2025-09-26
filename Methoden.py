@@ -13,17 +13,6 @@ def UserExists(connection, userID):
         insertUser(connection, userID)
         
 
-def ResetPremium(connection, userID):
-    """
-    Prüft ob Premium abgelaufen ist, wenn ja wird es resettet
-    """
-    Premium = getPremium(connection, userID)
-    if Premium:
-        PremiumTimestamp = datetime.fromisoformat(getPremiumTimestamp(connection, userID))
-        MonatBack = datetime.now() - timedelta(days=30)
-        if PremiumTimestamp < MonatBack:
-            resetPremium(connection, userID)
-
 
 def StreakPunkt(connection, userID):
     """

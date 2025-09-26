@@ -7,11 +7,10 @@ from discord.ext import commands
 from discord import app_commands
 from discord import ButtonStyle, ui
 from datetime import datetime, timedelta
-#für Paypal
-#import requests
-#from flask import Flask, request, jsonify
-#import threading
+from dotenv import load_dotenv
+import os
 #eigene Imports
+import paypal
 from dataBase import *
 from Methoden import *
 from help import *
@@ -26,7 +25,9 @@ from reveal import RevealMainView, RevealCustomView, revealEmbed
 from Shop.shop import ShopButtons, Shop, ShopEmbed
 from Shop.inventar import *
 from user.birthday import *
+from user.premiumDM import startPremiumChecker
 from Shop.items import *
+
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -35,10 +36,12 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 KuroID = 308660164137844736
 cooldownDuration = 24
 VoteCooldown = 12 #in Stunden
-BotToken = "MTMxMDc0NDM3OTIyODQyNjI5MA.GbLQRE.J0BWbSEs22F6cEiqzrUBwMgjrWYr6dqbIn49N8"
-#BotToken = "MTMwNjI0NDgzODUwNDY2NTE2OQ.Gh_inc.Ys9Pc1_L89uRQ1fPm1wsqbDvcD32SEzHivkSUg" #richtiger Bot
 
-logging.basicConfig(level=logging.DEBUG) #AKTIVIEREN FÜR LOGGING
+logging.basicConfig(level=logging.WARNING) #AKTIVIEREN FÜR LOGGING
+
+load_dotenv()
+#BotToken = os.getenv("BotToken")
+BotToken = os.getenv("TestBotToken") #Testbot
 
 connection = createConnection()
 
@@ -72,13 +75,24 @@ async def on_ready():
         print(f"Fehler beim Synchronisieren: {e}")
     #zeigt in Konsole an, auf welchen Servern der Bot ist
     for guild in bot.guilds:
-        print(f'- {guild.name} (ID: {guild.id})')
-    bot.loop.create_task(setBotActivity())
+        print(f'- {guild.name} (ID: {guild.id}) | {len(guild.members)} Mitglieder')
+    await setBotActivity()
+    #bot.loop.create_task(paypal.checkPaymentsLoop(bot, connection))
+    startPremiumChecker(bot, connection)
+
+@bot.event
+async def on_guild_join(guild):
+    await setBotActivity()
+
+@bot.event
+async def on_guild_remove(guild):
+    await setBotActivity()
 
 async def loadCommands():
     await bot.load_extension("commands.AdminCommands")
     await bot.load_extension("commands.SecretCommands")
     await bot.load_extension("commands.KuroCommands")
+    await bot.load_extension("commands.error")
     
 
 async def main():
@@ -103,13 +117,18 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
     channelID = str(channel.id)
     
     UserExists(connection, userID)
+    if getBan(connection, guildID, targetID) == True:
+        await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
+        return
+    if getBan(connection, guildID, userID) == True:
+        await interaction.followup.send("Du wurdest von der Nutzung des Bots ausgeschlossen!", ephemeral=True)
+        return
 
     Premium = getPremium(connection, userID)
     cooldown = getCooldown(connection, userID)
     date = datetime.now().date().isoformat()
     SparkUses = getSparkUses(connection, userID)
 
-    ResetPremium(connection, userID)
     ResetStreak(connection, userID)
     CheckServerExists(connection, guildID)
 
@@ -224,6 +243,14 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
+    if getBan(connection, serverID, targetID) == True:
+        await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
+        return
+
+    if getBan(connection, serverID, userID) == True:
+        await interaction.followup.send("Du wurdest von der Nutzung vom Bot ausgeschlossen!", ephemeral=True)
+        return
+
     CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
 
@@ -267,11 +294,12 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
 @bot.tree.command(name="topserver", description="Zeigt an auf welchem Server am meisten gesparkt wird.")
 async def topserver(interaction: discord.Interaction):
     rows = getTopServerSparks(connection)
-    guildID = str(interaction.guild.id)
+    serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
-    CheckServerExists(connection, guildID)
-    await CheckSparkChannel(connection, guildID, channelID, interaction)
+    CheckServerExists(connection, serverID)
+    if serverID is not None:
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     if rows:
         embed = discord.Embed(
@@ -315,8 +343,20 @@ async def cooldown(interaction: discord.Interaction):
 @bot.tree.command(name="hug", description="Umarme eine andere Person Anonym")
 @app_commands.describe(person="Wähle eine Person aus, die du Umarmen möchtest.")
 async def hug(interaction: discord.Interaction, person: discord.Member):
+    await interaction.response.defer(ephemeral=True)
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
+    userID = str(interaction.user.id)
+    targetID = str(person.id)
+
+    if getBan(connection, serverID, targetID) == True:
+        await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
+        return
+
+    if getBan(connection, serverID, userID) == True:
+        await interaction.followup.send("Du wurdest von der Nutzung vom Bot ausgeschlossen!", ephemeral=True)
+        return
+
     CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
     await sendHug(interaction, person)
@@ -327,8 +367,20 @@ async def hug(interaction: discord.Interaction, person: discord.Member):
 @bot.tree.command(name="pat", description="Gib einer anderen Person anonym ein Patpat c:")
 @app_commands.describe(person="Wähle eine Person aus, der du ein Patpat geben möchtest.")
 async def pat(interaction: discord.Interaction, person: discord.Member):
+    await interaction.response.defer(ephemeral=True)
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
+    userID = str(interaction.user.id)
+    targetID = str(person.id)
+
+    if getBan(connection, serverID, targetID) == True:
+        await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
+        return
+
+    if getBan(connection, serverID, userID) == True:
+        await interaction.followup.send("Du wurdest von der Nutzung vom Bot ausgeschlossen!", ephemeral=True)
+        return
+    
     CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
     await sendPat(interaction, person)
@@ -341,7 +393,8 @@ async def help(interaction: discord.Interaction, command: str = None):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
     CheckServerExists(connection, serverID)
-    await CheckSparkChannel(connection, serverID, channelID, interaction)
+    if serverID is not None:
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     if command is None:
         embed = discord.Embed(
@@ -372,10 +425,12 @@ async def help(interaction: discord.Interaction, command: str = None):
         await helpAdmin(interaction)
     elif command == "vote":
         await helpVote(interaction)
+    elif command == "shop":
+        await helpShop(interaction)
 
 @help.autocomplete("command")
 async def helpAutocomplete(interaction: discord.Interaction, current: str):
-    befehle = ["admin", "spark", "stats", "hug", "pat", "settings", "streak", "reveal", "vote"]
+    befehle = ["admin", "spark", "stats", "hug", "pat", "settings", "streak", "reveal", "vote", "shop"]
     return [
         app_commands.Choice(name=b, value=b)
         for b in befehle
@@ -427,8 +482,13 @@ async def streak(interaction: discord.Interaction):
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
+    if getBan(connection, serverID, userID) == True:
+        await interaction.followup.send("Du wurdest von der Nutzung des Bots ausgeschlossen!", ephemeral=True)
+        return
+
     CheckServerExists(connection, serverID)
-    await CheckSparkChannel(connection, serverID, channelID, interaction)
+    if serverID is not None:
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     embed = discord.Embed(
             title=f"Streak von {userName}",
@@ -447,6 +507,7 @@ async def streak(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="sendnewsletter", description="Newsletter an alle Abonnenten schicken")
+#@app_commands.guilds(discord.Object(id=475295112453423125)) funktioniert nicht, testen worans liegt
 async def sendNewsletter(interaction: discord.Interaction):
     if interaction.user.id != KuroID:
         await interaction.response.send_message("Du darfst diesen Befehl nicht verwenden.", ephemeral=True)
@@ -456,7 +517,7 @@ async def sendNewsletter(interaction: discord.Interaction):
 
 @bot.tree.command(name="premium", description="Hole dir Premium")
 async def premium(interaction: discord.Interaction):
-    await interaction.response.send_message("[Sende hier hin 1€ um Premium zu erhalten](https://paypal.me/KuroPixel?country.x=DE&locale.x=de_DE). In die Nachricht bitte deine Discord ID, damit dir Premium zugewiesen werden kann.", ephemeral=True)
+    await interaction.response.send_message("[Sende über **Freunde&Familie** 1€](https://paypal.me/KuroPixel?country.x=DE&locale.x=de_DE). In die Nachricht bitte deine Discord ID, damit dir Premium zugewiesen werden kann.\n-# Discord ID = Rechtsklick auf dich -> Nutzer-ID Kopieren", ephemeral=True)
 
 
 @bot.tree.command(name="vote", description="Wenn du den Bot kostenlos unterstützen möchtest :)")
@@ -558,8 +619,16 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
     channelID = str(interaction.channel.id)
     Birthday = getBirthday(connection, userID)
 
+    if getBan(connection, serverID, interaction.user.id) == True:
+            await interaction.followup.send("Du wurdest von der Nutzung des Bots ausgeschlossen!", ephemeral=True)
+            return
+    if getBan(connection, serverID, userID) == True:
+        await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
+        return
+
     CheckServerExists(connection, serverID)
-    await CheckSparkChannel(connection, serverID, channelID, interaction)
+    if serverID is not None:
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     embed = discord.Embed(
         title=f"Profil von {userName}",
@@ -567,7 +636,7 @@ async def profil(interaction: discord.Interaction, user: discord.User = None):
     embed.set_thumbnail(url=user.display_avatar.url)
     embed.add_field(name="🗓️Beigetreten am", value=user.joined_at.strftime("%d.%m.%Y"), inline=True)
 
-    if Birthday is not None and Birthday != 0:
+    if Birthday is not None and Birthday != '0':
         embed.add_field(name="🎂Geburtstag", value=getBirthday(connection, userID), inline=True)
 
     if Premium == True:
@@ -679,6 +748,16 @@ async def shop(interaction: discord.Interaction):
 async def inventar(interaction: discord.Interaction):
     await interaction.response.defer()
     embed = InventarEmbed(interaction, connection)
+    serverID = str(interaction.guild.id)
+    userID = str(interaction.user.id)
+
+    if getBan(connection, serverID, userID) == True:
+        await interaction.followup.send("Du wurdest von der Nutzung vom Bot ausgeschlossen!", ephemeral=True)
+        return
+
+    if serverID is not None:
+        channelID = str(interaction.channel.id)
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
     try:
         await interaction.followup.send(embed=embed, view=InventarButtons(connection))
     except Exception as e:
@@ -689,6 +768,17 @@ async def inventar(interaction: discord.Interaction):
 
 @bot.tree.command(name="setbirthday", description="Setze deinen Geburtstag")
 async def Birthday(interaction: discord.Interaction):
+    serverID = str(interaction.guild.id)
+    userID = str(interaction.user.id)
+
+    if getBan(connection, serverID, userID) == True:
+        await interaction.followup.send("Du wurdest von der Nutzung des Bots ausgeschlossen!", ephemeral=True)
+        return
+
+    if serverID is not None:
+        channelID = str(interaction.channel.id)
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
+        
     # Wrapper für save_callback, da die View nur (user_id, year, month, day) übergibt
     def save_cb(user_id: int, year: Optional[int], month: int, day: int):
         # Wenn Jahr optional, erstelle ein date-Objekt

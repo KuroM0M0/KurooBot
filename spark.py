@@ -1,3 +1,4 @@
+import asyncio
 import discord
 from discord import ButtonStyle, ui
 from dataBase import *
@@ -45,5 +46,7 @@ async def CheckSparkChannel(connection, guildID, channelID, interaction):
     sparkChannel = getChannelSparkID(connection, guildID)
     if sparkChannel != channelID and sparkChannel != None:
         await interaction.followup.send("Du kannst hier keine Befehle nutzen! Nutze den vorgesehenen Channel dafür.", ephemeral=True)
+        await asyncio.sleep(5)
+        await interaction.delete_original_response()
         raise Exception("Wrong Channel")
     

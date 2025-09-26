@@ -24,7 +24,13 @@ cmdDescription = textwrap.dedent(
         "**/profil**\n"
         "Zeigt dir Infos über dich an\n\n"
         "**/reveal**\n"
-        "Lasse dir anzeigen von wem ein Spark gesendet wurde\n\n")
+        "Lasse dir anzeigen von wem ein Spark gesendet wurde\n\n"
+        "**/shop**\n"
+        "Zeige dir alles was du kaufen kannst\n\n"
+        "**/inventar**\n"
+        "Hier siehst du alle Items die du besitzt.\n\n"
+        "**/use (Item)**\n"
+        "Benutze ein Item\n\n")
 
 async def helpSpark(interaction):
     embed = discord.Embed(
@@ -48,31 +54,33 @@ async def helpStreak(interaction):
         color=0x005b96)
     text = textwrap.dedent("Hier siehst du alle relevanten Infos zu deiner Streak. \n"
                            "Jedes mal wenn deine Streak durch 3 teilbar ist, gibt es einen Streakpunkt."
-                           "Mit Streakpunkten kannst du dir in Zukunft im Shop unterschiedliche Dinge kaufen, wie zb. Premium")
+                           "Mit Streakpunkten kannst du dir im Shop Premium kaufen.")
     embed.add_field(
         name="Hilfe zu /streak: ",
         value=text,
         inline=False)
     await interaction.response.send_message(embed=embed)
 
+
 async def helpSettings(interaction):
     embed = discord.Embed(
         color=0x005b96)
     text = textwrap.dedent("Hier kannst du deine Einstellungen anpassen. \n"
-                           "Je nachdem ob du Premium hast oder nicht, werden dir andere Buttons angezeigt."
                            "Es wird dir angezeigt was deine aktuellen Einstellungen sind."
-                           "Wenn du kein Premium hast, wird dir noch gesagt, was man mit Premium zusätzlich einstellen kann.")
+                           "Wenn du kein Premium hast, hast du nicht die Option alles einzustellen. \n"
+                           "Was du nicht einstellen kannst, ist unter 'Premium Einstellungen' aufgelistet.")
     embed.add_field(
         name="Hilfe zu /settings: ",
         value=text,
         inline=False)
     await interaction.response.send_message(embed=embed)
 
+
 async def helpHug(interaction):
     embed = discord.Embed(
         color=0x005b96)
     text = textwrap.dedent("Du kannst taglich einer Person **einen Hug oder Pat** geben. \n"
-                           "**Mit Premium** sind Hug/Pats **3x taglich** verwendbar.")
+                           "**Mit Premium** sind Hug/Pats **3x taglich** verwendbar mit jeweils einer Stunde Cooldown.")
     embed.add_field(
         name="Hilfe zu /hug: ",
         value=text,
@@ -83,17 +91,18 @@ async def helpPat(interaction):
     embed = discord.Embed(
         color=0x005b96)
     text = textwrap.dedent("Du kannst täglich einer Person **einen Hug oder Pat** geben. \n"
-                           " **Mit Premium** sind Hug/Pats **3x täglich** verwendbar.")
+                           " **Mit Premium** sind Hug/Pats **3x täglich** verwendbar mit jeweils einer Stunde Cooldown.")
     embed.add_field(
         name="Hilfe zu /pat: ",
         value=text,
         inline=False)
     await interaction.response.send_message(embed=embed)
 
+
 async def helpStats(interaction):
     embed = discord.Embed(
         color=0x005b96)
-    text = textwrap.dedent("Um deine **eigenen Stats** anzusehen, kannst du **/stats** eingeben. \n"
+    text = textwrap.dedent("Um deine **eigenen Stats** anzusehen, kannst du **/stats** eingeben. Du kannst zwischen Globalen und Server Stats wechseln.\n"
                            "Der Befehl zeigt dir alle Komplimente (auch custom Nachrichten) an und wie oft du diese bekommen hast."
                            "\n\n **Mit Premium** kannst du mit dem Befehl **/spark_ausblenden** custom Nachrichten ausblenden wenn du die SparkID angibst."
                            "Die SparkID findest du bei deinen Stats neben der custom Nachricht in Klammern. ")
@@ -113,9 +122,8 @@ async def helpReveal(interaction):
                             "Du brauchst dazu einen Reveal (wie viele du hast, siehst du mit /profil).\n\n"
                             "**Preise:**\n"
                             "2 Reveals = 3€\n"
-                            "([3€ über Freunde&Familie senden und deine DiscordID oder Namen angeben](https://www.paypal.com/paypalme/KuroPixel?country.x=DE&locale.x=de_DE))\n"
-                            "1 Reveal = 20 Streakpunkte (WIP)\n"
-                            "1 Reveal = 40 Votepunkte (WIP)\n"
+                            "([3€ über **Freunde&Familie** (sonst funktioniert es nicht) senden und deine Discord ID angeben](https://www.paypal.com/paypalme/KuroPixel?country.x=DE&locale.x=de_DE))\n"
+                            "1 Reveal = 40 Votepunkte (/shop)\n"
                             "\n In Zukunft ist noch geplant, dass man den Sender anfragen kann, ob es revealed werden darf.")
     embed.add_field(
         name="Hilfe zu /reveal: ",
@@ -145,9 +153,22 @@ async def helpVote(interaction):
         color=0x005b96)
     text = textwrap.dedent("Um an VotePunkte zu kommen, kannst du alle 12 Stunden einmal Voten.\n"
                            "Wichtig dabei ist, dass du nach dem Voten nocheinmal /vote eingeben musst, um deinen Votepunkt zu erhalten."
-                           "Mit diesen Punkten kannst du aktuell noch nichts machen, bald aber Premium und Reveals kaufen.")
+                           "Mit diesen Punkten kannst du dir im /shop Items kaufen :)")
     embed.add_field(
         name="Hilfe zu /vote: ",
+        value=text,
+        inline=False)
+    await interaction.response.send_message(embed=embed)
+
+
+async def helpShop(interaction):
+    embed = discord.Embed(
+        color=0x005b96)
+    text = textwrap.dedent("Um dir Items zu kaufen, kannst du den Befehl **/shop** eingeben.\n"
+                           "Dort siehst du auch direkt wie viele VotePunkte und StreakPunkte du hast.\n"
+                           "Was die Items genau machen, musst du selbst herausfinden :)\n")
+    embed.add_field(
+        name="Hilfe zu /shop: ",
         value=text,
         inline=False)
     await interaction.response.send_message(embed=embed)

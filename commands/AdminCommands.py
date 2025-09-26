@@ -27,18 +27,25 @@ class AdminCommands(commands.Cog):
         setChannelNewsletterID(connection, serverID, channel.id)
 
 
+    @commands.command(name="ban")
+    @commands.has_permissions(administrator=True)
+    async def ban(self, ctx, member: discord.Member, reason):
+        serverID = str(ctx.guild.id)
+        userID = str(member.id)
+        insertBan(connection, userID, serverID, ctx.author.id, reason)
+        await ctx.send(f"{member} ist nun vom Bot ausgeschlossen!")
+
+
+    @commands.command(name="unban")
+    @commands.has_permissions(administrator=True)
+    async def unban(self, ctx, member: discord.Member):
+        serverID = str(ctx.guild.id)
+        userID = str(member.id)
+        updateBan(connection, serverID, userID)
+        await ctx.send(f"{member} kann den Bot nun wieder nutzen!")
 
 
 
-    @setSparkChannel.error
-    async def setSparkChannel_error(ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
-
-    @setNewsletterChannel.error
-    async def setNewsletterChannel_error(ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
 
 async def setup(bot):
     await bot.add_cog(AdminCommands(bot))

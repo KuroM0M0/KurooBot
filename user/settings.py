@@ -38,6 +38,7 @@ class newSettings(discord.ui.View):
         self.sparkDM = self.format_toggle(getSparkDM(connection, userID))
         self.ghostPing = self.format_toggle(getGhostpingSetting(connection, userID))
         self.customSpark = self.format_toggle(getCustomSparkSetting(connection, userID))
+        self.premiumDM = self.format_toggle(getPremiumDMSetting(connection, userID))
 
     def settingEmbed(self):
         embed = discord.Embed(title="Einstellungen", color=0x005b96)
@@ -60,7 +61,8 @@ class newSettings(discord.ui.View):
             value=f">>> `Newsletter` → {self.newsletter}\n"
                   f"`SparkDM` → {self.sparkDM}\n"
                   f"`Stats` → {self.statsPrivate}\n"
-                  f"`Custom Sparks` → {self.customSpark}",
+                  f"`Custom Sparks` → {self.customSpark}"
+                  f"`PremiumDM` → {self.premiumDM}",
             inline=False
         )
 
@@ -81,6 +83,7 @@ class newSettings(discord.ui.View):
             value=f">>> `Ghostping` → {self.ghostPing}\n"
                 f"`Newsletter` → {self.newsletter}\n"
                 f"`SparkDM` → {self.sparkDM}\n"
+                f"`PremiumDM` → {self.premiumDM}\n"
                 f"`Custom Sparks` → {self.customSpark}",
             inline=False
         )
@@ -108,6 +111,7 @@ class SettingSelect(discord.ui.Select):
             options.append(discord.SelectOption(label="Ghostping", description="Stelle ein, ob du Ghostpings erhalten möchtest", value="ghostping", emoji="<:PeepoPing:1412450415986872461>"))
             options.append(discord.SelectOption(label="Newsletter", description="Stelle ein, ob du Updates vom Bot in deine DMs erhalten möchtest", value="newsletter", emoji="📰"))
             options.append(discord.SelectOption(label="SparkDM", description="Stelle ein, ob du vom Bot angeschrieben werden willst, wenn du gesparkt wurdest", value="sparkdm", emoji="<:Schaufel:1410610904361472031>"))
+            options.append(discord.SelectOption(label="PremiumDM", description="Stelle ein, ob du vom Bot angeschrieben werden willst, wenn dein Premium abläuft", value="premiumdm", emoji="👑"))
             options.append(discord.SelectOption(label="Custom Sparks", description="Stelle ein, ob du Custom Sparks erhalten möchtest", value="customsparks", emoji="✨"))
         else: #Damit bei Premium alles in richtiger Reihenfolge angezeigt wird
             options.append(discord.SelectOption(label="Ghostping", description="Stelle ein, ob du Ghostpings erhalten möchtest", value="ghostping", emoji="<:PeepoPing:1412450415986872461>"))
@@ -139,6 +143,10 @@ class SettingSelect(discord.ui.Select):
         elif value == "sparkdm":
             val = getSparkDM(connection, userID)
             setSparkDM(connection, userID, not val)
+
+        elif value == "premiumdm":
+            val = getPremiumDMSetting(connection, userID)
+            setPremiumDMSetting(connection, userID, not val)
 
         elif value == "stats":
             val = getStatsPrivate(connection, userID)
