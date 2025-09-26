@@ -90,6 +90,7 @@ async def loadCommands():
     await bot.load_extension("commands.AdminCommands")
     await bot.load_extension("commands.SecretCommands")
     await bot.load_extension("commands.KuroCommands")
+    await bot.load_extension("commands.error")
     
 
 async def main():

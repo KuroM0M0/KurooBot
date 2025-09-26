@@ -33,7 +33,7 @@ class AdminCommands(commands.Cog):
         serverID = str(ctx.guild.id)
         userID = str(member.id)
         insertBan(connection, userID, serverID, ctx.author.id, reason)
-        await ctx.send(f"{member} kann auf diesem Server den Bot nun nicht mehr nutzen!")
+        await ctx.send(f"{member} ist nun vom Bot ausgeschlossen!")
 
 
     @commands.command(name="unban")
@@ -42,35 +42,10 @@ class AdminCommands(commands.Cog):
         serverID = str(ctx.guild.id)
         userID = str(member.id)
         updateBan(connection, serverID, userID)
-        await ctx.send(f"{member} kann den Bot auf diesem Server wieder nutzen!")
+        await ctx.send(f"{member} kann den Bot nun wieder nutzen!")
 
 
 
-
-
-    @setSparkChannel.error
-    async def setSparkChannel_error(ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
-
-    @setNewsletterChannel.error
-    async def setNewsletterChannel_error(ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
-
-    @ban.error
-    async def ban_error(ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
-        if isinstance(error, commands.MissingRequiredFlag):
-            await ctx.send("❌ Bitte gib einen Grund an!", delete_after=10)
-        if isinstance(error, commands.MissingFlagArgument):
-            await ctx.send("❌ Bitte gib einen Grund an!", delete_after=10)
-    
-    @unban.error
-    async def unban_error(ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Du brauchst Administrator-Rechte, um diesen Befehl zu benutzen!", delete_after=10)
 
 async def setup(bot):
     await bot.add_cog(AdminCommands(bot))
