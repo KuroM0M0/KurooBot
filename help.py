@@ -24,7 +24,13 @@ cmdDescription = textwrap.dedent(
         "**/profil**\n"
         "Zeigt dir Infos über dich an\n\n"
         "**/reveal**\n"
-        "Lasse dir anzeigen von wem ein Spark gesendet wurde\n\n")
+        "Lasse dir anzeigen von wem ein Spark gesendet wurde\n\n"
+        "**/shop**\n"
+        "Zeige dir alles was du kaufen kannst\n\n"
+        "**/inventar**\n"
+        "Hier siehst du alle Items die du besitzt.\n\n"
+        "**/use (Item)**\n"
+        "Benutze ein Item\n\n")
 
 async def helpSpark(interaction):
     embed = discord.Embed(
@@ -55,6 +61,7 @@ async def helpStreak(interaction):
         inline=False)
     await interaction.response.send_message(embed=embed)
 
+
 async def helpSettings(interaction):
     embed = discord.Embed(
         color=0x005b96)
@@ -67,6 +74,7 @@ async def helpSettings(interaction):
         value=text,
         inline=False)
     await interaction.response.send_message(embed=embed)
+
 
 async def helpHug(interaction):
     embed = discord.Embed(
@@ -89,6 +97,7 @@ async def helpPat(interaction):
         value=text,
         inline=False)
     await interaction.response.send_message(embed=embed)
+
 
 async def helpStats(interaction):
     embed = discord.Embed(
@@ -147,6 +156,19 @@ async def helpVote(interaction):
                            "Mit diesen Punkten kannst du dir im /shop Items kaufen :)")
     embed.add_field(
         name="Hilfe zu /vote: ",
+        value=text,
+        inline=False)
+    await interaction.response.send_message(embed=embed)
+
+
+async def helpShop(interaction):
+    embed = discord.Embed(
+        color=0x005b96)
+    text = textwrap.dedent("Um dir Items zu kaufen, kannst du den Befehl **/shop** eingeben.\n"
+                           "Dort siehst du auch direkt wie viele VotePunkte und StreakPunkte du hast.\n"
+                           "Was die Items genau machen, musst du selbst herausfinden :)\n")
+    embed.add_field(
+        name="Hilfe zu /shop: ",
         value=text,
         inline=False)
     await interaction.response.send_message(embed=embed)
