@@ -40,8 +40,8 @@ VoteCooldown = 12 #in Stunden
 logging.basicConfig(level=logging.WARNING) #AKTIVIEREN FÜR LOGGING
 
 load_dotenv()
-#BotToken = os.getenv("BotToken")
-BotToken = os.getenv("TestBotToken") #Testbot
+BotToken = os.getenv("BotToken")
+#BotToken = os.getenv("TestBotToken") #Testbot
 
 connection = createConnection()
 
@@ -77,7 +77,7 @@ async def on_ready():
     for guild in bot.guilds:
         print(f'- {guild.name} (ID: {guild.id}) | {len(guild.members)} Mitglieder')
     await setBotActivity()
-    #bot.loop.create_task(paypal.checkPaymentsLoop(bot, connection))
+    #bot.loop.create_task(paypal.checkPaymentsLoop(bot, connection)) muss noch getestet werden
     startPremiumChecker(bot, connection)
 
 @bot.event
@@ -137,8 +137,8 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
         resetSparkUses(connection, userID)
         SparkUses = 0
 
-    #await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
-    #await CheckTarget(targetID, userID, interaction)
+    await SparkCheck(cooldown, SparkUses, Premium, date, interaction)
+    await CheckTarget(targetID, userID, interaction)
     await CheckSparkChannel(connection, guildID, channelID, interaction)
 
     if SparkUses < 1:
@@ -507,7 +507,6 @@ async def streak(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="sendnewsletter", description="Newsletter an alle Abonnenten schicken")
-#@app_commands.guilds(discord.Object(id=475295112453423125)) funktioniert nicht, testen worans liegt
 async def sendNewsletter(interaction: discord.Interaction):
     if interaction.user.id != KuroID:
         await interaction.response.send_message("Du darfst diesen Befehl nicht verwenden.", ephemeral=True)
