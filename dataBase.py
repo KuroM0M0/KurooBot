@@ -620,7 +620,7 @@ def getCooldown(connection, userID):
                                 (userID,))
             result = cursor.fetchone()
             if result is None:
-                return 0
+                return "0"
             return result[0]
         except sqlite3.Error as e:
             print(f"Fehler beim Abrufen des Cooldowns: {e}")

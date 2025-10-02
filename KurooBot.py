@@ -243,10 +243,6 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
 
-    if getBan(connection, serverID, targetID) == True:
-        await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
-        return
-
     if getBan(connection, serverID, userID) == True:
         await interaction.followup.send("Du wurdest von der Nutzung vom Bot ausgeschlossen!", ephemeral=True)
         return
@@ -269,6 +265,11 @@ async def stats(interaction: discord.Interaction, person: discord.Member = None)
             await channel.send(embed=embedSelf, view=StatView(user, None, interaction))
     else:
         targetID = str(person.id)
+
+        if getBan(connection, serverID, targetID) == True:
+            await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
+            return
+    
         targetName = person.display_name
         embedTarget = await StatsTarget(person, interaction, "global")
         StatsPrivateTarget = getStatsPrivate(connection, targetID)
