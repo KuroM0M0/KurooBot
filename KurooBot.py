@@ -389,11 +389,12 @@ async def pat(interaction: discord.Interaction, person: discord.Member):
 
 @bot.tree.command(name="help", description="Zeigt dir alle Befehle an")
 async def help(interaction: discord.Interaction, command: str = None):
-    serverID = str(interaction.guild.id)
-    channelID = str(interaction.channel.id)
-    CheckServerExists(connection, serverID)
-    if serverID is not None:
-        await CheckSparkChannel(connection, serverID, channelID, interaction)
+    if interaction.guild is not None:
+        serverID = str(interaction.guild.id)
+        channelID = str(interaction.channel.id)
+        CheckServerExists(connection, serverID)
+        if serverID is not None:
+            await CheckSparkChannel(connection, serverID, channelID, interaction)
 
     if command is None:
         embed = discord.Embed(
