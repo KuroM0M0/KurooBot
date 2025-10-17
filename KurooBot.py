@@ -27,17 +27,17 @@ from Shop.inventar import *
 from user.birthday import *
 from user.premiumDM import startPremiumChecker
 from Shop.items import *
+from duftenServer.NSFW import *
 
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 KuroID = 308660164137844736
 cooldownDuration = 24
 VoteCooldown = 12 #in Stunden
+duftendeID = 475295112453423125
 
-logging.basicConfig(level=logging.WARNING) #AKTIVIEREN FÜR LOGGING
+logging.basicConfig(level=logging.INFO) #AKTIVIEREN FÜR LOGGING
 
 load_dotenv()
 #BotToken = os.getenv("BotToken")
@@ -68,11 +68,19 @@ async def setBotActivity():
 async def on_ready():
     print(f"Bot ist eingeloggt als {bot.user.name}")
     try:
-        synced = await bot.tree.sync()
-        print(f"Slash-Commands synchronisiert: {len(synced)} Befehle")
+        #Global synchronisieren (alle globalen Commands)
+        synced_global = await bot.tree.sync()
+        print(f"Global synchronisierte Commands: {len(synced_global)}")
+
+         #Guild-spezifisch synchronisieren (nur ausgewählter Server)
+        synced_guild = await bot.tree.sync(guild=discord.Object(id=duftendeID))
+        print(f"Guild-spezifisch synchronisierte Commands: {len(synced_guild)}")
+
         bot.add_view(WhatIsSparkButton())
+        bot.add_view(interactionView())
     except Exception as e:
         print(f"Fehler beim Synchronisieren: {e}")
+
     #zeigt in Konsole an, auf welchen Servern der Bot ist
     for guild in bot.guilds:
         print(f'- {guild.name} (ID: {guild.id}) | {len(guild.members)} Mitglieder')
@@ -93,6 +101,7 @@ async def loadCommands():
     await bot.load_extension("commands.SecretCommands")
     await bot.load_extension("commands.KuroCommands")
     await bot.load_extension("commands.error")
+    await bot.load_extension("duftenServer.NSFW")
     
 
 async def main():
