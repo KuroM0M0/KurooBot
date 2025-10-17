@@ -15,6 +15,7 @@ class NSFWRevoke(commands.Cog):
         
 
     @app_commands.guilds(discord.Object(id=ServerID))
+    @commands.has_permissions(administrator=True)
     @app_commands.command(name="nsfwrevoke", description="NSFW Revoke")
     async def nsfwrevoke(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
