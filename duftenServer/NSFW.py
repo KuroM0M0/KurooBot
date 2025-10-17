@@ -20,7 +20,7 @@ class NSFWRevoke(commands.Cog):
         await interaction.response.defer(ephemeral=True)
         channel = interaction.channel
 
-        Nachricht = await channel.send("Drücke auf Bye um die NSFW Rechte entzogen zu bekommen.", view=interactionView())
+        Nachricht = await channel.send("Drücke auf Bye, um die NSFW-Rechte entzogen zu bekommen.", view=interactionView())
         #await Nachricht.add_reaction("🔞")
         self.message_id = Nachricht.id
         data['NSFW_MSG_ID'] = Nachricht.id
