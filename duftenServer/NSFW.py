@@ -3,7 +3,7 @@ import json
 from discord import app_commands, ui
 from discord.ext import commands
 
-ServerID = 475295112453423125 #das hintere ist meine ServerID zum testen
+ServerID = 1185618335950438500#475295112453423125 #das hintere ist meine ServerID zum testen
 
 # JSON-Datei einlesen
 with open('duftenServer/NSFW_ID.json', 'r') as file:
