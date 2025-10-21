@@ -37,7 +37,7 @@ cooldownDuration = 24
 VoteCooldown = 12 #in Stunden
 duftendeID = 475295112453423125
 
-logging.basicConfig(level=logging.INFO) #AKTIVIEREN FÜR LOGGING
+logging.basicConfig(level=logging.WARN) #AKTIVIEREN FÜR LOGGING
 
 load_dotenv()
 #BotToken = os.getenv("BotToken")
@@ -102,6 +102,7 @@ async def loadCommands():
     await bot.load_extension("commands.KuroCommands")
     await bot.load_extension("commands.error")
     await bot.load_extension("duftenServer.NSFW")
+    await bot.load_extension("duftenServer.roleRemoved")
     
 
 async def main():
