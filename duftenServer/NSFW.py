@@ -3,7 +3,8 @@ import json
 from discord import app_commands, ui
 from discord.ext import commands
 
-ServerID = 1185618335950438500#475295112453423125 #das hintere ist meine ServerID zum testen
+NSFWRoleID = 1186568822879170600 
+ServerID = 1185618335950438500
 
 # JSON-Datei einlesen
 with open('duftenServer/NSFW_ID.json', 'r') as file:
@@ -70,7 +71,7 @@ class confirmView(ui.View):
     async def confirm(self, interaction: discord.Interaction, button: ui.Button):
         user = interaction.user
         guild = interaction.guild
-        role = guild.get_role(1186568822879170600)
+        role = guild.get_role(NSFWRoleID)
         await user.remove_roles(role)
         await interaction.response.send_message(f"{user.mention} du hast den Zugang zum NSFW Bereich verloren.", ephemeral=True)
 
