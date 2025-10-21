@@ -47,4 +47,4 @@ def startPremiumChecker(bot, connection):
                 except discord.Forbidden:
                     print(f"Kann {userID} keine DM schicken (vermutlich blockiert).")
 
-    #premiumChecker.start()
+    premiumChecker.start()
