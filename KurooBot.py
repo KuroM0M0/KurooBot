@@ -35,13 +35,13 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 KuroID = 308660164137844736
 cooldownDuration = 24
 VoteCooldown = 12 #in Stunden
-duftendeID = 475295112453423125
+duftendeID = 1185618335950438500
 
 logging.basicConfig(level=logging.WARN) #AKTIVIEREN FÜR LOGGING
 
 load_dotenv()
-#BotToken = os.getenv("BotToken")
-BotToken = os.getenv("TestBotToken") #Testbot
+BotToken = os.getenv("BotToken")
+#BotToken = os.getenv("TestBotToken") #Testbot
 
 connection = createConnection()
 

@@ -3,8 +3,8 @@ import json
 from discord import app_commands, ui
 from discord.ext import commands
 
-ServerID = 475295112453423125 #Meine ServerID
-NSFWRoleID = 1329134672382398464#1186568822879170600
+NSFWRoleID = 1186568822879170600 
+ServerID = 1185618335950438500
 
 # JSON-Datei einlesen
 with open('duftenServer/NSFW_ID.json', 'r') as file:
@@ -16,6 +16,7 @@ class NSFWRevoke(commands.Cog):
         
 
     @app_commands.guilds(discord.Object(id=ServerID))
+    @commands.has_permissions(administrator=True)
     @app_commands.command(name="nsfwrevoke", description="NSFW Revoke")
     async def nsfwrevoke(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
