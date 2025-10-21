@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from duftenServer.NSFW import NSFWRoleID, ServerID
 
-ChannelID = 1329134639574421575#1426962556295057549
+ChannelID = 1426953845782876170
 
 class roleRemoved(commands.Cog):
     def __init__(self, bot):
