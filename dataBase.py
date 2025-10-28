@@ -725,8 +725,8 @@ def insertUserSetting(connection, userID):
         cursor = connection.cursor()
         try:
             cursor.execute('''  INSERT INTO Settings
-                                (UserID, SparkDM, HugPatPing, HugPatDM, StatsPrivate)
-                                VALUES(?, True, True, False, False)''',
+                                (UserID)
+                                VALUES(?)''',
                                 (userID,))
             connection.commit()
         except sqlite3.Error as e:

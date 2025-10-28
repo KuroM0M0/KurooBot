@@ -1,4 +1,4 @@
-from dataBase import *;
+from dataBase import *
 from typing import Optional
 import re
 import discord
