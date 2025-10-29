@@ -8,26 +8,26 @@ from discord import app_commands
 from discord import ButtonStyle, ui
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-import os
 #eigene Imports
 import paypal
 from dataBase import *
 from Methoden import *
-from help import *
-from hug import sendHug, sendPat
-from spark import *
+from slashCommands.help import *
+from slashCommands.hug import sendHug, sendPat
+from slashCommands.spark import *
 from user.settings import *
-from newsletter import NewsletterModal
-from disableCustomSpark import disableCustomSparkModal
-from stats import *
+from slashCommands.newsletter import NewsletterModal
+from slashCommands.disableCustomSpark import disableCustomSparkModal
+from slashCommands.stats import *
 from user.vote import *
-from reveal import RevealMainView, RevealCustomView, revealEmbed
+from slashCommands.reveal import RevealMainView, RevealCustomView, revealEmbed
 from Shop.shop import ShopButtons, Shop, ShopEmbed
 from Shop.inventar import *
 from user.birthday import *
 from user.premiumDM import startPremiumChecker
 from Shop.items import *
 from duftenServer.NSFW import *
+from config import BotToken
 
 
 intents = discord.Intents.all()
@@ -40,8 +40,7 @@ duftendeID = 1185618335950438500
 logging.basicConfig(level=logging.WARN) #AKTIVIEREN FÜR LOGGING
 
 load_dotenv()
-#BotToken = os.getenv("BotToken")
-BotToken = os.getenv("TestBotToken") #Testbot
+
 
 connection = createConnection()
 

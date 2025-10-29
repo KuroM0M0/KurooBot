@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
-from duftenServer.NSFW import NSFWRoleID, ServerID
-
-ChannelID = 1329134639574421575#1426953845782876170 hintere ist richtiger Wert
+from config import NSFWRoleID, ServerID, ChannelID
 
 class roleRemoved(commands.Cog):
     def __init__(self, bot):

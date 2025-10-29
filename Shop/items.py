@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from disableCustomSpark import *
+from slashCommands.disableCustomSpark import *
 from discord import ui
 
 class PriceType(Enum):

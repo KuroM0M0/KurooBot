@@ -2,9 +2,7 @@ import discord
 import json
 from discord import app_commands, ui
 from discord.ext import commands
-
-NSFWRoleID = 1329134672382398464#1186568822879170600 das hintere sind die echten Werte
-ServerID = 475295112453423125#1185618335950438500 das davor nur zum Testen
+from config import ServerID, NSFWRoleID
 
 # JSON-Datei einlesen
 with open('duftenServer/NSFW_ID.json', 'r') as file:
