@@ -1,0 +1,7 @@
+import os
+
+BotToken = os.getenv("BotToken")
+
+NSFWRoleID = 1186568822879170600
+ServerID = 1185618335950438500 
+ChannelID = 1426953845782876170
