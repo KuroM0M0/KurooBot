@@ -107,3 +107,13 @@ def replaceEmotes(text: str, guild: discord.Guild, bot: discord.Client) -> str:
         return chosen if chosen is not None else m.group(0)
 
     return _COLON_NAME.sub(repl, text)
+
+
+async def BanStuff(connection, serverID, targetID, userID, interaction):
+    if getBan(connection, serverID, targetID) == True:
+        await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
+        return
+
+    if getBan(connection, serverID, userID) == True:
+        await interaction.followup.send("Du wurdest von der Nutzung vom Bot ausgeschlossen!", ephemeral=True)
+        return
