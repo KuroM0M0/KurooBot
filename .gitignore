@@ -1,5 +1,6 @@
 __pycache__/
 data.db
 .env
-newsletter.py
+slashCommands/newsletter.py
+newsletter.py 
 config.py
