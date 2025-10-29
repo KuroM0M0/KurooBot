@@ -34,3 +34,4 @@ class NewsletterModal(discord.ui.Modal, title="Newsletter"):
             await asyncio.sleep(1)
 
 #Rename to newsletter.py when Using
+#using in slashCommands folder

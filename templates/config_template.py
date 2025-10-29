@@ -7,3 +7,4 @@ ServerID = 1185618335950438500
 ChannelID = 1426953845782876170
 
 #Rename to config.py when using
+#using in main folder
