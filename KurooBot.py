@@ -456,7 +456,8 @@ async def settings(interaction: discord.Interaction):
     userID = str(interaction.user.id)
     premium = getPremium(connection, userID)
 
-    insertUserSetting(connection, userID)
+    if checkUserSetting(connection, userID) == None:
+        insertUserSetting(connection, userID)
 
     settingsObj = newSettings(premium, userID)
     view = SettingsView(premium, userID)
