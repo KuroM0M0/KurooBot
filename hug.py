@@ -72,7 +72,7 @@ async def sendHug(interaction, person):
     # --- Komplimente aktualisieren, Embed senden, Ghostping ---
 
     embed = discord.Embed(
-        title="Umarmung <a:PepeHugEggplant:1310769251115728936>",
+        title="Umarmung <a:Umarmung:1433074713529286819>",
         description=f"{person.mention}, jemand würde dich jetzt sehr gerne umarmen, aber du bist nicht da </3",
         color=0x005b96
     )
@@ -151,7 +151,7 @@ async def sendPat(interaction, person):
 
 
     embed = discord.Embed(
-        title="Pat <a:neko_pat:1309638933658865744>",
+        title="Pat <a:Pat:1433074733729189899>",
         description=f"{person.mention}, du bekommst anonyme pat pats <3",
         color=0x005b96
     )
