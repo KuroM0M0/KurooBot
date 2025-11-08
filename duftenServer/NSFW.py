@@ -2,9 +2,7 @@ import discord
 import json
 from discord import app_commands, ui
 from discord.ext import commands
-
-NSFWRoleID = 1186568822879170600 
-ServerID = 1185618335950438500
+from config import ServerID, NSFWRoleID
 
 # JSON-Datei einlesen
 with open('duftenServer/NSFW_ID.json', 'r') as file:

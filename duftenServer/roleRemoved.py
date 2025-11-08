@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
-from duftenServer.NSFW import NSFWRoleID, ServerID
-
-ChannelID = 1426953845782876170
+from config import NSFWRoleID, ServerID, ChannelID
 
 class roleRemoved(commands.Cog):
     def __init__(self, bot):
@@ -27,6 +25,16 @@ class roleRemoved(commands.Cog):
         if removedRoles == set([guild.get_role(NSFWRoleID)]):
             for role in removedRoles:
                await channel.send(embed=createEmbed(after, role, "removed"))
+
+
+    @commands.Cog.listener()
+    async def on_raw_member_remove(self, payload):
+        user = payload.user
+        guild = self.bot.get_guild(ServerID)
+        channel = guild.get_channel(ChannelID)
+
+        if NSFWRoleID in [role.id for role in user.roles]:
+            await channel.send(embed=createEmbed(user, guild.get_role(NSFWRoleID), "removed"))
 
         
         

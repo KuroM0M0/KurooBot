@@ -12,7 +12,7 @@ maxUses = 1
 maxUsesVote = 2
 maxUsesPremium = 3
 
-async def sendHug(interaction, person):
+async def sendHug(interaction, person, anonym):
     CheckUserIsInSettings(connection, interaction.user.id)
 
     links = [
@@ -69,15 +69,22 @@ async def sendHug(interaction, person):
     updateHugPatCooldown(connection, userID)
     insertLogs(connection, now.isoformat(), userID, userName, targetID, targetName, "Umarmung 🫂", "Hug", guildID, guildName)
 
-    # --- Komplimente aktualisieren, Embed senden, Ghostping ---
+    # --- Komplimente aktualisieren, Embed senden, Ping ---
 
-    embed = discord.Embed(
-        title="Umarmung <a:Umarmung:1433074713529286819>",
-        description=f"{person.mention}, jemand würde dich jetzt sehr gerne umarmen, aber du bist nicht da </3",
-        color=0x005b96
-    )
+    if anonym == False:
+        embed = discord.Embed(
+            title="Umarmung <a:PepeHugEggplant:1310769251115728936>",
+            description=f"{person.mention}, {interaction.user.mention} würde dich jetzt sehr gerne umarmen, aber du bist nicht da </3",
+            color=0x005b96
+        )
+    else:
+        embed = discord.Embed(
+            title="Umarmung <a:PepeHugEggplant:1310769251115728936>",
+            description=f"{person.mention}, jemand würde dich jetzt sehr gerne umarmen, aber du bist nicht da </3",
+            color=0x005b96
+        )
+
     embed.set_image(url=random.choice(links))
-
     await interaction.followup.send("Erfolgreich gesendet", ephemeral=True)
     if getGhostpingSetting(connection, targetID) == True:
         await channel.send(embed=embed, content=f"||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​|| {person.mention}")
@@ -88,7 +95,7 @@ async def sendHug(interaction, person):
 
 
 
-async def sendPat(interaction, person):
+async def sendPat(interaction, person, anonym):
     checkUserSetting(connection, interaction.user.id)
     links = [
         "https://cdn.discordapp.com/attachments/1354078227903283251/1399384607237083249/Pat7.gif?ex=6888cdf9&is=68877c79&hm=4371fb99a5fda1edc3441be7fd3a1ebe23f6f4ad6de4d6f001d34a3132c956a7&",
@@ -149,12 +156,18 @@ async def sendPat(interaction, person):
     else:
         insertCompliment(connection, targetID, "Pat 🥰")
 
-
-    embed = discord.Embed(
-        title="Pat <a:Pat:1433074733729189899>",
-        description=f"{person.mention}, du bekommst anonyme pat pats <3",
-        color=0x005b96
-    )
+    if anonym == False:
+        embed = discord.Embed(
+            title="Pat <a:neko_pat:1309638933658865744>",
+            description=f"{person.mention}, du bekommst pat pats von {interaction.user.mention} <3",
+            color=0x005b96
+        )
+    else:
+        embed = discord.Embed(
+            title="Pat <a:neko_pat:1309638933658865744>",
+            description=f"{person.mention}, du bekommst anonyme pat pats <3",
+            color=0x005b96
+        )
     embed.set_image(url=random.choice(links))
     await interaction.followup.send("Erfolgreich gesendet", ephemeral=True)
     if getGhostpingSetting(connection, targetID) == True:

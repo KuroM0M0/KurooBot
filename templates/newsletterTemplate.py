@@ -32,3 +32,6 @@ class NewsletterModal(discord.ui.Modal, title="Newsletter"):
             newsChannel = interaction.client.get_channel(int(channelID))
             await newsChannel.send(embed=embed)
             await asyncio.sleep(1)
+
+#Rename to newsletter.py when Using
+#using in slashCommands folder

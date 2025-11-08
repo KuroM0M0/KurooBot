@@ -8,26 +8,26 @@ from discord import app_commands
 from discord import ButtonStyle, ui
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-import os
 #eigene Imports
 import paypal
 from dataBase import *
 from Methoden import *
-from help import *
-from hug import sendHug, sendPat
-from spark import *
+from slashCommands.help import *
+from slashCommands.hug import sendHug, sendPat
+from slashCommands.spark import *
 from user.settings import *
-from newsletter import NewsletterModal
-from disableCustomSpark import disableCustomSparkModal
-from stats import *
+from slashCommands.newsletter import NewsletterModal
+from slashCommands.disableCustomSpark import disableCustomSparkModal
+from slashCommands.stats import *
 from user.vote import *
-from reveal import RevealMainView, RevealCustomView, revealEmbed
+from slashCommands.reveal import RevealMainView, RevealCustomView, revealEmbed
 from Shop.shop import ShopButtons, Shop, ShopEmbed
 from Shop.inventar import *
 from user.birthday import *
 from user.premiumDM import startPremiumChecker
 from Shop.items import *
 from duftenServer.NSFW import *
+from config import BotToken
 
 
 intents = discord.Intents.all()
@@ -40,8 +40,7 @@ duftendeID = 1185618335950438500
 logging.basicConfig(level=logging.WARN) #AKTIVIEREN FÜR LOGGING
 
 load_dotenv()
-BotToken = os.getenv("BotToken")
-#BotToken = os.getenv("TestBotToken") #Testbot
+
 
 connection = createConnection()
 
@@ -127,12 +126,7 @@ async def spark(interaction: discord.Interaction, person: discord.Member, kompli
     channelID = str(channel.id)
     
     UserExists(connection, userID)
-    if getBan(connection, guildID, targetID) == True:
-        await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
-        return
-    if getBan(connection, guildID, userID) == True:
-        await interaction.followup.send("Du wurdest von der Nutzung des Bots ausgeschlossen!", ephemeral=True)
-        return
+    await BanStuff(connection, guildID, targetID, userID, interaction)
 
     Premium = getPremium(connection, userID)
     cooldown = getCooldown(connection, userID)
@@ -351,48 +345,35 @@ async def cooldown(interaction: discord.Interaction):
 
 @bot.tree.command(name="hug", description="Umarme eine andere Person Anonym")
 @app_commands.describe(person="Wähle eine Person aus, die du Umarmen möchtest.")
-async def hug(interaction: discord.Interaction, person: discord.Member):
+async def hug(interaction: discord.Interaction, person: discord.Member, anonym: bool = True):
     await interaction.response.defer(ephemeral=True)
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
     userID = str(interaction.user.id)
     targetID = str(person.id)
 
-    if getBan(connection, serverID, targetID) == True:
-        await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
-        return
 
-    if getBan(connection, serverID, userID) == True:
-        await interaction.followup.send("Du wurdest von der Nutzung vom Bot ausgeschlossen!", ephemeral=True)
-        return
-
+    await BanStuff(connection, serverID, targetID, userID, interaction)
     CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
-    await sendHug(interaction, person)
+    await sendHug(interaction, person, anonym)
 
 
 
 
 @bot.tree.command(name="pat", description="Gib einer anderen Person anonym ein Patpat c:")
 @app_commands.describe(person="Wähle eine Person aus, der du ein Patpat geben möchtest.")
-async def pat(interaction: discord.Interaction, person: discord.Member):
+async def pat(interaction: discord.Interaction, person: discord.Member, anonym: bool = True):
     await interaction.response.defer(ephemeral=True)
     serverID = str(interaction.guild.id)
     channelID = str(interaction.channel.id)
     userID = str(interaction.user.id)
     targetID = str(person.id)
 
-    if getBan(connection, serverID, targetID) == True:
-        await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
-        return
-
-    if getBan(connection, serverID, userID) == True:
-        await interaction.followup.send("Du wurdest von der Nutzung vom Bot ausgeschlossen!", ephemeral=True)
-        return
-    
+    await BanStuff(connection, serverID, targetID, userID, interaction)
     CheckServerExists(connection, serverID)
     await CheckSparkChannel(connection, serverID, channelID, interaction)
-    await sendPat(interaction, person)
+    await sendPat(interaction, person, anonym)
 
 
 

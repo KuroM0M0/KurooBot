@@ -88,8 +88,8 @@ def ShopEmbed(site: int, interaction: discord.Interaction, connection) -> discor
         description=f"Du hast: ",
         color=0x005b96)
     embed.set_thumbnail(url="https://media.discordapp.net/attachments/1354078227903283251/1405245863852245033/Shop.png?ex=689ec972&is=689d77f2&hm=efb2c60ae90d11f746b1117fbe394e7045810515cf4fd616648ba8830a61d0f6&=")
-    embed.add_field(name="", value=f"**{votepunkte}** <:Votepunkt:1430551357076672592>", inline=True)
-    embed.add_field(name="", value=f"**{streakpunkte}** <:Streakpunkt:1430551355856130140>", inline=True)
+    embed.add_field(name="", value=f"**{votepunkte}** <:Votepunkt:1406582498112311428>", inline=True)
+    embed.add_field(name="", value=f"**{streakpunkte}** <:Streakpunkt:1406583255934963823>", inline=True)
     embed.add_field(name="", value="", inline=True)
     embed.add_field(name="--------", value="", inline=False)
 
@@ -98,9 +98,9 @@ def ShopEmbed(site: int, interaction: discord.Interaction, connection) -> discor
         item = items[0]
         priceEmote = item.priceType.value
         if priceEmote == "VotePunkte":
-            priceEmote = "<:Votepunkt:1430551357076672592>"
+            priceEmote = "<:Votepunkt:1406582498112311428>"
         elif priceEmote == "StreakPunkte":
-            priceEmote = "<:Streakpunkt:1430551355856130140>"
+            priceEmote = "<:Streakpunkt:1406583255934963823>"
 
         embed.set_image(url=item.image)
 

@@ -102,19 +102,19 @@ class SettingSelect(discord.ui.Select):
         self.userID = userID
         self.hatPremium = hatPremium
         options = [
-                discord.SelectOption(label="Streak", description="Stelle ein, ob deine Streak Privat oder Öffentlich angezeigt werden soll", value="streak", emoji="<:Streakpunkt:1430551355856130140>"),
+                discord.SelectOption(label="Streak", description="Stelle ein, ob deine Streak Privat oder Öffentlich angezeigt werden soll", value="streak", emoji="<:Streakpunkt:1406583255934963823>"),
                 discord.SelectOption(label="Profil", description="Stelle ein, ob dein Profil Privat oder Öffentlich angezeigt werden soll", value="profil", emoji="👤")
             ]
         
         if hatPremium:
             options.append(discord.SelectOption(label="Stats", description="Stelle ein, ob deine Stats Privat oder Öffentlich angezeigt werden sollen", value="stats", emoji="📊"))
-            options.append(discord.SelectOption(label="Ghostping", description="Stelle ein, ob du Ghostpings erhalten möchtest", value="ghostping", emoji="<:PeepoPing:1430552219178242079>"))
+            options.append(discord.SelectOption(label="Ghostping", description="Stelle ein, ob du Ghostpings erhalten möchtest", value="ghostping", emoji="<:PeepoPing:1412450415986872461>"))
             options.append(discord.SelectOption(label="Newsletter", description="Stelle ein, ob du Updates vom Bot in deine DMs erhalten möchtest", value="newsletter", emoji="📰"))
-            options.append(discord.SelectOption(label="SparkDM", description="Stelle ein, ob du vom Bot angeschrieben werden willst, wenn du gesparkt wurdest", value="sparkdm", emoji="<:Schaufel:1430552039456510117>"))
+            options.append(discord.SelectOption(label="SparkDM", description="Stelle ein, ob du vom Bot angeschrieben werden willst, wenn du gesparkt wurdest", value="sparkdm", emoji="<:Schaufel:1410610904361472031>"))
             options.append(discord.SelectOption(label="PremiumDM", description="Stelle ein, ob du vom Bot angeschrieben werden willst, wenn dein Premium abläuft", value="premiumdm", emoji="👑"))
             options.append(discord.SelectOption(label="Custom Sparks", description="Stelle ein, ob du Custom Sparks erhalten möchtest", value="customsparks", emoji="✨"))
         else: #Damit bei Premium alles in richtiger Reihenfolge angezeigt wird
-            options.append(discord.SelectOption(label="Ghostping", description="Stelle ein, ob du Ghostpings erhalten möchtest", value="ghostping", emoji="<:PeepoPing:1430552219178242079>"))
+            options.append(discord.SelectOption(label="Ghostping", description="Stelle ein, ob du Ghostpings erhalten möchtest", value="ghostping", emoji="<:PeepoPing:1412450415986872461>"))
             
         super().__init__(placeholder="Einstellungen ändern", min_values=1, max_values=1, options=options)
 
