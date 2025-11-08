@@ -26,6 +26,16 @@ class roleRemoved(commands.Cog):
             for role in removedRoles:
                await channel.send(embed=createEmbed(after, role, "removed"))
 
+
+    @commands.Cog.listener()
+    async def on_raw_member_remove(self, payload):
+        user = payload.user
+        guild = self.bot.get_guild(ServerID)
+        channel = guild.get_channel(ChannelID)
+
+        if NSFWRoleID in [role.id for role in user.roles]:
+            await channel.send(embed=createEmbed(user, guild.get_role(NSFWRoleID), "removed"))
+
         
         
 def createEmbed(user, role, update):
