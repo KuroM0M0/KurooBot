@@ -39,6 +39,8 @@ def startPremiumChecker(bot, connection):
     async def premiumChecker():
         allUsers = getAllPremiumUser(connection)
         for userID in allUsers:
+            if getPremiumDMSetting(connection, userID[0]) == 0:
+                continue
             reminder = checkPremiumStatus(connection, userID[0])
             if reminder:
                 user = await bot.fetch_user(userID[0])
