@@ -1,6 +1,7 @@
 import os
 
 BotToken = os.getenv("BotToken")
+MainServerID = 475295112453423125
 
 #duftenServer
 NSFWRoleID = 1186568822879170600
