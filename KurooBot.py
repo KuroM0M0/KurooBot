@@ -28,6 +28,7 @@ from user.premiumDM import startPremiumChecker
 from Shop.items import *
 from duftenServer.NSFW import *
 from config import BotToken
+from Twitch.checkLive import checkStream
 
 
 intents = discord.Intents.all()
@@ -77,6 +78,8 @@ async def on_ready():
 
         bot.add_view(WhatIsSparkButton())
         bot.add_view(interactionView())
+
+        checkStream()
     except Exception as e:
         print(f"Fehler beim Synchronisieren: {e}")
 
