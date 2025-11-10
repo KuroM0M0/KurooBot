@@ -20,7 +20,7 @@ def checkPremiumStatus(connection, userID):
     # Nur Datum vergleichen, damit es ganztägig gilt
     if now.date() == remind_date.date():
         unix = int(expire_date.timestamp())
-        return f"Dein Premium läuft bald ab! Es endet am <t:{unix}:F> (<t:{unix}:R>)."
+        return f"Dein Premium läuft bald ab! Es endet am <t:{unix}:F> (<t:{unix}:R>). \n-# Kleiner Tipp: wenn du diese Nachricht ausblenden willst, nutze /settings"
 
     # Premium abgelaufen?
     if now >= expire_date:
@@ -32,10 +32,10 @@ def checkPremiumStatus(connection, userID):
 
 def startPremiumChecker(bot, connection):
     """
-    Startet den Premium-Checker Task, der alle 12 Stunden läuft.
+    Startet den Premium-Checker Task, der alle 20 Stunden läuft.
     """
 
-    @tasks.loop(hours=12)
+    @tasks.loop(hours=20)
     async def premiumChecker():
         allUsers = getAllPremiumUser(connection)
         for userID in allUsers:
