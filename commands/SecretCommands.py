@@ -3,6 +3,8 @@ from discord.ext import commands
 from datetime import datetime
 from dataBase import *
 from Methoden import *
+from config import *
+from Twitch.checkLive import checkStreamStatus
 
 class SecretCommands(commands.Cog):
     @commands.command(name="verkraben")
@@ -20,6 +22,20 @@ class SecretCommands(commands.Cog):
             await ctx.send(f"{target.mention} hat sich bremium geholt!")
         else:
             await ctx.send(f"{target.mention} hol dir auch bremium! c:")
+
+    @commands.command(name='status')
+    async def status_command(self, ctx):
+        '''Manueller Befehl um den Stream-Status zu prüfen'''
+        stream_data = checkStreamStatus(TwitchUsername)
+        
+        if stream_data is None:
+            await ctx.send('Fehler beim Abrufen des Stream-Status')
+            return
+        
+        if stream_data['isLive']:
+            await ctx.send(f'✅ {TwitchUsername} ist aktuell LIVE!')
+        else:
+            await ctx.send(f'❌ {TwitchUsername} ist aktuell offline')
 
 
 
