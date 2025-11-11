@@ -1,13 +1,16 @@
 import discord
 from discord.ext import tasks
-from config import CheckInterval, TwitchUsername, TwitchMessageChannel
+from config import CheckInterval, TwitchUsername, TwitchMessageChannel, TwitchPingID
 from Twitch.Twitch import checkStreamStatus
-from KurooBot import bot
 
-@tasks.loop(seconds=CheckInterval)
-async def checkStream():
+Bot = None
+isLive = False  # Speichert den aktuellen Live-Status
+
+@tasks.loop(minutes=CheckInterval)
+async def checkStream(bot):
     '''Prüft regelmäßig, ob der Stream live geht'''
-    global is_live
+    global isLive
+    print("Stream-Status prüfen...")
     
     # Hole den aktuellen Stream-Status
     stream_data = checkStreamStatus(TwitchUsername)
@@ -17,8 +20,8 @@ async def checkStream():
         return
     
     # Wenn der Stream live ist und vorher offline war
-    if stream_data['is_live'] and not is_live:
-        is_live = True
+    if stream_data['isLive'] and not isLive:
+        isLive = True
         
         # Hole den Discord Channel
         channel = bot.get_channel(TwitchMessageChannel)
@@ -40,18 +43,13 @@ async def checkStream():
             embed.set_footer(text='Twitch Benachrichtigung')
             
             # Sende die Nachricht
-            await channel.send(f'@everyone {TwitchUsername} ist live!', embed=embed)
+            roleMention = f'<@&{TwitchPingID}>'
+            await channel.send(f'{roleMention} {TwitchUsername} ist live!', embed=embed)
             print(f'Benachrichtigung gesendet: {TwitchUsername} ist live!')
         else:
             print(f'Channel mit ID {TwitchMessageChannel} nicht gefunden')
     
     # Wenn der Stream offline ist
-    elif not stream_data['is_live'] and is_live:
-        is_live = False
+    elif not stream_data['isLive'] and isLive:
+        isLive = False
         print(f'{TwitchUsername} ist jetzt offline')
-
-
-@checkStream.before_loop
-async def before_check_stream():
-    '''Wartet bis der Bot bereit ist, bevor die Schleife startet'''
-    await bot.wait_until_ready()

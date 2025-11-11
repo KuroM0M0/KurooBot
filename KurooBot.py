@@ -80,8 +80,6 @@ async def on_ready():
 
         bot.add_view(WhatIsSparkButton())
         bot.add_view(interactionView())
-
-        await checkStream(bot)
     except Exception as e:
         print(f"Fehler beim Synchronisieren: {e}")
 
@@ -91,6 +89,7 @@ async def on_ready():
     await setBotActivity()
     #bot.loop.create_task(paypal.checkPaymentsLoop(bot, connection))
     startPremiumChecker(bot, connection)
+    bot.loop.create_task(checkStream(bot))
 
 @bot.event
 async def on_guild_join(guild):

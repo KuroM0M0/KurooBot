@@ -13,6 +13,7 @@ TwitchUsername = ""
 TwitchID = ""
 TwitchSecret = ""
 TwitchMessageChannel = 1329134639574421575 #Discord Channel in dem die Nachricht gesendet werden soll
+TwitchPingID = 1437490546410262630 #ID von der Rolle die gepingt werden soll, wenn jemand Live ist
 CheckInterval = 1 #in Minuten
 
 #spark.py
