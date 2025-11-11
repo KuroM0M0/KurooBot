@@ -1,11 +1,11 @@
 import discord
 from discord.ext import commands
-from config import NSFWRoleID, ServerID, ChannelID
+from config import NSFWRoleID, DuftenServerID, ChannelID
 
 class roleRemoved(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.ServerID = ServerID
+        self.ServerID = DuftenServerID
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
@@ -30,7 +30,7 @@ class roleRemoved(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_member_remove(self, payload):
         user = payload.user
-        guild = self.bot.get_guild(ServerID)
+        guild = self.bot.get_guild(DuftenServerID)
         channel = guild.get_channel(ChannelID)
 
         if NSFWRoleID in [role.id for role in user.roles]:

@@ -27,7 +27,8 @@ from user.birthday import *
 from user.premiumDM import startPremiumChecker
 from Shop.items import *
 from duftenServer.NSFW import *
-from config import BotToken
+from config import BotToken, MainServerID
+from Twitch.checkLive import checkStream
 
 
 intents = discord.Intents.all()
@@ -72,8 +73,10 @@ async def on_ready():
         print(f"Global synchronisierte Commands: {len(synced_global)}")
 
          #Guild-spezifisch synchronisieren (nur ausgewählter Server)
-        synced_guild = await bot.tree.sync(guild=discord.Object(id=duftendeID))
-        print(f"Guild-spezifisch synchronisierte Commands: {len(synced_guild)}")
+        duftGuild = await bot.tree.sync(guild=discord.Object(id=duftendeID))
+        kuroGuild = await bot.tree.sync(guild=discord.Object(id=MainServerID))
+        print(f"Duften-spezifisch synchronisierte Commands: {len(duftGuild)}")
+        print(f"Kuro-spezifisch synchronisierte Commands: {len(kuroGuild)}")
 
         bot.add_view(WhatIsSparkButton())
         bot.add_view(interactionView())
@@ -86,6 +89,7 @@ async def on_ready():
     await setBotActivity()
     #bot.loop.create_task(paypal.checkPaymentsLoop(bot, connection))
     startPremiumChecker(bot, connection)
+    bot.loop.create_task(checkStream(bot))
 
 @bot.event
 async def on_guild_join(guild):
@@ -499,8 +503,7 @@ async def streak(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 
-
-@bot.tree.command(name="sendnewsletter", description="Newsletter an alle Abonnenten schicken")
+@bot.tree.command(name="sendnewsletter", description="Newsletter an alle Abonnenten schicken", guild=discord.Object(id=MainServerID))
 #@app_commands.guilds(discord.Object(id=475295112453423125)) funktioniert nicht, testen worans liegt
 async def sendNewsletter(interaction: discord.Interaction):
     if interaction.user.id != KuroID:

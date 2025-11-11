@@ -61,7 +61,7 @@ class newSettings(discord.ui.View):
             value=f">>> `Newsletter` → {self.newsletter}\n"
                   f"`SparkDM` → {self.sparkDM}\n"
                   f"`Stats` → {self.statsPrivate}\n"
-                  f"`Custom Sparks` → {self.customSpark}"
+                  f"`Custom Sparks` → {self.customSpark}\n"
                   f"`PremiumDM` → {self.premiumDM}",
             inline=False
         )
@@ -108,13 +108,13 @@ class SettingSelect(discord.ui.Select):
         
         if hatPremium:
             options.append(discord.SelectOption(label="Stats", description="Stelle ein, ob deine Stats Privat oder Öffentlich angezeigt werden sollen", value="stats", emoji="📊"))
-            options.append(discord.SelectOption(label="Ghostping", description="Stelle ein, ob du Ghostpings erhalten möchtest", value="ghostping", emoji="<:PeepoPing:1412450415986872461>"))
+            options.append(discord.SelectOption(label="Ping", description="Stelle ein, ob du Pings erhalten möchtest, wenn du gesparkt wirst", value="Ping", emoji="<:PeepoPing:1412450415986872461>"))
             options.append(discord.SelectOption(label="Newsletter", description="Stelle ein, ob du Updates vom Bot in deine DMs erhalten möchtest", value="newsletter", emoji="📰"))
             options.append(discord.SelectOption(label="SparkDM", description="Stelle ein, ob du vom Bot angeschrieben werden willst, wenn du gesparkt wurdest", value="sparkdm", emoji="<:Schaufel:1410610904361472031>"))
             options.append(discord.SelectOption(label="PremiumDM", description="Stelle ein, ob du vom Bot angeschrieben werden willst, wenn dein Premium abläuft", value="premiumdm", emoji="👑"))
             options.append(discord.SelectOption(label="Custom Sparks", description="Stelle ein, ob du Custom Sparks erhalten möchtest", value="customsparks", emoji="✨"))
         else: #Damit bei Premium alles in richtiger Reihenfolge angezeigt wird
-            options.append(discord.SelectOption(label="Ghostping", description="Stelle ein, ob du Ghostpings erhalten möchtest", value="ghostping", emoji="<:PeepoPing:1412450415986872461>"))
+            options.append(discord.SelectOption(label="Ping", description="Stelle ein, ob du Pings erhalten möchtest", value="Ping", emoji="<:PeepoPing:1412450415986872461>"))
             
         super().__init__(placeholder="Einstellungen ändern", min_values=1, max_values=1, options=options)
 
@@ -132,7 +132,7 @@ class SettingSelect(discord.ui.Select):
             val = getProfilPrivateSetting(connection, userID)
             setProfilPrivateSetting(connection, userID, not val)
 
-        elif value == "ghostping":
+        elif value == "Ping":
             val = getGhostpingSetting(connection, userID)
             setGhostpingSetting(connection, userID, not val)
 
