@@ -112,8 +112,8 @@ def replaceEmotes(text: str, guild: discord.Guild, bot: discord.Client) -> str:
 async def BanStuff(connection, serverID, targetID, userID, interaction):
     if getBan(connection, serverID, targetID) == True:
         await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
-        return
+        raise Exception("Target is banned")
 
     if getBan(connection, serverID, userID) == True:
         await interaction.followup.send("Du wurdest von der Nutzung vom Bot ausgeschlossen!", ephemeral=True)
-        return
+        raise Exception("User is banned")
