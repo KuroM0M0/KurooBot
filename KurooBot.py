@@ -28,7 +28,7 @@ from user.premiumDM import startPremiumChecker
 from Shop.items import *
 from duftenServer.NSFW import *
 from config import BotToken, MainServerID
-from Twitch.checkLive import checkStream
+from Twitch.checkLive import startCheckStream
 
 
 intents = discord.Intents.all()
@@ -89,7 +89,7 @@ async def on_ready():
     await setBotActivity()
     #bot.loop.create_task(paypal.checkPaymentsLoop(bot, connection))
     startPremiumChecker(bot, connection)
-    bot.loop.create_task(checkStream(bot))
+    startCheckStream(bot)
 
 @bot.event
 async def on_guild_join(guild):
