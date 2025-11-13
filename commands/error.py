@@ -3,11 +3,17 @@ from discord import app_commands
 import discord
 
 class ErrorHandler(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+        # Registriert den globalen Slash-Command-Error-Handler
+        self.bot.tree.on_error = self.onAppCommandError
+
+    # --------------------------
+    # PREFIX COMMAND ERRORS
+    # --------------------------
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
+    async def onOommandError(self, ctx: commands.Context, error: commands.CommandError):
         """Globaler Error-Handler für Prefix-Commands."""
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Dir fehlen die nötigen Berechtigungen für diesen Command!")
@@ -26,5 +32,20 @@ class ErrorHandler(commands.Cog):
         else:
             await ctx.send("❌ Ein unbekannter Fehler ist aufgetreten. Bitte versuche es später erneut.")
 
-async def setup(bot):
+    # --------------------------
+    # SLASH COMMAND ERRORS
+    # --------------------------
+    async def onAppCommandError(self, interaction: discord.Interaction, error: Exception):
+        """Globaler Error-Handler für Slash-Commands."""
+        if isinstance(error, app_commands.CommandInvokeError):
+            original = error.original
+            if isinstance(original, discord.Forbidden):
+                await interaction.response.send_message("⚠️ Ich konnte dem Nutzer keine Nachricht schicken (vermutlich blockiert oder DMs deaktiviert).")
+                return
+            print(f"[SlashCommand-Error] {original}")
+        else:
+            print(f"[Unbekannter SlashCommand-Error] {error}")
+
+
+async def setup(bot: commands.Bot):
     await bot.add_cog(ErrorHandler(bot))
