@@ -2097,3 +2097,97 @@ def getAllPremiumUser(connection):
             print(f"Fehler beim selecten von PremiumUser: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getServerSettings(connection, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT *
+                                FROM ServerSettings
+                                WHERE ServerID = ?''',
+                                (serverID,))
+            result = cursor.fetchone()
+            return result
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von ServerSettings: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getServerAnonymHug(connection, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT AnonymHug
+                                FROM ServerSettings
+                                WHERE ServerID = ?''',
+                                (serverID,))
+            result = cursor.fetchone()
+            if result == None:
+                return 0
+            else:
+                return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von ServerSettingsHug: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def getServerAnonymSpark(connection, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  SELECT AnonymSpark
+                                FROM ServerSettings
+                                WHERE ServerID = ?''',
+                                (serverID,))
+            result = cursor.fetchone()
+            if result == None:
+                return 0
+            else:
+                return result[0]
+        except sqlite3.Error as e:
+            print(f"Fehler beim selecten von ServerSettingsSpark: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setServerAnonymSpark(connection, serverID, value):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE ServerSettings
+                                SET AnonymSpark = ?
+                                WHERE ServerID = ?''',
+                                (value, serverID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der ServerAnonymSpark: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def setServerAnonymHug(connection, serverID, value):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  UPDATE ServerSettings
+                                SET AnonymHug = ?
+                                WHERE ServerID = ?''',
+                                (value, serverID))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der ServerAnonymHug: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")

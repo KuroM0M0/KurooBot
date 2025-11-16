@@ -162,8 +162,68 @@ class SettingSelect(discord.ui.Select):
 
 
 
-
 class SettingsView(discord.ui.View):
     def __init__(self, hatPremium: bool, userID: int):
-        super().__init__(timeout=60)
+        super().__init__(timeout=120)
         self.add_item(SettingSelect(hatPremium, userID))
+
+
+
+
+
+
+
+
+
+
+#-------------- SettingStuff for Server ------------------
+class ServerSettingSelect(discord.ui.Select):
+    def __init__(self, serverID: int):
+        self.serverID = serverID
+        options = [
+            discord.SelectOption(label="Hug/Pat", value="hug", emoji="<:Streakpunkt:1406583255934963823>"),
+            discord.SelectOption(label="Sparks", value="spark", emoji="👤")
+        ]
+        super().__init__(placeholder="Einstellungen ändern", min_values=1, max_values=1, options=options)
+
+
+    async def callback(self, interaction: discord.Interaction):
+        serverID = str(interaction.guild.id)
+        value = self.values[0]
+
+        if value == "hug":
+            val = getServerAnonymHug(connection, serverID)
+            setServerAnonymHug(connection, serverID, not val)
+
+        elif value == "spark":
+            val = getServerAnonymSpark(connection, serverID)
+            setServerAnonymSpark(connection, serverID, not val)
+
+
+
+class ServerSettingView(discord.ui.View):
+    def __init__(self, serverID: int):
+        super().__init__()
+        self.serverID = serverID
+        self.add_item(ServerSettingSelect(serverID))
+
+    def Embed(self):
+        serverID = self.serverID
+        embed = discord.Embed(title="Einstellungen", color=0x005b96)
+        embed.add_field(
+            name="🔒 Anonymität Auswahlmöglichkeiten",
+            value=ServerSettingView.embedFormat(self),
+            inline=False
+        )
+        return embed
+    
+    def embedFormat(self):
+        serverID = self.serverID
+        if getServerAnonymHug(connection, serverID) == 0 and getServerAnonymSpark(connection, serverID) == 0:
+            return ">>> `Hug/Pat` → Ja/Halb/Nein\n`Sparks` → Ja/Halb/Nein"
+        elif getServerAnonymHug(connection, serverID) == 0 and not getServerAnonymSpark(connection, serverID) == 1:
+            return ">>> `Hug/Pat` → Ja/Halb/Nein\n`Sparks` → Ja/Halb"
+        elif not getServerAnonymHug(connection, serverID) == 1 and getServerAnonymSpark(connection, serverID) == 0:
+            return ">>> `Hug/Pat` → Ja/Halb\n`Sparks` → Ja/Halb/Nein"
+        else:
+            return ">>> `Hug/Pat` → Ja/Halb\n`Sparks` → Ja/Halb"

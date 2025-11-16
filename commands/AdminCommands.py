@@ -3,6 +3,7 @@ from discord.ext import commands
 from datetime import datetime
 from dataBase import *
 from Methoden import *
+from user.settings import ServerSettingView
 
 connection = createConnection()
 
@@ -43,6 +44,15 @@ class AdminCommands(commands.Cog):
         userID = str(member.id)
         updateBan(connection, serverID, userID)
         await ctx.send(f"{member} kann den Bot nun wieder nutzen!")
+
+
+    @commands.command(name="settings")
+    @commands.has_permissions(administrator=True)
+    async def settings(self, ctx):
+        serverID = str(ctx.guild.id)
+        view = ServerSettingView(serverID)
+        embed = view.Embed()
+        await ctx.send(embed=embed, view=view)
 
 
 
