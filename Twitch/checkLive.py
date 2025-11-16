@@ -11,7 +11,6 @@ def startCheckStream(bot):
     async def checkStream():
         '''Prüft regelmäßig, ob der Stream live geht'''
         global isLive
-        print("Stream-Status prüfen...")
         
         # Hole den aktuellen Stream-Status
         stream_data = checkStreamStatus(TwitchUsername)

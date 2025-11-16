@@ -13,7 +13,7 @@ class ErrorHandler(commands.Cog):
     # PREFIX COMMAND ERRORS
     # --------------------------
     @commands.Cog.listener()
-    async def onOommandError(self, ctx: commands.Context, error: commands.CommandError):
+    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         """Globaler Error-Handler für Prefix-Commands."""
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Dir fehlen die nötigen Berechtigungen für diesen Command!")
@@ -40,7 +40,7 @@ class ErrorHandler(commands.Cog):
         if isinstance(error, app_commands.CommandInvokeError):
             original = error.original
             if isinstance(original, discord.Forbidden):
-                await interaction.response.send_message("⚠️ Ich konnte dem Nutzer keine Nachricht schicken (vermutlich blockiert oder DMs deaktiviert).")
+                await interaction.followup.send("⚠️ Ich konnte dem Nutzer keine Nachricht schicken (vermutlich blockiert oder DMs deaktiviert).")
                 return
             print(f"[SlashCommand-Error] {original}")
         else:
@@ -49,3 +49,4 @@ class ErrorHandler(commands.Cog):
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(ErrorHandler(bot))
+    print("ErrorHandler geladen ✅")
