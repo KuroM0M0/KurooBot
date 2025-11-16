@@ -2191,3 +2191,19 @@ def setServerAnonymHug(connection, serverID, value):
             print(f"Fehler beim setzen der ServerAnonymHug: {e}")
     else:
         print("Keine Datenbankverbindung verführbar")
+
+
+
+
+def insertServerSettings(connection, serverID):
+    if connection is not None:
+        cursor = connection.cursor()
+        try:
+            cursor.execute('''  INSERT INTO ServerSettings (ServerID)
+                                VALUES (?)''',
+                                (serverID,))
+            connection.commit()
+        except sqlite3.Error as e:
+            print(f"Fehler beim setzen der ServerSettings: {e}")
+    else:
+        print("Keine Datenbankverbindung verführbar")

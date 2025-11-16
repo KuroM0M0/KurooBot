@@ -49,6 +49,8 @@ class AdminCommands(commands.Cog):
     @commands.command(name="settings")
     @commands.has_permissions(administrator=True)
     async def settings(self, ctx):
+        if getServerSettings(connection, ctx.guild.id) == None:
+            insertServerSettings(connection, ctx.guild.id)
         serverID = str(ctx.guild.id)
         view = ServerSettingView(serverID)
         embed = view.Embed()
