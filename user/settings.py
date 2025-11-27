@@ -103,7 +103,7 @@ class SettingSelect(discord.ui.Select):
         self.userID = userID
         self.hatPremium = hatPremium
         options = [
-                discord.SelectOption(label="Streak", description="Stelle ein, ob deine Streak Privat oder Öffentlich angezeigt werden soll", value="streak", emoji=f"{E.StreakPointE}"),
+                discord.SelectOption(label="Streak", description="Stelle ein, ob deine Streak Privat oder Öffentlich angezeigt werden soll", value="streak", emoji=f"{E.StreakPoint}"),
                 discord.SelectOption(label="Profil", description="Stelle ein, ob dein Profil Privat oder Öffentlich angezeigt werden soll", value="profil", emoji="👤")
             ]
         
@@ -181,7 +181,7 @@ class SettingsView(discord.ui.View):
 class ServerSettingSelect(discord.ui.Select):
     def __init__(self):
         options = [
-            discord.SelectOption(label="Hug/Pat", value="hug", emoji="<:Streakpunkt:1406583255934963823>"),
+            discord.SelectOption(label="Hug/Pat", value="hug", emoji=f"{E.StreakPoint}"),
             discord.SelectOption(label="Sparks", value="spark", emoji="👤")
         ]
         super().__init__(placeholder="Einstellungen ändern", min_values=1, max_values=1, options=options)
