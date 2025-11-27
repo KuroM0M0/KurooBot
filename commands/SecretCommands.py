@@ -1,4 +1,5 @@
 import discord
+import emotes as E
 from discord.ext import commands
 from datetime import datetime
 from dataBase import *
@@ -11,9 +12,9 @@ class SecretCommands(commands.Cog):
     async def verkraben(self, ctx, member: discord.Member = None):
         target = member or ctx.author
         if member == None:
-            await ctx.send(f"{target.mention} hat sich verkraben! <:Schaufel:1410610904361472031>")
+            await ctx.send(f"{target.mention} hat sich verkraben! {E.Schaufel}")
         else:
-            await ctx.send(f"{target.mention} geh dich verkraben! <:Schaufel:1410610904361472031>")
+            await ctx.send(f"{target.mention} geh dich verkraben! {E.Schaufel}")
 
     @commands.command(name="bremium")
     async def bremium(self, ctx, member: discord.Member = None):

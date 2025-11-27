@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 #eigene Imports
 import paypal
+import emotes as E
 from dataBase import *
 from Methoden import *
 from slashCommands.help import *
@@ -490,7 +491,7 @@ async def streak(interaction: discord.Interaction):
 
     embed = discord.Embed(
             title=f"Streak von {userName}",
-            description=f"Streak: {streak} Tage\nStreak Punkte: {streakPunkte} <:Streakpunkt:1406583255934963823>",
+            description=f"Streak: {streak} Tage\nStreak Punkte: {streakPunkte} {E.StreakPoint}",
             color=0x005b96
         )
     embed.set_thumbnail(url=interaction.user.display_avatar.url)
