@@ -37,7 +37,7 @@ def startCheckStream(bot):
                 url=f"https://twitch.tv/{TwitchUsername}"
             )
             embed.add_field(name='🎮 Spiel', value=stream_data['game_name'], inline=True)
-            embed.add_field(name='👥 Zuschauer', value=str(stream_data['viewer_count'], inline=True))
+            embed.add_field(name='👥 Zuschauer', value=str(stream_data['viewer_count']), inline=True)
                 
             if stream_data["thumbnail_url"]:
                 embed.set_image(url=stream_data["thumbnail_url"])
