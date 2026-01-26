@@ -107,6 +107,10 @@ async def loadCommands():
     await bot.load_extension("commands.error")
     await bot.load_extension("duftenServer.NSFW")
     await bot.load_extension("duftenServer.roleRemoved")
+
+    await bot.load_extension("slashCommands.timeout")
+
+
     
 
 async def main():
