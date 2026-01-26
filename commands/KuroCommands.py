@@ -122,6 +122,16 @@ class KuroCommands(commands.Cog):
 
         await ctx.send(f"Erledigt! Ich habe {len(target_guilds)} Server verlassen.")
 
+    @commands.command()
+    @commands.is_owner()
+    async def reload(self, ctx, extension):
+        bot = ctx.bot
+        try:
+            await bot.reload_extension(f"{extension}")
+            await ctx.send(f"✅ Modul `{extension}` wurde neu geladen!")
+        except Exception as e:
+            await ctx.send(f"❌ Fehler: {e}")
+
 
 async def setup(bot):
     await bot.add_cog(KuroCommands(bot))
