@@ -1,6 +1,9 @@
 from discord.ext import commands
 from discord import app_commands
+from dataBase import *
 import discord
+
+connection = createConnection()
 
 class ErrorHandler(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -14,6 +17,8 @@ class ErrorHandler(commands.Cog):
     # --------------------------
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        guildID = str(ctx.guild.id)
+        channel = str(ctx.channel.id)
         """Globaler Error-Handler für Prefix-Commands."""
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Dir fehlen die nötigen Berechtigungen für diesen Command!")
@@ -30,7 +35,9 @@ class ErrorHandler(commands.Cog):
             await ctx.send(f"⚠️ Ein Fehler ist aufgetreten: `{type(original_error).__name__}`")
             print(f"Fehler in Prefix-Command '{ctx.command.name}': {original_error}")  # Logging
         else:
-            await ctx.send("❌ Ein unbekannter Fehler ist aufgetreten. Bitte versuche es später erneut.")
+            if CheckSparkChannel(guildID, channel):
+                message = await ctx.send("❌ Ein unbekannter Fehler ist aufgetreten. Bitte versuche es später erneut.")
+                await message.delete(delay=10)
 
     # --------------------------
     # SLASH COMMAND ERRORS
@@ -47,6 +54,14 @@ class ErrorHandler(commands.Cog):
             print(f"[Unbekannter SlashCommand-Error] {error}")
 
 
-async def setup(bot: commands.Bot):
+def CheckSparkChannel(guildID, channel):
+    sparkChannel = getChannelSparkID(connection, guildID)
+    if sparkChannel == channel:
+        return True
+    else:
+        return False
+
+
+async def setup(bot):
     await bot.add_cog(ErrorHandler(bot))
     print("ErrorHandler geladen ✅")
