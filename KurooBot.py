@@ -28,7 +28,7 @@ from user.birthday import *
 from user.premiumDM import startPremiumChecker
 from Shop.items import *
 from duftenServer.NSFW import *
-from config import BotToken, MainServerID
+from config import BotToken, MainServerID, connection
 from Twitch.checkLive import startCheckStream
 
 
@@ -42,9 +42,6 @@ duftendeID = 1185618335950438500
 logging.basicConfig(level=logging.WARN) #AKTIVIEREN FÜR LOGGING
 
 load_dotenv()
-
-
-connection = createConnection()
 
 try:
     with open("compliments.json", "r", encoding="utf8") as f:

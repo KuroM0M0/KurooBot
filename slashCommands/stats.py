@@ -2,7 +2,6 @@ from dataBase import *
 from Methoden import replaceEmotes
 import discord
 
-connection = createConnection()
 
 async def StatsSelf(user, interaction, scope="global"):
     if scope == "server":

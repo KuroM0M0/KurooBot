@@ -4,8 +4,9 @@ from datetime import datetime
 from dataBase import *
 from Methoden import *
 from user.settings import ServerSettingView
+from config import connection
 
-connection = createConnection()
+
 
 class AdminCommands(commands.Cog):
     @commands.command(name="setSparkChannel")
@@ -49,10 +50,11 @@ class AdminCommands(commands.Cog):
     @commands.command(name="settings")
     @commands.has_permissions(administrator=True)
     async def settings(self, ctx):
+        bot = ctx.bot
         if getServerSettings(connection, ctx.guild.id) == None:
             insertServerSettings(connection, ctx.guild.id)
         serverID = str(ctx.guild.id)
-        view = ServerSettingView(serverID)
+        view = ServerSettingView(serverID, bot)
         embed = view.Embed()
         await ctx.send(embed=embed, view=view)
 

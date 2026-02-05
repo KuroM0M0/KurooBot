@@ -3,7 +3,6 @@ import discord
 import emotes as E
 from discord import ButtonStyle, ui
 
-connection = createConnection()
 
 #secondary, grey, gray = grau
 #primary, blurple = blau

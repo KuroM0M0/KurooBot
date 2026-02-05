@@ -4,8 +4,9 @@ from discord.ext import commands
 from datetime import datetime
 from dataBase import *
 from Methoden import *
+from config import connection
 
-connection = createConnection()
+
 KuroID = 308660164137844736
 
 
