@@ -1,6 +1,65 @@
 from dataBase import *
 from Methoden import replaceEmotes
 import discord
+from config import connection
+from discord.ext import commands
+from discord import app_commands
+from slashCommands.spark import CheckSparkChannel
+from Methoden import CheckServerExists
+
+
+class Stats(commands.Cog):
+    @app_commands.command(name="stats", description="Zeigt dir die Statistiken einer Person an.")
+    @app_commands.describe(person="Wähle die Person aus, von der du die Stats sehen möchtest.")
+    async def stats(self, interaction: discord.Interaction, person: discord.Member = None):
+        await interaction.response.defer(ephemeral=True)
+        user = interaction.user
+        userID = str(interaction.user.id)
+        channel = interaction.channel
+        serverID = str(interaction.guild.id)
+        channelID = str(interaction.channel.id)
+
+        if getBan(connection, serverID, userID) == True:
+            await interaction.followup.send("Du wurdest von der Nutzung vom Bot ausgeschlossen!", ephemeral=True)
+            return
+
+        CheckServerExists(connection, serverID)
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
+
+        if person is None:
+            StatsPrivateSelf = getStatsPrivate(connection, userID)
+            embedSelf = await StatsSelf(user, interaction, "global")
+            if not embedSelf:
+                await interaction.followup.send(
+                    f"{user.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:"
+                )
+                return
+            if StatsPrivateSelf == 1:
+                await interaction.followup.send(embed=embedSelf, view=StatView(user, None, interaction))
+            else:
+                await interaction.delete_original_response()
+                await channel.send(embed=embedSelf, view=StatView(user, None, interaction))
+        else:
+            targetID = str(person.id)
+
+            if getBan(connection, serverID, targetID) == True:
+                await interaction.followup.send("Dieser Nutzer wurde vom Bot ausgeschlossen!", ephemeral=True)
+                return
+        
+            targetName = person.display_name
+            embedTarget = await StatsTarget(person, interaction, "global")
+            StatsPrivateTarget = getStatsPrivate(connection, targetID)
+            if not embedTarget:
+                await interaction.delete_original_response()
+                await channel.send(
+                    f"{person.display_name} hat noch keine Stats. Mach ihr doch eine Freude mit /spark c:"
+                )
+                return
+            if StatsPrivateTarget == 1:
+                await interaction.followup.send(f"{targetName} hat seine Stats versteckt.", ephemeral=True)
+            else:
+                await interaction.delete_original_response()
+                await channel.send(embed=embedTarget, view=StatView(user, person, interaction))
 
 
 async def StatsSelf(user, interaction, scope="global"):
@@ -130,3 +189,8 @@ class StatView(discord.ui.View):
     def __init__(self, user, person, interaction):
         super().__init__(timeout=60)
         self.add_item(StatSelect(user, person, interaction))
+
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Stats(bot))
+    print("Stats geladen ✅")

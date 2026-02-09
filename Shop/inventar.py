@@ -1,8 +1,34 @@
 import discord
-from discord import ui
+from discord import ui, app_commands
+from discord.ext import commands
 from dataclasses import dataclass
 from Shop.shop import Shop
 from dataBase import *
+from slashCommands.spark import CheckSparkChannel
+from config import connection
+
+
+class Inventar(commands.Cog):
+    @app_commands.command(name="inventar", description="Hier siehst du welche Items du hast c:")
+    async def inventar(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        embed = InventarEmbed(interaction, connection)
+        serverID = str(interaction.guild.id)
+        userID = str(interaction.user.id)
+
+        if getBan(connection, serverID, userID) == True:
+            await interaction.followup.send("Du wurdest von der Nutzung vom Bot ausgeschlossen!", ephemeral=True)
+            return
+
+        if serverID is not None:
+            channelID = str(interaction.channel.id)
+            await CheckSparkChannel(connection, serverID, channelID, interaction)
+        try:
+            await interaction.followup.send(embed=embed, view=InventarButtons(connection))
+        except Exception as e:
+            print("Fehler beim Senden des Inventars:", e)
+            await interaction.followup.send(f"Fehler: {e}", ephemeral=True)
+
 
 class InventarButtons(ui.View):
     def __init__(self, connection):
@@ -44,3 +70,8 @@ def InventarEmbed(interaction, connection):
         embed.add_field(name="Leer", value="Du hast noch keine Items.", inline=False)
 
     return embed
+
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Inventar(bot))
+    print("Inventar geladen ✅")

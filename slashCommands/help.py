@@ -1,6 +1,64 @@
 import discord
 import textwrap
+from Methoden import *
+from config import connection
+from slashCommands.spark import CheckSparkChannel
+from discord.ext import commands
 from discord import app_commands
+
+
+class Help(commands.Cog):
+    @app_commands.command(name="help", description="Zeigt dir alle Befehle an")
+    async def help(self, interaction: discord.Interaction, command: str = None):
+        await interaction.response.defer()
+        if interaction.guild is not None:
+            serverID = str(interaction.guild.id)
+            channelID = str(interaction.channel.id)
+            CheckServerExists(connection, serverID)
+            if serverID is not None:
+                await CheckSparkChannel(connection, serverID, channelID, interaction)
+
+        if command is None:
+            embed = discord.Embed(
+                color=0x005b96
+            )
+
+            embed.add_field(
+                name="ℹ️ Befehle: ",
+                value=cmdDescription,
+                inline=False
+            )
+            await interaction.followup.send(embed=embed)
+        elif command == "spark":
+            await helpSpark(interaction)
+        elif command == "stats":
+            await helpStats(interaction)
+        elif command == "hug":
+            await helpHug(interaction)
+        elif command == "pat":
+            await helpPat(interaction)
+        elif command == "settings":
+            await helpSettings(interaction)
+        elif command == "streak":
+            await helpStreak(interaction)
+        elif command == "reveal":
+            await helpReveal(interaction)
+        elif command == "admin":
+            await helpAdmin(interaction)
+        elif command == "vote":
+            await helpVote(interaction)
+        elif command == "shop":
+            await helpShop(interaction)
+
+    @help.autocomplete("command")
+    async def helpAutocomplete(self, interaction: discord.Interaction, current: str):
+        befehle = ["admin", "spark", "stats", "hug", "pat", "settings", "streak", "reveal", "vote", "shop"]
+        return [
+            app_commands.Choice(name=b, value=b)
+            for b in befehle
+            if current.lower() in b.lower()
+        ]
+
 
 cmdDescription = textwrap.dedent(
         "**/spark (Person) (Kompliment) (reveal)**\n"
@@ -45,7 +103,7 @@ async def helpSpark(interaction):
         name="Hilfe zu /spark: ",
         value=text,
         inline=False)
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 
 
@@ -59,7 +117,7 @@ async def helpStreak(interaction):
         name="Hilfe zu /streak: ",
         value=text,
         inline=False)
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 
 async def helpSettings(interaction):
@@ -73,30 +131,32 @@ async def helpSettings(interaction):
         name="Hilfe zu /settings: ",
         value=text,
         inline=False)
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 
 async def helpHug(interaction):
     embed = discord.Embed(
         color=0x005b96)
     text = textwrap.dedent("Du kannst taglich einer Person **einen Hug oder Pat** geben. \n"
-                           "**Mit Premium** sind Hug/Pats **3x taglich** verwendbar mit jeweils einer Stunde Cooldown.")
+                           "**Mit Premium** sind Hug/Pats **3x taglich** verwendbar mit jeweils einer Stunde Cooldown."
+                           "\n\nDie Server Administratoren können Einstellen, ob das Feld Anonym verfügbar ist oder nicht.")
     embed.add_field(
         name="Hilfe zu /hug: ",
         value=text,
         inline=False)
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 async def helpPat(interaction):
     embed = discord.Embed(
         color=0x005b96)
     text = textwrap.dedent("Du kannst täglich einer Person **einen Hug oder Pat** geben. \n"
-                           " **Mit Premium** sind Hug/Pats **3x täglich** verwendbar mit jeweils einer Stunde Cooldown.")
+                           " **Mit Premium** sind Hug/Pats **3x täglich** verwendbar mit jeweils einer Stunde Cooldown."
+                           "\n\nDie Server Administratoren können Einstellen, ob das Feld Anonym verfügbar ist oder nicht.")
     embed.add_field(
         name="Hilfe zu /pat: ",
         value=text,
         inline=False)
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 
 async def helpStats(interaction):
@@ -110,7 +170,7 @@ async def helpStats(interaction):
         name="Hilfe zu /stats: ",
         value=text,
         inline=False)
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 
 async def helpReveal(interaction):
@@ -129,7 +189,7 @@ async def helpReveal(interaction):
         name="Hilfe zu /reveal: ",
         value=text,
         inline=False)
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 
 async def helpAdmin(interaction):
@@ -145,7 +205,7 @@ async def helpAdmin(interaction):
         name="Hilfe zur Einrichtung vom Bot: ",
         value=text,
         inline=False)
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 
 async def helpVote(interaction):
@@ -158,7 +218,7 @@ async def helpVote(interaction):
         name="Hilfe zu /vote: ",
         value=text,
         inline=False)
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 
 async def helpShop(interaction):
@@ -171,4 +231,9 @@ async def helpShop(interaction):
         name="Hilfe zu /shop: ",
         value=text,
         inline=False)
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
+
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Help(bot))
+    print("Help geladen ✅")

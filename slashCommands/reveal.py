@@ -1,7 +1,84 @@
 import discord
+from discord.ext import commands
+from discord import app_commands
 from datetime import datetime
 from discord import ButtonStyle, ui
 from Methoden import replaceEmotes
+from dataBase import *
+from config import connection
+
+
+class Reveal(commands.Cog):
+    @app_commands.command(name="reveal", description="Lasse dir anzeigen von wem ein Spark gesendet wurde!")
+    async def reveal(self, interaction: discord.Interaction, sparkid: int = None):
+        await interaction.response.defer(ephemeral=True)
+        userID = str(interaction.user.id)
+        revealUses = getRevealUses(connection, userID)
+        reveals = getReveals(connection, userID) #noch nicht revealed
+        customReveals = getRevealsCustom(connection, userID) #noch nicht revealede custom sparks
+        revealed = getRevealedSparks(connection, userID) #schon revealed
+        revealedCustom = getRevealedSparksCustom(connection, userID)
+        if sparkid is not None:
+            isRevealed = getIsRevealed(connection, sparkid)
+            if revealUses < 1:
+                await interaction.followup.send("Du hast keine Reveals mehr. Um dir neue zu holen, gib '/help reveal' ein.", ephemeral=True)
+                return
+
+            if userID != getSparkTargetID(connection, sparkid):
+                await interaction.followup.send("Du kannst nur Sparks revealen, die du selbst erhalten hast!", ephemeral=True)
+                return
+
+            result = getSparkReveal(connection, sparkid)
+            if result is None:
+                await interaction.followup.send("Dieser Spark existiert nicht oder der Sender möchte Anonym bleiben.", ephemeral=True)
+                return
+            elif isRevealed == True:
+                await interaction.followup.send(f"Dieser Spark wurde bereits von dir aufgedeckt!", ephemeral=True)
+                return
+            else:
+                await interaction.followup.send(f"Dieser Spark wurde von {result} gesendet.", ephemeral=True)
+                setRevealUses(connection, userID, revealUses - 1)
+                setIsRevealed(connection, sparkid)
+        else:
+            description_lines = []
+            if not reveals and not customReveals:
+                embed = discord.Embed(
+                    title="✨ Revealbare Sparks:",
+                    description="Du hast aktuell keine revealbaren Sparks.",
+                    color=0x00ff00)
+                
+            else:
+                if revealed or revealedCustom:
+                    description_lines.append("**Bereits revealed:**")
+                if revealed:
+                    description_lines.extend(revealEmbed(revealed))
+
+                # 2️⃣ Noch nicht revealed Sparks
+                if reveals:
+                    if description_lines:
+                        description_lines.append("")  # Leerzeile zur Trennung
+                    description_lines.append("**Noch revealbar:**")
+                    for spark_id, timestamp, compliment in reveals:
+                        try:
+                            dt = datetime.fromisoformat(timestamp)
+                            unix_ts = int(dt.timestamp())
+                        except ValueError:
+                            unix_ts = 0
+                        line = f"{compliment} — <t:{unix_ts}:R> — ID `{spark_id}`"
+                        description_lines.append(line)
+
+                # Falls gar nichts vorhanden ist
+                if not description_lines:
+                    description_lines.append("Du hast aktuell keine revealbaren Sparks.")
+
+                # Embed erstellen
+                embed = discord.Embed(
+                    title="✨ Revealbare Sparks:",
+                    description="\n".join(description_lines),
+                    color=0x005b96
+                )
+            await interaction.followup.send(embed=embed, view=RevealMainView(reveals, revealed, customReveals, revealedCustom), ephemeral=True)
+
 
 class RevealMainView(ui.View):
     def __init__(self, normal_reveals, revealed, custom_reveals, revealed_custom):
@@ -127,3 +204,8 @@ def buildCustomEmbed(custom_reveals, revealed_custom, interaction):
         description="\n".join(description_lines),
         color=0x00ff00
     )
+
+
+async def setup(bot):
+    await bot.add_cog(Reveal(bot))
+    print("reveal geladen ✅")

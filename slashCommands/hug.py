@@ -1,11 +1,16 @@
 import discord
 import asyncio
 import random
+import emotes as E
+from discord import app_commands
+from discord.ext import commands
 from datetime import datetime, timedelta
 from dataBase import *
 from Methoden import *
+from slashCommands.spark import CheckSparkChannel
+from config import connection
 
-connection = createConnection()
+
 cooldownDurationHugPat = 1#2       #für vote bleibt gleich
 cooldownDurationHugPatPremium = 1
 maxUses = 1
@@ -73,13 +78,13 @@ async def sendHug(interaction, person, anonym):
 
     if anonym == False:
         embed = discord.Embed(
-            title="Umarmung <a:PepeHugEggplant:1310769251115728936>",
+            title=f"Umarmung {E.Hug}",
             description=f"{person.mention}, {interaction.user.mention} würde dich jetzt sehr gerne umarmen, aber du bist nicht da </3",
             color=0x005b96
         )
     else:
         embed = discord.Embed(
-            title="Umarmung <a:PepeHugEggplant:1310769251115728936>",
+            title=f"Umarmung {E.Hug}",
             description=f"{person.mention}, jemand würde dich jetzt sehr gerne umarmen, aber du bist nicht da </3",
             color=0x005b96
         )
@@ -159,13 +164,13 @@ async def sendPat(interaction, person, anonym):
 
     if anonym == False:
         embed = discord.Embed(
-            title="Pat <a:neko_pat:1309638933658865744>",
+            title=f"Pat {E.Pat}",
             description=f"{person.mention}, du bekommst pat pats von {interaction.user.mention} <3",
             color=0x005b96
         )
     else:
         embed = discord.Embed(
-            title="Pat <a:neko_pat:1309638933658865744>",
+            title=f"Pat {E.Pat}",
             description=f"{person.mention}, du bekommst anonyme pat pats <3",
             color=0x005b96
         )
@@ -176,3 +181,47 @@ async def sendPat(interaction, person, anonym):
         await ghostping.delete()
 
     await channel.send(embed=embed)
+
+
+class HugCommand(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(name="hug", description="Umarme eine andere Person Anonym")
+    @app_commands.describe(person="Wähle eine Person aus, die du Umarmen möchtest.")
+    async def hug(self, interaction: discord.Interaction, person: discord.Member, anonym: bool = True):
+        await interaction.response.defer(ephemeral=True)
+        serverID = str(interaction.guild.id)
+        channelID = str(interaction.channel.id)
+        userID = str(interaction.user.id)
+        targetID = str(person.id)
+
+
+        await BanStuff(connection, serverID, targetID, userID, interaction)
+        CheckServerExists(connection, serverID)
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
+        await sendHug(interaction, person, anonym)
+
+
+
+
+    @app_commands.command(name="pat", description="Gib einer anderen Person anonym ein Patpat c:")
+    @app_commands.describe(person="Wähle eine Person aus, der du ein Patpat geben möchtest.")
+    async def pat(self, interaction: discord.Interaction, person: discord.Member, anonym: bool = True):
+        await interaction.response.defer(ephemeral=True)
+        serverID = str(interaction.guild.id)
+        channelID = str(interaction.channel.id)
+        userID = str(interaction.user.id)
+        targetID = str(person.id)
+
+
+        await BanStuff(connection, serverID, targetID, userID, interaction)
+        CheckServerExists(connection, serverID)
+        await CheckSparkChannel(connection, serverID, channelID, interaction)
+        await sendPat(interaction, person, anonym)
+
+
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(HugCommand(bot))
+    print("Hug/Pat geladen ✅")
