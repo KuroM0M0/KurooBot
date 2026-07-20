@@ -5,7 +5,7 @@ from config import roleConnection, MainServerID
 from Kurocord.roleDB import getAllRoleTimer, insertUser
 from datetime import datetime, timedelta, timezone
 
-inactivityLimit = timedelta(months=3)  # anpassen nach Bedarf
+inactivityLimit = timedelta(days=90)  # anpassen nach Bedarf
 removeRoleId = 1320822518185197683      # Rolle, die bei Inaktivität entfernt wird
 removeRoleMensch = 542073219516071936
 removeRoleHalbAlien = 750710293826371614
