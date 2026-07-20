@@ -111,6 +111,7 @@ async def loadCommands():
     await bot.load_extension("slashCommands.use")
     await bot.load_extension("slashCommands.shop")
     await bot.load_extension("slashCommands.feedback")
+    await bot.load_extension("Kurocord.roles")
 
 
     
